@@ -88,10 +88,9 @@ This project heavily relies on the `docling` library. To understand its features
 
 ## 🤝 Contributing
 
-All contributions are welcome! If you have suggestions for new features, bug fixes, or improvements, please feel free to participate.
+This project welcomes contributions of all kinds, whether it's bug fixes, new features, or documentation improvements.
 
-1.  Discuss ideas by opening an issue on [GitHub Issues](https://github.com/gyunggyung/docling-translate/issues).
-2.  Fork this repository, apply your changes, and send a Pull Request.
+For a detailed development workflow and contribution methods, please refer to the [**Contribution Guidelines (CONTRIBUTING.md)**](CONTRIBUTING.md).
 
 ## 📜 License
 
