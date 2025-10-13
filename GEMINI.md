@@ -46,4 +46,8 @@
 
 코드 변경 후 기능을 확인할 때는 아래의 표준 예제 파일을 사용합니다.
 
-*   **표준 예제 PDF:** `samples/2501.17887v1.pdf`
+*   **표준 예제 PDF:** `samples/1706.03762v7.pdf`
+
+## 프로젝트 기여 규칙 준수
+
+Gemini AI 에이전트는 이 프로젝트의 공식적인 기여 가이드라인을 따릅니다. 모든 코드 변경, 브랜치 생성, Pull Request 요청은 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)에 명시된 절차에 따라 진행됩니다.

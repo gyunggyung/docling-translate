@@ -88,10 +88,9 @@ python main.py "samples/1706.03762v7.pdf"
 
 ## 🤝 기여하기 (Contributing)
 
-여러분의 모든 기여를 환영합니다! 새로운 기능 제안, 버그 수정, 개선 아이디어가 있다면 언제든지 참여해 주세요.
+이 프로젝트는 여러분의 기여를 언제나 환영합니다. 버그 수정, 기능 추가, 문서 개선 등 어떤 형태의 기여든 좋습니다.
 
-1.  [GitHub Issues](https://github.com/gyunggyung/docling-translate/issues)에 이슈를 등록하여 아이디어를 논의합니다.
-2.  이 저장소를 Fork한 후, 변경 사항을 적용하여 Pull Request를 보내주세요.
+자세한 개발 워크플로우와 기여 방법은 [**기여 가이드라인 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md) 문서를 참고해주세요.
 
 ## 📜 라이선스
 
