@@ -1,5 +1,7 @@
 # docling-translate
 
+[Read in English](docs/README.en.md)
+
 **기술 PDF, 이제 원문과 번역문을 한 문장씩 비교하며 완벽하게 이해하세요.**
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -43,6 +45,11 @@ pip install -r requirements.txt
 python main.py "path/to/your/document.pdf"
 ```
 
+예를 들어, 프로젝트에 포함된 샘플 파일(`Attention Is All You Need` 논문)을 번역하려면 다음 명령어를 실행하세요.
+```bash
+python main.py "samples/1706.03762v7.pdf"
+```
+
 ### 🎨 출력 예시
 
 번역 결과물(`_combined.md`)은 아래와 같이 원문과 번역문이 한 문장 단위로 생성되어, 비교하며 읽기 매우 편리합니다.
@@ -70,20 +77,20 @@ python main.py "path/to/your/document.pdf"
 - [ ] **폴더 단위 번역**: 단일 파일이 아닌 폴더 전체의 PDF를 한 번에 번역하는 기능
 - [ ] **성능 향상을 위한 병렬 처리**: 멀티프로세싱을 활용한 대용량 문서 번역 속도 개선
 - [ ] **다중 번역 엔진 지원**: GPT API, 로컬 LLM 등 최신 번역 엔진 선택 기능
+- [ ] **다국어 번역 지원**: 한국어 외 다른 언어로의 번역 기능 확장
 
 ## 📚 개발 참고 자료
 
-이 프로젝트는 `docling` 라이브러리를 핵심으로 사용합니다.
+이 프로젝트는 `docling` 라이브러리를 핵심으로 사용합니다. `docling`의 기능과 사용법을 이해하려면 공식 문서를 참고하는 것이 가장 좋습니다.
 
-*   **`docling` 공식 문서:** 기능과 사용법을 이해하기 위한 가장 중요한 자료입니다.
-    *   **GitHub Repository & Docs:** [https://github.com/docling-project/docling/tree/main/docs](https://github.com/docling-project/docling/tree/main/docs)
-    *   `@docling-docs/examples` 내의 예제들은 주요 기능 구현에 큰 도움이 됩니다.
+*   **`docling` 공식 문서 사이트:** [https://docling-project.github.io/docling/](https://docling-project.github.io/docling/)
+*   **`docling` 예제 코드 (GitHub):** [https://github.com/docling-project/docling/tree/main/docs/examples](https://github.com/docling-project/docling/tree/main/docs/examples)
 
 ## 🤝 기여하기 (Contributing)
 
 여러분의 모든 기여를 환영합니다! 새로운 기능 제안, 버그 수정, 개선 아이디어가 있다면 언제든지 참여해 주세요.
 
-1.  [GitHub Issues](https://github.com/your-username/docling-translate/issues)에 이슈를 등록하여 아이디어를 논의합니다.
+1.  [GitHub Issues](https://github.com/gyunggyung/docling-translate/issues)에 이슈를 등록하여 아이디어를 논의합니다.
 2.  이 저장소를 Fork한 후, 변경 사항을 적용하여 Pull Request를 보내주세요.
 
 ## 📜 라이선스

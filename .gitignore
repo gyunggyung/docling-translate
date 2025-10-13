@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Output directory
+/output/
+
+# Documentation and large files not part of the source code
+/docling-docs/
+*.pdf
+!samples/1706.03762v7.pdf
+*.docx
+
+.gemini/
+gha-creds-*.json
