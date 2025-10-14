@@ -19,7 +19,7 @@ except LookupError:
     nltk.download('punkt_tab', quiet=True)
     _log.info("NLTK 모델 다운로드가 완료되었습니다.")
 
-def translate_text(text: str, src: str = "en", dest: str = "ko") -> str:
+def translate_text(text: str, src: str, dest: str) -> str:
     """
     주어진 단일 텍스트 문자열을 번역합니다.
     번역에 실패하거나 텍스트가 비어있으면 원본 텍스트를 반환합니다.
@@ -42,7 +42,7 @@ def translate_text(text: str, src: str = "en", dest: str = "ko") -> str:
         _log.error(f"번역 중 오류 발생: {e}")
         return text  # 오류 발생 시 원본 텍스트로 대체
 
-def translate_by_sentence(text: str, src: str = "en", dest: str = "ko") -> list[tuple[str, str]]:
+def translate_by_sentence(text: str, src: str, dest: str) -> list[tuple[str, str]]:
     """
     주어진 텍스트 블록을 문장 단위로 나누고, 각 문장을 번역합니다.
     결과를 (원본 문장, 번역된 문장) 형태의 튜플 리스트로 반환합니다.
