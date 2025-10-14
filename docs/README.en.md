@@ -1,5 +1,9 @@
 # docling-translate
 
+<p align="center">
+  <img src="logo.png" alt="docling-translate logo" width="600"/>
+</p>
+
 [한국어로 읽기](../README.md)
 
 **Technical PDFs, now perfectly understood by comparing original and translated sentences side-by-side.**
@@ -39,24 +43,19 @@ pip install -r requirements.txt
 
 ### 2. Usage
 
-Translate a PDF file with the following command.
+For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper) with default settings (English->Korean), run the following command:
 
 ```bash
-python main.py "path/to/your/document.pdf"
+python main.py "samples/1706.03762v7.pdf"
 ```
 
 **Specifying Languages (Optional):**
 
-You can specify the source language with the `-f` (`--from`) option and the target language with the `-t` (`--to`) option. (Default: English `en` -> Korean `ko`)
+You can specify the source language with the `-f` (`--from`) option and the target language with the `-t` (`--to`) option.
 
 ```bash
 # Translate an English PDF to German
 python main.py "samples/1706.03762v7.pdf" -f en -t de
-```
-
-For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper) with default settings (English->Korean), run the following command:
-```bash
-python main.py "samples/1706.03762v7.pdf"
 ```
 
 ### 🎨 Output Example

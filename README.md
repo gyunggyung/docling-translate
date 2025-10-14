@@ -1,5 +1,9 @@
 # docling-translate
 
+<p align="center">
+  <img src="docs/logo.png" alt="docling-translate logo" width="600"/>
+</p>
+
 [Read in English](docs/README.en.md)
 
 **기술 PDF, 이제 원문과 번역문을 한 문장씩 비교하며 완벽하게 이해하세요.**
@@ -39,24 +43,18 @@ pip install -r requirements.txt
 
 ### 2. 사용법
 
-아래 명령어로 PDF 파일을 번역해 보세요.
-
+예를 들어, 프로젝트에 포함된 샘플 파일(`Attention Is All You Need` 논문)을 기본 설정(영어->한국어)으로 번역하려면 다음 명령어를 실행하세요.
 ```bash
-python main.py "path/to/your/document.pdf"
+python main.py "samples/1706.03762v7.pdf"
 ```
 
 **언어 지정 (선택 사항):**
 
-`-f` (`--from`) 옵션으로 원본 언어를, `-t` (`--to`) 옵션으로 번역할 언어를 지정할 수 있습니다. (기본값: 영어 `en` -> 한국어 `ko`)
+다른 언어로 번역하고 싶다면 `-f` (`--from`) 옵션으로 원본 언어를, `-t` (`--to`) 옵션으로 목표 언어를 지정할 수 있습니다.
 
 ```bash
 # 영문 PDF를 독일어로 번역
 python main.py "samples/1706.03762v7.pdf" -f en -t de
-```
-
-예를 들어, 프로젝트에 포함된 샘플 파일(`Attention Is All You Need` 논문)을 기본 설정(영어->한국어)으로 번역하려면 다음 명령어를 실행하세요.
-```bash
-python main.py "samples/1706.03762v7.pdf"
 ```
 
 ### 🎨 출력 예시
