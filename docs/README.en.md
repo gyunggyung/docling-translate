@@ -45,7 +45,16 @@ Translate a PDF file with the following command.
 python main.py "path/to/your/document.pdf"
 ```
 
-For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper), run the following command:
+**Specifying Languages (Optional):**
+
+You can specify the source language with the `-f` (`--from`) option and the target language with the `-t` (`--to`) option. (Default: English `en` -> Korean `ko`)
+
+```bash
+# Translate an English PDF to German
+python main.py "samples/1706.03762v7.pdf" -f en -t de
+```
+
+For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper) with default settings (English->Korean), run the following command:
 ```bash
 python main.py "samples/1706.03762v7.pdf"
 ```
@@ -77,7 +86,7 @@ The translated output (`_combined.md`) is generated with original and translated
 - [ ] **Folder-level Translation**: Translate all PDFs in a folder at once
 - [ ] **Parallel Processing for Performance**: Improve translation speed for large documents using multiprocessing
 - [ ] **Multi-Engine Translation Support**: Add options for different translation engines like GPT API, local LLMs, etc.
-- [ ] **Multi-language Support**: Expand translation capabilities to languages other than Korean
+- [x] **Multi-language Support**: Expand translation capabilities to languages other than Korean
 
 ## 📚 Development Resources
 

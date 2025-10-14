@@ -6,6 +6,7 @@ import argparse
 import os
 from pathlib import Path
 import logging
+from datetime import datetime
 
 # Hugging Face Hub 관련 환경 변수 설정 (심볼릭 링크 비활성화)
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
@@ -61,134 +62,114 @@ def save_and_get_image_path(item: DocItem, doc: DoclingDocument, output_dir: Pat
     
     return ""
 
-def process_document(pdf_path: str):
+def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 'ko'):
     """
     PDF를 변환하고, 텍스트 내용을 문장 단위로 번역한 후,
-    네 가지 다른 형식(_en, _ko, _combined, _combined_simple)의 마크다운 파일로 저장합니다.
+    결과를 고유한 폴더에 마크다운 파일로 저장합니다.
+
+    :param pdf_path: 번역할 PDF 파일 경로
+    :param source_lang: 원본 언어 코드 (예: 'en')
+    :param target_lang: 목표 언어 코드 (예: 'ko')
     """
-    # 입력된 PDF 파일 경로가 실제로 존재하는지 확인합니다.
+    # 1. 입력 파일 유효성 검사
     if not os.path.exists(pdf_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {pdf_path}")
         return
 
-    logging.info(f"문서 처리 시작: {pdf_path}")
-    # 출력 디렉토리('output')를 설정하고 생성합니다.
-    output_dir = Path("output")
-    output_dir.mkdir(exist_ok=True)
-    # 출력 파일의 기본 이름을 PDF 파일명에서 추출합니다. (확장자 제외)
+    # 2. 출력 경로 설정 (동적 생성)
     base_filename = Path(pdf_path).stem
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # 고유한 결과물 폴더 경로 생성
+    # 예: output/1706.03762v7/en_to_ko_20251014_183000/
+    output_dir = Path("output") / base_filename / f"{source_lang}_to_{target_lang}_{timestamp}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    logging.info(f"문서 처리 시작: {pdf_path} (번역: {source_lang} -> {target_lang})")
+    logging.info(f"결과물 저장 폴더: {output_dir}")
 
+    # 3. Docling 변환기 설정 및 실행
     logging.info("Docling 파이프라인 설정 중...")
-    # docling 파이프라인 옵션을 설정합니다: 표와 그림을 이미지로 생성하고, 이미지 품질(scale)을 2.0으로 설정합니다.
     pipeline_options = PdfPipelineOptions(generate_picture_images=True, generate_table_images=True, images_scale=2.0)
-    # 설정된 옵션으로 DocumentConverter 객체를 생성합니다.
     converter = DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
     )
 
     logging.info("PDF를 DoclingDocument로 변환 중...")
     try:
-        # PDF 파일을 docling의 내부 형식인 DoclingDocument로 변환합니다.
         doc: DoclingDocument = converter.convert(pdf_path).document
     except Exception as e:
-        # 변환 중 오류 발생 시 에러 로그를 남기고 함수를 종료합니다.
         logging.error(f"PDF 변환 오류: {e}", exc_info=True)
         return
     logging.info("PDF 변환 성공.")
 
+    # 4. 번역 및 파일 저장
     logging.info("문장 단위 번역과 함께 출력 파일 생성 중...")
     
-    # 출력될 4개 마크다운 파일의 전체 경로를 설정합니다.
-    path_en = output_dir / f"{base_filename}_en.md"
-    path_ko = output_dir / f"{base_filename}_ko.md"
+    # 출력 파일 경로 설정 (언어 코드 동적 반영)
+    path_src = output_dir / f"{base_filename}_{source_lang}.md"
+    path_target = output_dir / f"{base_filename}_{target_lang}.md"
     path_combined = output_dir / f"{base_filename}_combined.md"
-    path_combined_simple = output_dir / f"{base_filename}_combined_simple.md"
 
-    # 이미지 파일명 중복을 피하기 위한 카운터를 초기화합니다.
+    # 이미지 파일명 중복을 피하기 위한 카운터 초기화
     counters = {"table": 0, "picture": 0}
 
-    # 4개의 파일을 동시에 열어서 작업을 진행합니다. (인코딩은 utf-8)
-    with open(path_en, "w", encoding="utf-8") as f_en, \
-         open(path_ko, "w", encoding="utf-8") as f_ko, \
-         open(path_combined, "w", encoding="utf-8") as f_comb, \
-         open(path_combined_simple, "w", encoding="utf-8") as f_comb_simple:
+    # 파일을 열어 작업을 진행합니다.
+    with open(path_src, "w", encoding="utf-8") as f_src, \
+         open(path_target, "w", encoding="utf-8") as f_target, \
+         open(path_combined, "w", encoding="utf-8") as f_comb:
 
-        # DoclingDocument의 모든 아이템(텍스트, 표, 그림 등)을 순회합니다.
         for item, _ in doc.iterate_items():
-            # 아이템의 원본 페이지 번호를 추출합니다. (없으면 빈 문자열)
             page_num_str = f"(p. {item.prov[0].page_no})" if item.prov and item.prov[0].page_no else ""
 
-            # 아이템이 텍스트(TextItem)인 경우
             if isinstance(item, TextItem):
-                # 텍스트가 비어있지 않은 경우에만 처리합니다.
                 if not item.text or not item.text.strip():
                     continue
 
-                # 텍스트 블록을 문장 단위로 번역하여 (원본, 번역) 쌍의 리스트를 받습니다.
-                sentence_pairs = translate_by_sentence(item.text)
+                # 언어 코드를 전달하여 번역 실행
+                sentence_pairs = translate_by_sentence(item.text, src=source_lang, dest=target_lang)
                 
-                # 원문(_en.md)과 번역문(_ko.md) 파일에는 전체 문단을 다시 합쳐서 씁니다.
                 original_paragraph = " ".join([pair[0] for pair in sentence_pairs])
                 translated_paragraph = " ".join([pair[1] for pair in sentence_pairs])
 
-                f_en.write(f"{original_paragraph} {page_num_str}\n\n")
-                f_ko.write(f"{translated_paragraph} {page_num_str}\n\n")
+                f_src.write(f"{original_paragraph} {page_num_str}\n\n")
+                f_target.write(f"{translated_paragraph} {page_num_str}\n\n")
 
-                # 통합본(_combined.md) 파일에는 인용구(>)를 사용하여 문장 단위로 번갈아 씁니다.
+                # 라벨에 동적 언어 코드 사용
                 for orig_sent, trans_sent in sentence_pairs:
-                    f_comb.write(f"**Original (English)** {page_num_str}\n")
+                    f_comb.write(f"**Original ({source_lang})** {page_num_str}\n")
                     f_comb.write(f"> {orig_sent}\n\n")
-                    f_comb.write(f"**Translated (Korean)** {page_num_str}\n")
+                    f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n")
                     f_comb.write(f"> {trans_sent}\n\n")
                     f_comb.write("---\n")
                 f_comb.write("\n")
 
-                # 실험적인 심플 통합본(_combined_simple.md) 파일에는 인용구 없이 씁니다.
-                for orig_sent, trans_sent in sentence_pairs:
-                    f_comb_simple.write(f"**Original (English)** {page_num_str}\n")
-                    f_comb_simple.write(f"{orig_sent}\n\n")
-                    f_comb_simple.write(f"**Translated (Korean)** {page_num_str}\n")
-                    f_comb_simple.write(f"{trans_sent}\n\n")
-                    f_comb_simple.write("---\n")
-                f_comb_simple.write("\n")
-
-            # 아이템이 표(TableItem) 또는 그림(PictureItem)인 경우
             elif isinstance(item, (TableItem, PictureItem)):
-                # 아이템을 이미지로 저장하고 상대 경로를 받아옵니다.
                 image_path = save_and_get_image_path(item, doc, output_dir, base_filename, counters)
                 
                 if image_path:
-                    # 마크다운 이미지 링크를 생성합니다.
                     alt_text = "table" if isinstance(item, TableItem) else "image"
                     md_link = f"![{alt_text}]({image_path}) {page_num_str}\n\n"
                     
-                    # 4개 파일 모두에 이미지 링크를 씁니다.
-                    f_en.write(md_link)
-                    f_ko.write(md_link)
+                    f_src.write(md_link)
+                    f_target.write(md_link)
                     f_comb.write(md_link)
-                    f_comb_simple.write(md_link)
 
-                    # 캡션(설명)이 있는 경우, 캡션도 번역하여 추가합니다.
                     orig_caption = item.caption_text(doc)
                     if orig_caption:
-                        trans_caption = translate_text(orig_caption) # 캡션은 문장 단위가 아닌 통으로 번역
-                        f_en.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
-                        f_ko.write(f"**캡션:** {trans_caption} {page_num_str}\n\n")
+                        # 캡션 번역 시에도 언어 코드 전달
+                        trans_caption = translate_text(orig_caption, src=source_lang, dest=target_lang)
                         
-                        # 통합본 파일에 캡션 원문과 번역문을 씁니다.
-                        f_comb.write(f"**Original Caption:** {orig_caption} {page_num_str}\n")
+                        # 캡션 라벨에도 동적 언어 코드 사용
+                        f_src.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
+                        f_target.write(f"**Caption:** {trans_caption} {page_num_str}\n\n")
+                        
+                        f_comb.write(f"**Original Caption ({source_lang}):** {orig_caption} {page_num_str}\n")
                         f_comb.write(f"> {orig_caption}\n\n")
-                        f_comb.write(f"**Translated Caption:** {trans_caption} {page_num_str}\n")
+                        f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
-                        # 심플 통합본 파일에도 캡션을 씁니다.
-                        f_comb_simple.write(f"**Original Caption:** {orig_caption} {page_num_str}\n")
-                        f_comb_simple.write(f"{orig_caption}\n\n")
-                        f_comb_simple.write(f"**Translated Caption:** {trans_caption} {page_num_str}\n")
-                        f_comb_simple.write(f"{trans_caption}\n\n")
-
                     f_comb.write("---\n\n")
-                    f_comb_simple.write("---\n\n")
 
     logging.info(f"파일 생성 완료: {output_dir}")
 
@@ -196,9 +177,20 @@ def process_document(pdf_path: str):
 if __name__ == "__main__":
     # 커맨드 라인 인자를 처리하기 위한 ArgumentParser 객체를 생성합니다.
     parser = argparse.ArgumentParser(description="PDF 문서를 문장 단위로 번역합니다.")
-    # 'pdf_path'라는 이름의 필수 인자를 추가합니다.
+    
+    # 필수 인자: 번역할 PDF 파일의 경로
     parser.add_argument("pdf_path", type=str, help="번역할 PDF 파일의 경로")
+    
+    # 선택 인자: 원본 언어 설정
+    parser.add_argument('-f', '--from', dest='source_lang', type=str, default='en', 
+                        help="번역할 원본 언어 코드 (기본값: en)")
+    
+    # 선택 인자: 목표 언어 설정
+    parser.add_argument('-t', '--to', dest='target_lang', type=str, default='ko', 
+                        help="번역 결과물 언어 코드 (기본값: ko)")
+
     # 커맨드 라인 인자를 파싱합니다.
     args = parser.parse_args()
-    # 파싱된 인자(pdf_path)를 가지고 메인 함수를 실행합니다.
-    process_document(args.pdf_path)
+    
+    # 파싱된 인자들을 가지고 메인 함수를 실행합니다.
+    process_document(args.pdf_path, args.source_lang, args.target_lang)

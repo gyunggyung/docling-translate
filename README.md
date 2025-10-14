@@ -45,7 +45,16 @@ pip install -r requirements.txt
 python main.py "path/to/your/document.pdf"
 ```
 
-예를 들어, 프로젝트에 포함된 샘플 파일(`Attention Is All You Need` 논문)을 번역하려면 다음 명령어를 실행하세요.
+**언어 지정 (선택 사항):**
+
+`-f` (`--from`) 옵션으로 원본 언어를, `-t` (`--to`) 옵션으로 번역할 언어를 지정할 수 있습니다. (기본값: 영어 `en` -> 한국어 `ko`)
+
+```bash
+# 영문 PDF를 독일어로 번역
+python main.py "samples/1706.03762v7.pdf" -f en -t de
+```
+
+예를 들어, 프로젝트에 포함된 샘플 파일(`Attention Is All You Need` 논문)을 기본 설정(영어->한국어)으로 번역하려면 다음 명령어를 실행하세요.
 ```bash
 python main.py "samples/1706.03762v7.pdf"
 ```
@@ -77,7 +86,7 @@ python main.py "samples/1706.03762v7.pdf"
 - [ ] **폴더 단위 번역**: 단일 파일이 아닌 폴더 전체의 PDF를 한 번에 번역하는 기능
 - [ ] **성능 향상을 위한 병렬 처리**: 멀티프로세싱을 활용한 대용량 문서 번역 속도 개선
 - [ ] **다중 번역 엔진 지원**: GPT API, 로컬 LLM 등 최신 번역 엔진 선택 기능
-- [ ] **다국어 번역 지원**: 한국어 외 다른 언어로의 번역 기능 확장
+- [x] **다국어 번역 지원**: 한국어 외 다른 언어로의 번역 기능 확장
 
 ## 📚 개발 참고 자료
 
