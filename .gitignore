@@ -4,6 +4,7 @@ __pycache__/
 
 # Environment variables
 .env
+.vscode
 
 # Output directory
 /output/

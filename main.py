@@ -82,7 +82,7 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
     
     # 고유한 결과물 폴더 경로 생성
     # 예: output/1706.03762v7/en_to_ko_20251014_183000/
-    output_dir = Path("output") / base_filename / f"{source_lang}_to_{target_lang}_{timestamp}"
+    output_dir = Path("output") / f"{base_filename}_{source_lang}_to_{target_lang}_{timestamp}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
     logging.info(f"문서 처리 시작: {pdf_path} (번역: {source_lang} -> {target_lang})")
@@ -137,10 +137,10 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
 
                 # 라벨에 동적 언어 코드 사용
                 for orig_sent, trans_sent in sentence_pairs:
-                    f_comb.write(f"**Original ({source_lang})** {page_num_str}\n")
-                    f_comb.write(f"> {orig_sent}\n\n")
-                    f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n")
-                    f_comb.write(f"> {trans_sent}\n\n")
+                    f_comb.write(f"**Original ({source_lang})** {page_num_str}\n\n")
+                    f_comb.write(f"{orig_sent}\n\n")
+                    f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n\n")
+                    f_comb.write(f"{trans_sent}\n\n")
                     f_comb.write("---\n")
                 f_comb.write("\n")
 
@@ -164,9 +164,9 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
                         f_src.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
                         f_target.write(f"**Caption:** {trans_caption} {page_num_str}\n\n")
                         
-                        f_comb.write(f"**Original Caption ({source_lang}):** {orig_caption} {page_num_str}\n")
+                        f_comb.write(f"**Original Caption ({source_lang}):** {orig_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {orig_caption}\n\n")
-                        f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n")
+                        f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
                     f_comb.write("---\n\n")
