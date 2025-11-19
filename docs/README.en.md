@@ -100,6 +100,8 @@ This project welcomes contributions of all kinds, whether it's bug fixes, new fe
 
 For a detailed development workflow and contribution methods, please refer to the [**Contribution Guidelines (CONTRIBUTING.md)**](CONTRIBUTING.md).
 
+Also, please adhere to our [**Code of Conduct (CODE_OF_CONDUCT.md)**](../CODE_OF_CONDUCT.md) to foster a healthy and respectful community.
+
 ## 📜 License
 
 This project is licensed under the **Apache License 2.0**. For more details, see the `LICENSE` file.
