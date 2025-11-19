@@ -99,7 +99,7 @@ python main.py "samples/1706.03762v7.pdf" -f en -t de
 
 자세한 개발 워크플로우와 기여 방법은 [**기여 가이드라인 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md) 문서를 참고해주세요.
 
-또한, 건강하고 존중받는 커뮤니티를 위해 [**행동 강령 (CODE_OF_CONDUCT.md)**](CODE_OF_CONDUCT.md)을 준수해 주시기 바랍니다.
+또한, 건강하고 존중받는 커뮤니티를 위해 [**행동 강령 (CODE_OF_CONDUCT.md)**](docs/CODE_OF_CONDUCT.md)을 준수해 주시기 바랍니다.
 
 ## 📜 라이선스
 
