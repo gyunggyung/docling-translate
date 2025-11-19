@@ -8,6 +8,8 @@ from pathlib import Path
 import logging
 from datetime import datetime
 
+import html
+
 # Hugging Face Hub 관련 환경 변수 설정 (심볼릭 링크 비활성화)
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
 
@@ -22,6 +24,43 @@ from translator import translate_by_sentence, translate_text
 
 # 기본 로깅 설정: 시간, 로그 레벨, 메시지 형식을 지정합니다.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+HTML_HEADER = """
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docling Translation Result</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        .sentence-container { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .translated { cursor: pointer; color: #333; font-weight: 500; }
+        .translated:hover { color: #0056b3; }
+        .original { font-size: 0.95em; color: #666; margin-top: 8px; padding-left: 12px; border-left: 4px solid #ddd; display: none; background-color: #f1f1f1; padding: 8px; border-radius: 4px; }
+        img { max-width: 100%; height: auto; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .caption { text-align: center; font-size: 0.9em; color: #777; margin-top: 10px; }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+    </style>
+    <script>
+        function toggleOriginal(el) {
+            const next = el.nextElementSibling;
+            if (next.style.display === 'none' || next.style.display === '') {
+                next.style.display = 'block';
+            } else {
+                next.style.display = 'none';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Translation Result</h1>
+"""
+
+HTML_FOOTER = """
+</body>
+</html>
+"""
 
 def save_and_get_image_path(item: DocItem, doc: DoclingDocument, output_dir: Path, base_filename: str, counters: dict) -> str:
     """
@@ -110,6 +149,7 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
     path_src = output_dir / f"{base_filename}_{source_lang}.md"
     path_target = output_dir / f"{base_filename}_{target_lang}.md"
     path_combined = output_dir / f"{base_filename}_combined.md"
+    path_html = output_dir / f"{base_filename}_interactive.html"
 
     # 이미지 파일명 중복을 피하기 위한 카운터 초기화
     counters = {"table": 0, "picture": 0}
@@ -117,7 +157,10 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
     # 파일을 열어 작업을 진행합니다.
     with open(path_src, "w", encoding="utf-8") as f_src, \
          open(path_target, "w", encoding="utf-8") as f_target, \
-         open(path_combined, "w", encoding="utf-8") as f_comb:
+         open(path_combined, "w", encoding="utf-8") as f_comb, \
+         open(path_html, "w", encoding="utf-8") as f_html:
+        
+        f_html.write(HTML_HEADER)
 
         for item, _ in doc.iterate_items():
             page_num_str = f"(p. {item.prov[0].page_no})" if item.prov and item.prov[0].page_no else ""
@@ -142,6 +185,16 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
                     f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n\n")
                     f_comb.write(f"{trans_sent}\n\n")
                     f_comb.write("---\n")
+                    
+                    # HTML 생성
+                    orig_safe = html.escape(orig_sent)
+                    trans_safe = html.escape(trans_sent)
+                    f_html.write(f"""
+                    <div class="sentence-container">
+                        <div class="translated" onclick="toggleOriginal(this)">{trans_safe} {page_num_str}</div>
+                        <div class="original">{orig_safe}</div>
+                    </div>
+                    """)
                 f_comb.write("\n")
 
             elif isinstance(item, (TableItem, PictureItem)):
@@ -154,6 +207,9 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
                     f_src.write(md_link)
                     f_target.write(md_link)
                     f_comb.write(md_link)
+                    
+                    # HTML 이미지 추가
+                    f_html.write(f'<img src="{image_path}" alt="{alt_text}">\n')
 
                     orig_caption = item.caption_text(doc)
                     if orig_caption:
@@ -169,7 +225,12 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
                         f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
+                        # HTML 캡션 추가
+                        f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n')
+
                     f_comb.write("---\n\n")
+        
+        f_html.write(HTML_FOOTER)
 
     logging.info(f"파일 생성 완료: {output_dir}")
 
