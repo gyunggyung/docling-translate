@@ -1,72 +1,252 @@
-# 필요한 라이브러리들을 가져옵니다.
-from deep_translator import GoogleTranslator # 구글 번역을 위한 라이브러리
-import logging # 로그 기록을 위한 라이브러리
-import nltk # 자연어 처리를 위한 NLTK 라이브러리
+# translator.py
+# 번역 엔진들을 한 곳에서 관리하는 모듈입니다.
+
+import os
+import time
+import logging
+from typing import List, Tuple  # (지금은 거의 안 쓰지만, 일단 유지)
+
+from deep_translator import GoogleTranslator  # deep-translator 기반
+import deepl
+import nltk  # 문장 단위 분리를 위한 NLTK
+
+# Gemini SDK는 선택 사항이므로, 설치 안 돼 있으면 None 처리
+try:
+    from google import genai  # google-genai 공식 SDK
+except ImportError:
+    genai = None
 
 # 기본 로깅 설정
 logging.basicConfig(level=logging.INFO)
 _log = logging.getLogger(__name__)
 
+# ------------------------------
+# 전역 설정 (환경 변수)
+# ------------------------------
+
+# 번역 엔진 선택은 이제 main.py 인자로 받으므로,
+# 여기서는 엔진 전역(ENGINE)은 더 이상 사용하지 않는다.
+
+# DeepL / Gemini API 키
+DEEPL_API_KEY = os.getenv("DEEPL_API_KEY", "").strip()
+
+_deepl_client = None
+if DEEPL_API_KEY:
+    _deepl_client = deepl.DeepLClient(DEEPL_API_KEY)
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+# ------------------------------
+# NLTK 모델 준비
+# ------------------------------
 try:
-    # NLTK의 문장 토큰화에 필요한 리소스가 있는지 확인합니다.
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('tokenizers/punkt_tab')
+    nltk.data.find("tokenizers/punkt")
+    nltk.data.find("tokenizers/punkt_tab")
 except LookupError:
-    # 리소스가 없는 경우, 사용자에게 알리고 다운로드를 시작합니다.
     _log.info("NLTK 데이터 모델이 없거나 불완전합니다. 'punkt'와 'punkt_tab'을 다운로드합니다...")
-    # 오류 메시지의 제안에 따라 리소스를 다운로드합니다. (quiet=True로 설정하여 불필요한 로그 최소화)
-    nltk.download('punkt', quiet=True)
-    nltk.download('punkt_tab', quiet=True)
+    nltk.download("punkt", quiet=True)
+    nltk.download("punkt_tab", quiet=True)
     _log.info("NLTK 모델 다운로드가 완료되었습니다.")
 
-def translate_text(text: str, src: str, dest: str) -> str:
+
+# ------------------------------
+# 엔진별 로우레벨 번역 함수
+# ------------------------------
+
+def _translate_with_google(text: str, src: str, dest: str) -> str:
+    """deep-translator의 GoogleTranslator 사용"""
+    return GoogleTranslator(source=src, target=dest).translate(text)
+
+
+def _to_deepl_lang(code: str | None) -> str | None:
+    """우리 프로젝트 언어코드(en, ko, ja ...)를 DeepL 코드(EN, KO, JA ...)로 변환"""
+    if not code:
+        return None
+    code = code.lower()
+
+    # 자주 쓰는 건 명시적으로
+    mapping = {
+        "en": "EN",
+        "en-us": "EN-US",
+        "en-gb": "EN-GB",
+        "ko": "KO",
+        "ja": "JA",
+        "zh": "ZH",
+    }
+    if code in mapping:
+        return mapping[code]
+
+    # 나머지는 앞 2글자 대문자로 (예: 'fr' -> 'FR')
+    if "-" in code:
+        return code.upper()
+    return code[:2].upper()
+
+
+def _translate_with_deepl(text: str, src: str, dest: str) -> str:
+    """공식 DeepL Python SDK로 번역"""
+    if not _deepl_client or not DEEPL_API_KEY:
+        _log.error("DeepL 클라이언트가 초기화되지 않았습니다. DEEPL_API_KEY 환경 변수를 확인하세요.")
+        return text
+
+    try:
+        source_lang = _to_deepl_lang(src)
+        target_lang = _to_deepl_lang(dest) or "EN"
+
+        result = _deepl_client.translate_text(
+            text,
+            source_lang=source_lang,  # None이면 자동 감지
+            target_lang=target_lang,
+        )
+        return result.text
+    except deepl.DeepLException as e:
+        _log.error("공식 DeepL API 번역 중 오류 발생: %s", e)
+        return text
+    except Exception as e:
+        _log.error("예상치 못한 DeepL 오류: %s", e)
+        return text
+
+
+def _translate_with_gemini(text: str, src: str, dest: str) -> str:
+    """
+    Gemini로 번역을 시도하되,
+    - 503 / 429 같은 에러가 나면 몇 번 재시도
+    - 그래도 안 되면 Google 번역으로 fallback
+    """
+    # SDK 자체가 없는 경우 → 바로 Google로 fallback
+    if genai is None:
+        _log.error(
+            "google-genai 패키지가 설치되어 있지 않아 Gemini를 사용할 수 없습니다. "
+            "Google 번역으로 fallback 합니다."
+        )
+        return _translate_with_google(text, src, dest)
+
+    if not GEMINI_API_KEY:
+        _log.error("GEMINI_API_KEY가 설정되어 있지 않아 Gemini를 사용할 수 없습니다.")
+        return text
+
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        _log.error("Gemini 클라이언트 초기화 실패, Google로 fallback: %s", e)
+        return _translate_with_google(text, src, dest)
+
+    # 최대 3번까지 재시도 (0,1,2번째 시도)
+    last_error = None
+    for attempt in range(3):
+        try:
+            prompt = (
+                f"Translate the following text from {src} to {dest}.\n"
+                f"Return only the translated text, without quotes.\n\n"
+                f"{text}"
+            )
+
+            resp = client.models.generate_content(
+                model="gemini-2.5-flash",   # 현재 사용 중인 모델명
+                contents=prompt,
+            )
+
+            # 정상 응답
+            if hasattr(resp, "text") and resp.text:
+                return resp.text.strip()
+
+            # text가 비어 있는 희한한 경우 → 에러 취급하고 재시도
+            raise RuntimeError("Gemini 응답에 text가 없습니다.")
+
+        except Exception as e:
+            last_error = e
+            msg = str(e)
+
+            # 503 / 429 같이 "잠깐 과부하 / quota" 느낌이면 재시도
+            retriable = (
+                "503" in msg
+                or "UNAVAILABLE" in msg
+                or "model is overloaded" in msg.lower()
+                or "RESOURCE_EXHAUSTED" in msg
+                or "429" in msg
+            )
+
+            if retriable and attempt < 2:
+                wait = 2 ** attempt  # 1초 → 2초 → 4초
+                _log.warning(
+                    "Gemini 호출 실패(시도 %d/3, %ss 후 재시도): %s",
+                    attempt + 1,
+                    wait,
+                    msg,
+                )
+                time.sleep(wait)
+                continue  # 다음 시도
+
+            # 재시도 불가하거나 마지막 시도면 루프 종료
+            _log.error("Gemini 번역 최종 실패, Google로 fallback: %s", msg)
+            break
+
+    # 여기까지 왔다는 건 3번 모두 실패했다는 뜻 → Google 번역으로 fallback
+    return _translate_with_google(text, src, dest)
+
+
+# ------------------------------
+# 공개 함수: translate_text / translate_by_sentence
+# ------------------------------
+
+def translate_text(
+    text: str,
+    src: str,
+    dest: str,
+    engine: str = "google",
+) -> str:
     """
     주어진 단일 텍스트 문자열을 번역합니다.
-    번역에 실패하거나 텍스트가 비어있으면 원본 텍스트를 반환합니다.
 
-    :param text: 번역할 텍스트
-    :param src: 원본 언어 코드 (기본값: 'en')
-    :param dest: 대상 언어 코드 (기본값: 'ko')
-    :return: 번역된 텍스트 또는 원본 텍스트
+    engine 인자로 사용할 수 있는 값:
+      - "google" (기본값)
+      - "deepl"
+      - "gemini"
     """
-    # 입력된 텍스트가 비어있거나 공백만 있는지 확인합니다.
     if not text or not text.strip():
         return ""
-    try:
-        # GoogleTranslator 객체를 생성하고 텍스트를 번역합니다.
-        translated = GoogleTranslator(source=src, target=dest).translate(text)
-        # 번역 결과가 있으면 결과를, 없으면 빈 문자열을 반환합니다.
-        return translated if translated else ""
-    except Exception as e:
-        # 번역 중 오류가 발생하면 로그를 남기고 원본 텍스트를 반환합니다.
-        _log.error(f"번역 중 오류 발생: {e}")
-        return text  # 오류 발생 시 원본 텍스트로 대체
 
-def translate_by_sentence(text: str, src: str, dest: str) -> list[tuple[str, str]]:
+    engine = (engine or "google").lower()
+    translated: str | None
+
+    try:
+        if engine == "google":
+            translated = _translate_with_google(text, src, dest)
+        elif engine == "deepl":
+            translated = _translate_with_deepl(text, src, dest)
+        elif engine == "gemini":
+            translated = _translate_with_gemini(text, src, dest)
+        else:
+            _log.warning(
+                f"알 수 없는 번역 엔진 '{engine}' 이므로 google로 fallback 합니다."
+            )
+            translated = _translate_with_google(text, src, dest)
+
+        return translated if translated is not None else ""
+    except Exception as e:
+        _log.error(f"번역 중 오류 발생({engine}): {e}", exc_info=True)
+        # 문제 생기면 원문을 그대로 돌려주도록 함
+        return text
+
+
+def translate_by_sentence(
+    text: str,
+    src: str,
+    dest: str,
+    engine: str = "google",
+) -> list[tuple[str, str]]:
     """
     주어진 텍스트 블록을 문장 단위로 나누고, 각 문장을 번역합니다.
-    결과를 (원본 문장, 번역된 문장) 형태의 튜플 리스트로 반환합니다.
-
-    :param text: 번역할 텍스트 블록
-    :param src: 원본 언어 코드 (기본값: 'en')
-    :param dest: 대상 언어 코드 (기본값: 'ko')
-    :return: (원본 문장, 번역된 문장) 튜플의 리스트
+    결과를 (원본 문장, 번역된 문장) 튜플 리스트로 반환합니다.
     """
-    # 입력된 텍스트가 비어있거나 공백만 있는지 확인합니다.
     if not text or not text.strip():
         return []
 
-    # NLTK를 사용하여 텍스트를 문장 단위로 분리합니다.
     sentences = nltk.sent_tokenize(text)
-    
-    translated_pairs = [] # 번역된 (원본, 번역) 쌍을 저장할 리스트
-    # 각 문장에 대해 반복 작업을 수행합니다.
+    translated_pairs: list[tuple[str, str]] = []
+
     for sentence in sentences:
-        # 문장이 공백이 아닌 경우에만 번역을 수행합니다.
         if sentence.strip():
-            # 위에서 정의한 translate_text 함수를 사용해 문장을 번역합니다.
-            translated_sentence = translate_text(sentence, src, dest)
-            # 원본 문장과 번역된 문장을 튜플로 묶어 리스트에 추가합니다.
+            translated_sentence = translate_text(sentence, src, dest, engine=engine)
             translated_pairs.append((sentence, translated_sentence))
-    
+
     return translated_pairs
