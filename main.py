@@ -9,6 +9,12 @@ import logging
 from datetime import datetime
 
 import html
+from typing import List, Tuple
+
+from dotenv import load_dotenv
+
+# .env 파일 내용 환경변수로 로드
+load_dotenv()
 
 # Hugging Face Hub 관련 환경 변수 설정 (심볼릭 링크 비활성화)
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
