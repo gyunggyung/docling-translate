@@ -9,6 +9,11 @@ import logging
 from datetime import datetime
 
 import html
+from typing import List, Tuple
+from dotenv import load_dotenv
+
+# .env 파일 내용 환경변수로 로드
+load_dotenv()
 
 # Hugging Face Hub 관련 환경 변수 설정 (심볼릭 링크 비활성화)
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
@@ -20,6 +25,8 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem
 
 # translator.py에서 구현한 번역 함수들을 가져옵니다.
+# ⚠️ translator.py에서 translate_by_sentence, translate_text가
+# engine 인자를 받도록 이미 수정되어 있어야 합니다.
 from translator import translate_by_sentence, translate_text
 
 # 기본 로깅 설정: 시간, 로그 레벨, 메시지 형식을 지정합니다.
@@ -101,7 +108,12 @@ def save_and_get_image_path(item: DocItem, doc: DoclingDocument, output_dir: Pat
     
     return ""
 
-def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 'ko'):
+def process_document(
+    pdf_path: str,
+    source_lang: str = 'en',
+    target_lang: str = 'ko',
+    engine: str = 'google',   # ✅ 번역 엔진 인자 추가
+):
     """
     PDF를 변환하고, 텍스트 내용을 문장 단위로 번역한 후,
     결과를 고유한 폴더에 마크다운 파일로 저장합니다.
@@ -109,6 +121,7 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
     :param pdf_path: 번역할 PDF 파일 경로
     :param source_lang: 원본 언어 코드 (예: 'en')
     :param target_lang: 목표 언어 코드 (예: 'ko')
+    :param engine: 사용할 번역 엔진 ("google", "deepl", "gemini")
     """
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(pdf_path):
@@ -124,7 +137,9 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
     output_dir = Path("output") / f"{base_filename}_{source_lang}_to_{target_lang}_{timestamp}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    logging.info(f"문서 처리 시작: {pdf_path} (번역: {source_lang} -> {target_lang})")
+    logging.info(
+        f"문서 처리 시작: {pdf_path} (번역: {source_lang} -> {target_lang}, 엔진: {engine})"
+    )
     logging.info(f"결과물 저장 폴더: {output_dir}")
 
     # 3. Docling 변환기 설정 및 실행
@@ -169,8 +184,13 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
                 if not item.text or not item.text.strip():
                     continue
 
-                # 언어 코드를 전달하여 번역 실행
-                sentence_pairs = translate_by_sentence(item.text, src=source_lang, dest=target_lang)
+                # 언어 코드와 엔진을 전달하여 번역 실행
+                sentence_pairs = translate_by_sentence(
+                    item.text,
+                    src=source_lang,
+                    dest=target_lang,
+                    engine=engine,            # ✅ 엔진 전달
+                )
                 
                 original_paragraph = " ".join([pair[0] for pair in sentence_pairs])
                 translated_paragraph = " ".join([pair[1] for pair in sentence_pairs])
@@ -213,8 +233,13 @@ def process_document(pdf_path: str, source_lang: str = 'en', target_lang: str = 
 
                     orig_caption = item.caption_text(doc)
                     if orig_caption:
-                        # 캡션 번역 시에도 언어 코드 전달
-                        trans_caption = translate_text(orig_caption, src=source_lang, dest=target_lang)
+                        # 캡션 번역 시에도 언어 코드와 엔진 전달
+                        trans_caption = translate_text(
+                            orig_caption,
+                            src=source_lang,
+                            dest=target_lang,
+                            engine=engine,       # ✅ 엔진 전달
+                        )
                         
                         # 캡션 라벨에도 동적 언어 코드 사용
                         f_src.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
@@ -243,15 +268,40 @@ if __name__ == "__main__":
     parser.add_argument("pdf_path", type=str, help="번역할 PDF 파일의 경로")
     
     # 선택 인자: 원본 언어 설정
-    parser.add_argument('-f', '--from', dest='source_lang', type=str, default='en', 
-                        help="번역할 원본 언어 코드 (기본값: en)")
+    parser.add_argument(
+        '-f', '--from',
+        dest='source_lang',
+        type=str,
+        default='en',
+        help="번역할 원본 언어 코드 (기본값: en)",
+    )
     
     # 선택 인자: 목표 언어 설정
-    parser.add_argument('-t', '--to', dest='target_lang', type=str, default='ko', 
-                        help="번역 결과물 언어 코드 (기본값: ko)")
+    parser.add_argument(
+        '-t', '--to',
+        dest='target_lang',
+        type=str,
+        default='ko',
+        help="번역 결과물 언어 코드 (기본값: ko)",
+    )
+
+    # ✅ 선택 인자: 번역 엔진 설정
+    parser.add_argument(
+        '-e', '--engine',
+        dest='engine',
+        type=str,
+        choices=['google', 'deepl', 'gemini'],
+        default='google',
+        help="번역 엔진 선택 (google, deepl, gemini). 기본값: google",
+    )
 
     # 커맨드 라인 인자를 파싱합니다.
     args = parser.parse_args()
     
     # 파싱된 인자들을 가지고 메인 함수를 실행합니다.
-    process_document(args.pdf_path, args.source_lang, args.target_lang)
+    process_document(
+        args.pdf_path,
+        args.source_lang,
+        args.target_lang,
+        args.engine,   # ✅ 엔진 인자 전달
+    )
