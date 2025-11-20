@@ -10,7 +10,6 @@ from datetime import datetime
 
 import html
 from typing import List, Tuple
-
 from dotenv import load_dotenv
 
 # .env 파일 내용 환경변수로 로드
