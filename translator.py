@@ -4,6 +4,7 @@
 import os
 import time
 import logging
+import concurrent.futures
 from typing import List, Tuple  # (지금은 거의 안 쓰지만, 일단 유지)
 
 from deep_translator import GoogleTranslator  # deep-translator 기반
@@ -233,20 +234,93 @@ def translate_by_sentence(
     src: str,
     dest: str,
     engine: str = "google",
+    max_workers: int = 1,
 ) -> list[tuple[str, str]]:
     """
-    주어진 텍스트 블록을 문장 단위로 나누고, 각 문장을 번역합니다.
-    결과를 (원본 문장, 번역된 문장) 튜플 리스트로 반환합니다.
+    텍스트를 문장 단위로 분리하여 병렬로 번역합니다.
+    
+    Args:
+        text (str): 번역할 전체 텍스트
+        src (str): 원본 언어 코드
+        dest (str): 대상 언어 코드
+        engine (str): 번역 엔진 ('google', 'deepl', 'gemini')
+        max_workers (int): 병렬 처리를 위한 워커 수
+        
+    Returns:
+        list[tuple[str, str]]: (원문 문장, 번역된 문장) 튜플의 리스트
     """
     if not text or not text.strip():
         return []
 
     sentences = nltk.sent_tokenize(text)
-    translated_pairs: list[tuple[str, str]] = []
+    if len(sentences) > 1:
+        logging.info(f"Translating batch of {len(sentences)} sentences")
+    results = []
 
-    for sentence in sentences:
-        if sentence.strip():
+    # 워커 수가 1 이하이면 순차 처리 (오버헤드 감소 및 디버깅 용이)
+    if max_workers <= 1:
+        for sentence in sentences:
             translated_sentence = translate_text(sentence, src, dest, engine=engine)
-            translated_pairs.append((sentence, translated_sentence))
+            results.append((sentence, translated_sentence))
+        return results
 
-    return translated_pairs
+    # 병렬 처리
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # executor.map은 입력 순서대로 결과를 반환하므로 적합함
+        try:
+            # map 함수는 iterable의 각 요소에 함수를 적용하고 결과를 순서대로 반환
+            translated_sentences = list(executor.map(
+                lambda s: translate_text(s, src, dest, engine),
+                sentences
+            ))
+            
+            for original, translated in zip(sentences, translated_sentences):
+                results.append((original, translated))
+                
+        except Exception as e:
+            _log.error(f"병렬 번역 중 오류 발생: {e}")
+            # 오류 발생 시 빈 리스트 반환
+            return []
+
+    return results
+
+
+def translate_sentences_bulk(
+    sentences: list[str],
+    src: str,
+    dest: str,
+    engine: str = "google",
+    max_workers: int = 1,
+) -> list[str]:
+    """
+    다수의 문장을 병렬로 번역하여 반환합니다. (Bulk Translation)
+    
+    Args:
+        sentences (list[str]): 번역할 문장 리스트
+        src (str): 원본 언어 코드
+        dest (str): 대상 언어 코드
+        engine (str): 번역 엔진
+        max_workers (int): 병렬 처리를 위한 워커 수
+        
+    Returns:
+        list[str]: 번역된 문장 리스트 (입력 순서 유지)
+    """
+    if not sentences:
+        return []
+
+    # 워커 수가 1 이하이면 순차 처리
+    if max_workers <= 1:
+        return [translate_text(s, src, dest, engine) for s in sentences]
+
+    # 병렬 처리
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        try:
+            # map을 사용하여 입력 순서대로 결과 반환
+            return list(executor.map(
+                lambda s: translate_text(s, src, dest, engine),
+                sentences
+            ))
+        except Exception as e:
+            _log.error(f"Bulk 병렬 번역 중 오류 발생: {e}")
+            # 오류 발생 시 순차 처리로 폴백
+            return [translate_text(s, src, dest, engine) for s in sentences]
