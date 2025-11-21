@@ -53,8 +53,14 @@ python main.py "samples/1706.03762v7.pdf"
 다른 언어로 번역하고 싶다면 `-f` (`--from`) 옵션으로 원본 언어를, `-t` (`--to`) 옵션으로 목표 언어를 지정할 수 있습니다.
 
 ```bash
-# 영문 PDF를 독일어로 번역
-python main.py "samples/1706.03762v7.pdf" -f en -t de
+# 단일 파일 번역
+python main.py "path/to/your/document.pdf"
+
+# 폴더 내 모든 PDF 일괄 번역
+python main.py "path/to/your/folder/"
+
+# 옵션 사용 (언어 및 엔진 변경)
+python main.py "document.pdf" -f en -t ko -e deepl
 ```
 
 ### 3. 웹 뷰어 실행 (Web Viewer)

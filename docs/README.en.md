@@ -46,16 +46,14 @@ pip install -r requirements.txt
 For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper) with default settings (English->Korean), run the following command:
 
 ```bash
-python main.py "samples/1706.03762v7.pdf"
-```
+# Translate a single file
+python main.py "path/to/your/document.pdf"
 
-**Specifying Languages (Optional):**
+# Translate all PDFs in a folder
+python main.py "path/to/your/folder/"
 
-You can specify the source language with the `-f` (`--from`) option and the target language with the `-t` (`--to`) option.
-
-```bash
-# Translate an English PDF to German
-python main.py "samples/1706.03762v7.pdf" -f en -t de
+# With options (Source/Target language, Engine)
+python main.py "document.pdf" -f en -t ko -e deepl
 ```
 
 ### 3. Launch Web Viewer

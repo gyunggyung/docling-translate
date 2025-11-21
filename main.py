@@ -307,10 +307,33 @@ if __name__ == "__main__":
     # 커맨드 라인 인자를 파싱합니다.
     args = parser.parse_args()
     
-    # 파싱된 인자들을 가지고 메인 함수를 실행합니다.
-    process_document(
-        args.pdf_path,
-        args.source_lang,
-        args.target_lang,
-        args.engine,   # ✅ 엔진 인자 전달
-    )
+    input_path = Path(args.pdf_path)
+
+    # 입력이 디렉토리인 경우
+    if input_path.is_dir():
+        pdf_files = list(input_path.glob("*.pdf"))
+        if not pdf_files:
+            logging.warning(f"폴더 내에 PDF 파일이 없습니다: {input_path}")
+        else:
+            logging.info(f"폴더 감지됨. 총 {len(pdf_files)}개의 PDF 파일을 처리합니다.")
+            for i, pdf_file in enumerate(pdf_files, 1):
+                logging.info(f"[{i}/{len(pdf_files)}] 처리 중: {pdf_file.name}")
+                try:
+                    process_document(
+                        str(pdf_file),
+                        args.source_lang,
+                        args.target_lang,
+                        args.engine,
+                    )
+                except Exception as e:
+                    logging.error(f"파일 처리 실패 ({pdf_file.name}): {e}")
+                    continue
+
+    # 입력이 단일 파일인 경우
+    else:
+        process_document(
+            str(input_path),
+            args.source_lang,
+            args.target_lang,
+            args.engine,
+        )
