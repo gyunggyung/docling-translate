@@ -54,7 +54,15 @@ python main.py "path/to/your/folder/"
 
 # With options (Source/Target language, Engine)
 python main.py "document.pdf" -f en -t ko -e deepl
+
+# Parallel processing for faster translation (default: 4 workers)
+python main.py "document.pdf" --max-workers 8
+
+# Measure performance metrics
+python main.py "document.pdf" --benchmark
 ```
+
+**💡 Performance Tip**: Using `--max-workers 8` improves translation speed by **4.7x**! (239s → 51s)
 
 ### 3. Launch Web Viewer
 
@@ -85,13 +93,15 @@ The translated output (`_combined.md`) is generated with original and translated
 ## 🗺️ Development Roadmap
 
 - [x] **PDF → Markdown Conversion**: Accurate structure analysis using `docling`
-- [x] **Triple-Format Output**: Generate original/translated/combined Markdown files
+- [x] **Triple-Format Output**: Generate original/translated/combined Markdown + interactive HTML files
 - [x] **Page Number Display**: Reference original page numbers in `(p. N)` format
-- [x] **Sentence-level Translation & Comparison**: High-readability side-by-side view (Complete!)
-- [ ] **Folder-level Translation**: Translate all PDFs in a folder at once
-- [ ] **Parallel Processing for Performance**: Improve translation speed for large documents using multiprocessing
-- [ ] **Multi-Engine Translation Support**: Add options for different translation engines like GPT API, local LLMs, etc.
-- [x] **Multi-language Support**: Expand translation capabilities to languages other than Korean
+- [x] **Sentence-level Translation & Comparison**: High-readability side-by-side view
+- [x] **Folder-level Translation**: Translate all PDFs in a folder at once
+- [x] **Parallel Processing for Performance**: **4.7x speedup** using multithreading 🚀
+- [x] **Multi-Engine Translation Support**: Google Translate, DeepL, Gemini API available
+- [x] **Multi-language Support**: Expand translation capabilities to multiple languages
+- [ ] **Web UI Parallel Processing**: Integrate parallel processing into Streamlit app
+- [ ] **Additional Translation Engines**: GPT API, local LLMs, and other state-of-the-art models
 
 ## 📚 Development Resources
 

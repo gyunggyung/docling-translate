@@ -2,11 +2,18 @@
 # os: 운영 체제와 상호 작용하기 위해 사용합니다. (예: 경로 확인)
 # pathlib.Path: 파일 시스템 경로를 객체 지향적으로 다루기 위해 사용합니다.
 # logging: 프로그램 실행 중 정보를 기록하기 위해 사용합니다.
+import time
+import sys
+
+# 1. Import Time 측정 시작
+_t0_import = time.time()
+
 import argparse
 import os
 from pathlib import Path
 import logging
 from datetime import datetime
+import concurrent.futures
 
 import html
 from typing import List, Tuple
@@ -25,11 +32,16 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem
 
 # translator.py에서 구현한 번역 함수들을 가져옵니다.
-# ⚠️ translator.py에서 translate_by_sentence, translate_text가
-# engine 인자를 받도록 이미 수정되어 있어야 합니다.
 from translator import translate_by_sentence, translate_text
 
-# 기본 로깅 설정: 시간, 로그 레벨, 메시지 형식을 지정합니다.
+# 벤치마크 유틸리티
+from benchmark import global_benchmark as bench
+
+# Import Time 측정 종료
+_t1_import = time.time()
+_import_duration = _t1_import - _t0_import
+
+# 기본 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 HTML_HEADER = """
@@ -72,104 +84,129 @@ HTML_FOOTER = """
 def save_and_get_image_path(item: DocItem, doc: DoclingDocument, output_dir: Path, base_filename: str, counters: dict) -> str:
     """
     TableItem 또는 PictureItem의 이미지를 저장하고, 마크다운에서 사용할 상대 경로를 반환합니다.
-
-    :param item: 이미지로 저장할 아이템 (TableItem 또는 PictureItem)
-    :param doc: 원본 DoclingDocument 객체
-    :param output_dir: 출력을 저장할 디렉토리
-    :param base_filename: 출력 파일명의 기반이 될 이름
-    :param counters: 테이블과 그림의 번호를 매기기 위한 카운터
-    :return: 저장된 이미지의 상대 경로 문자열
     """
-    # 아이템 유형에 따라 'table' 또는 'picture' 문자열을 결정합니다.
+    t0 = time.time() # 이미지 저장 시간 측정 시작
+
     item_type = "table" if isinstance(item, TableItem) else "picture"
     counters[item_type] += 1
     
-    # 이미지를 저장할 'images' 폴더를 생성합니다. (이미 존재하면 넘어감)
     image_dir = output_dir / "images"
     image_dir.mkdir(exist_ok=True)
     
-    # 저장될 이미지 파일의 이름을 결정합니다. (예: 'filename_table_1.png')
     image_filename = f"{base_filename}_{item_type}_{counters[item_type]}.png"
     image_path = image_dir / image_filename
-    # 마크다운 파일에서는 항상 슬래시(/)를 사용해야 하므로 경로를 수정합니다.
     relative_path = f"images/{image_filename}"
 
     try:
-        # docling 아이템에서 이미지를 추출합니다.
         img = item.get_image(doc)
         if img:
-            # 이미지를 PNG 파일로 저장합니다.
             img.save(image_path, "PNG")
-            logging.info(f"이미지 저장 완료: {image_path}")
+            # 벤치마크: 이미지 저장 통계
+            duration = time.time() - t0
+            # 이미지 크기(byte)를 알 수 있다면 좋겠지만, 여기선 일단 1개로 카운트
+            bench.add_stat("Image Save", duration, count=1, volume=0, unit="imgs")
             return relative_path
     except Exception as e:
-        # 이미지 저장 중 오류 발생 시 경고 로그를 남깁니다.
         logging.warning(f"{item.self_ref}의 이미지를 저장할 수 없습니다: {e}")
     
     return ""
 
-def process_document(
+def process_single_file(
     pdf_path: str,
-    source_lang: str = 'en',
-    target_lang: str = 'ko',
-    engine: str = 'google',   # ✅ 번역 엔진 인자 추가
+    converter: DocumentConverter,
+    source_lang: str,
+    target_lang: str,
+    engine: str,
+    max_workers: int = 1
 ):
     """
-    PDF를 변환하고, 텍스트 내용을 문장 단위로 번역한 후,
-    결과를 고유한 폴더에 마크다운 파일로 저장합니다.
-
-    :param pdf_path: 번역할 PDF 파일 경로
-    :param source_lang: 원본 언어 코드 (예: 'en')
-    :param target_lang: 목표 언어 코드 (예: 'ko')
-    :param engine: 사용할 번역 엔진 ("google", "deepl", "gemini")
+    단일 PDF 파일을 처리하는 함수 (Bulk Translation 적용)
     """
+    file_name = Path(pdf_path).name
+    bench.start(f"Total Process: {file_name}")
+    
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(pdf_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {pdf_path}")
         return
 
-    # 2. 출력 경로 설정 (동적 생성)
+    # 2. 출력 경로 설정
     base_filename = Path(pdf_path).stem
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # 고유한 결과물 폴더 경로 생성
-    # 예: output/1706.03762v7/en_to_ko_20251014_183000/
     output_dir = Path("output") / f"{base_filename}_{source_lang}_to_{target_lang}_{timestamp}"
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    logging.info(
-        f"문서 처리 시작: {pdf_path} (번역: {source_lang} -> {target_lang}, 엔진: {engine})"
-    )
-    logging.info(f"결과물 저장 폴더: {output_dir}")
+    logging.info(f"[{file_name}] 문서 처리 시작 (엔진: {engine})")
 
-    # 3. Docling 변환기 설정 및 실행
-    logging.info("Docling 파이프라인 설정 중...")
-    pipeline_options = PdfPipelineOptions(generate_picture_images=True, generate_table_images=True, images_scale=2.0)
-    converter = DocumentConverter(
-        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
-    )
-
-    logging.info("PDF를 DoclingDocument로 변환 중...")
+    # 3. Docling 변환
+    bench.start(f"Conversion: {file_name}")
+    logging.info(f"[{file_name}] PDF 변환 중...")
     try:
         doc: DoclingDocument = converter.convert(pdf_path).document
     except Exception as e:
-        logging.error(f"PDF 변환 오류: {e}", exc_info=True)
+        logging.error(f"[{file_name}] PDF 변환 오류: {e}", exc_info=True)
         return
-    logging.info("PDF 변환 성공.")
+    bench.end(f"Conversion: {file_name}")
+    logging.info(f"[{file_name}] PDF 변환 성공.")
 
-    # 4. 번역 및 파일 저장
-    logging.info("문장 단위 번역과 함께 출력 파일 생성 중...")
+    # 4. 번역 및 파일 저장 (Bulk Translation Strategy)
+    bench.start(f"Translation & Save: {file_name}")
+    logging.info(f"[{file_name}] 텍스트 수집 및 일괄 번역 준비... (Workers: {max_workers})")
+
+    # --- Phase 1: Collection (모든 문장 수집 + 아이템 저장) ---
+    import nltk
+    all_sentences = []
+    doc_items = []  # 아이템들을 리스트로 저장 (두 번째 순회를 위해)
     
-    # 출력 파일 경로 설정 (언어 코드 동적 반영)
+    # iterate_items()는 generator이므로 한 번만 순회하고 결과를 저장
+    for item, _ in doc.iterate_items():
+        doc_items.append((item, _))  # 나중에 사용하기 위해 저장
+        
+        if isinstance(item, TextItem):
+            if item.text and item.text.strip():
+                sentences = nltk.sent_tokenize(item.text)
+                all_sentences.extend(sentences)
+        elif isinstance(item, (TableItem, PictureItem)):
+             orig_caption = item.caption_text(doc)
+             if orig_caption:
+                 all_sentences.append(orig_caption)
+
+    # 중복 제거 (선택 사항: 번역량 줄이기 위해)
+    unique_sentences = list(set(all_sentences))
+    logging.info(f"[{file_name}] 총 {len(all_sentences)}개 문장 수집 (고유 문장: {len(unique_sentences)}개)")
+
+    # --- Phase 2: Bulk Translation (일괄 병렬 번역) ---
+    t_trans_start = time.time()
+    
+    # translator.py에 새로 추가한 함수 사용
+    from translator import translate_sentences_bulk
+    
+    translated_results = translate_sentences_bulk(
+        unique_sentences,
+        src=source_lang,
+        dest=target_lang,
+        engine=engine,
+        max_workers=max_workers
+    )
+    
+    t_trans_end = time.time()
+    
+    # 번역 맵 생성 (원문 -> 번역문)
+    translation_map = dict(zip(unique_sentences, translated_results))
+    
+    # 통계 기록
+    total_chars = sum(len(s) for s in unique_sentences)
+    bench.add_stat("Translation (Sentences)", t_trans_end - t_trans_start, count=len(unique_sentences), volume=total_chars, unit="chars")
+    logging.info(f"[{file_name}] 일괄 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
+
+    # --- Phase 3: Generation (파일 생성) ---
     path_src = output_dir / f"{base_filename}_{source_lang}.md"
     path_target = output_dir / f"{base_filename}_{target_lang}.md"
     path_combined = output_dir / f"{base_filename}_combined.md"
     path_html = output_dir / f"{base_filename}_interactive.html"
 
-    # 이미지 파일명 중복을 피하기 위한 카운터 초기화
     counters = {"table": 0, "picture": 0}
 
-    # 파일을 열어 작업을 진행합니다.
     with open(path_src, "w", encoding="utf-8") as f_src, \
          open(path_target, "w", encoding="utf-8") as f_target, \
          open(path_combined, "w", encoding="utf-8") as f_comb, \
@@ -177,20 +214,20 @@ def process_document(
         
         f_html.write(HTML_HEADER)
 
-        for item, _ in doc.iterate_items():
+        # 저장해둔 아이템 리스트 사용
+        for item, _ in doc_items:
             page_num_str = f"(p. {item.prov[0].page_no})" if item.prov and item.prov[0].page_no else ""
 
             if isinstance(item, TextItem):
                 if not item.text or not item.text.strip():
                     continue
-
-                # 언어 코드와 엔진을 전달하여 번역 실행
-                sentence_pairs = translate_by_sentence(
-                    item.text,
-                    src=source_lang,
-                    dest=target_lang,
-                    engine=engine,            # ✅ 엔진 전달
-                )
+                
+                # 미리 번역된 맵에서 조회
+                sentences = nltk.sent_tokenize(item.text)
+                sentence_pairs = []
+                for s in sentences:
+                    trans = translation_map.get(s, "") # 없으면 빈 문자열 (이론상 없으면 안됨)
+                    sentence_pairs.append((s, trans))
                 
                 original_paragraph = " ".join([pair[0] for pair in sentence_pairs])
                 translated_paragraph = " ".join([pair[1] for pair in sentence_pairs])
@@ -198,7 +235,6 @@ def process_document(
                 f_src.write(f"{original_paragraph} {page_num_str}\n\n")
                 f_target.write(f"{translated_paragraph} {page_num_str}\n\n")
 
-                # 라벨에 동적 언어 코드 사용
                 for orig_sent, trans_sent in sentence_pairs:
                     f_comb.write(f"**Original ({source_lang})** {page_num_str}\n\n")
                     f_comb.write(f"{orig_sent}\n\n")
@@ -206,7 +242,6 @@ def process_document(
                     f_comb.write(f"{trans_sent}\n\n")
                     f_comb.write("---\n")
                     
-                    # HTML 생성
                     orig_safe = html.escape(orig_sent)
                     trans_safe = html.escape(trans_sent)
                     f_html.write(f"""
@@ -228,20 +263,13 @@ def process_document(
                     f_target.write(md_link)
                     f_comb.write(md_link)
                     
-                    # HTML 이미지 추가
                     f_html.write(f'<img src="{image_path}" alt="{alt_text}">\n')
 
                     orig_caption = item.caption_text(doc)
                     if orig_caption:
-                        # 캡션 번역 시에도 언어 코드와 엔진 전달
-                        trans_caption = translate_text(
-                            orig_caption,
-                            src=source_lang,
-                            dest=target_lang,
-                            engine=engine,       # ✅ 엔진 전달
-                        )
+                        # 캡션 번역 조회
+                        trans_caption = translation_map.get(orig_caption, "")
                         
-                        # 캡션 라벨에도 동적 언어 코드 사용
                         f_src.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
                         f_target.write(f"**Caption:** {trans_caption} {page_num_str}\n\n")
                         
@@ -250,90 +278,99 @@ def process_document(
                         f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
-                        # HTML 캡션 추가
                         f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n')
 
                     f_comb.write("---\n\n")
         
         f_html.write(HTML_FOOTER)
 
-    logging.info(f"파일 생성 완료: {output_dir}")
+    bench.end(f"Translation & Save: {file_name}")
+    bench.end(f"Total Process: {file_name}")
+    logging.info(f"[{file_name}] 파일 생성 완료: {output_dir}")
 
-    # 생성된 파일 경로들을 반환
-    return {
-        "output_dir": output_dir,
-        "src_md": path_src,
-        "target_md": path_target,
-        "combined_md": path_combined,
-        "html_path": path_html,
-    }
 
-# 이 스크립트가 직접 실행될 때만 아래 코드가 동작합니다.
-if __name__ == "__main__":
-    # 커맨드 라인 인자를 처리하기 위한 ArgumentParser 객체를 생성합니다.
+def main():
     parser = argparse.ArgumentParser(description="PDF 문서를 문장 단위로 번역합니다.")
+    parser.add_argument("pdf_path", type=str, help="번역할 PDF 파일 또는 폴더의 경로")
+    parser.add_argument('-f', '--from', dest='source_lang', type=str, default='en', help="번역할 원본 언어 코드 (기본값: en)")
+    parser.add_argument('-t', '--to', dest='target_lang', type=str, default='ko', help="번역 결과물 언어 코드 (기본값: ko)")
+    parser.add_argument('-e', '--engine', dest='engine', type=str, choices=['google', 'deepl', 'gemini'], default='google', help="번역 엔진 선택")
+    parser.add_argument('--max-workers', type=int, default=4, help="병렬 처리를 위한 최대 워커 수 (기본값: 4)")
     
-    # 필수 인자: 번역할 PDF 파일의 경로
-    parser.add_argument("pdf_path", type=str, help="번역할 PDF 파일의 경로")
-    
-    # 선택 인자: 원본 언어 설정
-    parser.add_argument(
-        '-f', '--from',
-        dest='source_lang',
-        type=str,
-        default='en',
-        help="번역할 원본 언어 코드 (기본값: en)",
-    )
-    
-    # 선택 인자: 목표 언어 설정
-    parser.add_argument(
-        '-t', '--to',
-        dest='target_lang',
-        type=str,
-        default='ko',
-        help="번역 결과물 언어 코드 (기본값: ko)",
-    )
+    # 벤치마크 옵션
+    parser.add_argument('-b', '--benchmark', action='store_true', help="상세 벤치마크 리포트 생성")
+    parser.add_argument('--sequential', action='store_true', help="병렬 처리 비활성화 (순차 실행)")
 
-    # ✅ 선택 인자: 번역 엔진 설정
-    parser.add_argument(
-        '-e', '--engine',
-        dest='engine',
-        type=str,
-        choices=['google', 'deepl', 'gemini'],
-        default='google',
-        help="번역 엔진 선택 (google, deepl, gemini). 기본값: google",
-    )
-
-    # 커맨드 라인 인자를 파싱합니다.
     args = parser.parse_args()
     
-    input_path = Path(args.pdf_path)
+    # 벤치마크 활성화 설정
+    bench.enabled = args.benchmark
+    if bench.enabled:
+        # Import Time 기록 (수동으로 추가)
+        bench.add_manual_record("Import Libraries", _t0_import, _t1_import)
+        
+        # 실행 설정 기록
+        bench.max_workers = 1 if args.sequential else args.max_workers
+        bench.sequential = args.sequential
+        
+        logging.info(f"벤치마크 활성화됨. Import Time: {_import_duration:.2f}s")
 
-    # 입력이 디렉토리인 경우
+    input_path = Path(args.pdf_path)
+    pdf_files = []
+
     if input_path.is_dir():
         pdf_files = list(input_path.glob("*.pdf"))
         if not pdf_files:
             logging.warning(f"폴더 내에 PDF 파일이 없습니다: {input_path}")
-        else:
-            logging.info(f"폴더 감지됨. 총 {len(pdf_files)}개의 PDF 파일을 처리합니다.")
-            for i, pdf_file in enumerate(pdf_files, 1):
-                logging.info(f"[{i}/{len(pdf_files)}] 처리 중: {pdf_file.name}")
-                try:
-                    process_document(
-                        str(pdf_file),
-                        args.source_lang,
-                        args.target_lang,
-                        args.engine,
-                    )
-                except Exception as e:
-                    logging.error(f"파일 처리 실패 ({pdf_file.name}): {e}")
-                    continue
-
-    # 입력이 단일 파일인 경우
+            return
     else:
-        process_document(
-            str(input_path),
-            args.source_lang,
-            args.target_lang,
-            args.engine,
-        )
+        pdf_files = [input_path]
+
+    logging.info(f"총 {len(pdf_files)}개의 파일을 처리합니다.")
+
+    # 1. Docling 초기화 (한 번만 수행)
+    bench.start("Initialization")
+    logging.info("Docling 파이프라인 초기화 중...")
+    pipeline_options = PdfPipelineOptions(generate_picture_images=True, generate_table_images=True, images_scale=2.0)
+    converter = DocumentConverter(
+        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
+    )
+    bench.end("Initialization")
+
+    # 2. 실행 (병렬 vs 순차)
+    bench.start("Total Batch Execution")
+    
+    max_workers = 1 if args.sequential else args.max_workers
+    logging.info(f"실행 모드: {'순차(Sequential)' if args.sequential else '병렬(Parallel)'} (Workers: {max_workers})")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for pdf_file in pdf_files:
+            futures.append(
+                executor.submit(
+                    process_single_file,
+                    str(pdf_file),
+                    converter,
+                    args.source_lang,
+                    args.target_lang,
+                    args.engine,
+                    max_workers  # 번역 병렬 처리 워커 수 전달
+                )
+            )
+        
+        # 모든 작업 완료 대기
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                logging.error(f"작업 중 예외 발생: {e}")
+
+    bench.end("Total Batch Execution")
+
+    # 3. 벤치마크 리포트 출력 및 저장
+    if bench.enabled:
+        print(bench.report())
+        bench.save_to_file("docs/BENCHMARK_LOG.md")
+
+if __name__ == "__main__":
+    main()
