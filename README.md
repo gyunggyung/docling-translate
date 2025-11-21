@@ -57,6 +57,14 @@ python main.py "samples/1706.03762v7.pdf"
 python main.py "samples/1706.03762v7.pdf" -f en -t de
 ```
 
+### 3. 웹 뷰어 실행 (Web Viewer)
+
+편리한 웹 인터페이스를 통해 PDF를 업로드하고 번역할 수 있습니다.
+
+```bash
+streamlit run app.py
+```
+
 ### 🎨 출력 예시
 
 번역 결과물(`_combined.md`)은 아래와 같이 원문과 번역문이 한 문장 단위로 생성되어, 비교하며 읽기 매우 편리합니다.
