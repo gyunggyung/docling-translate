@@ -259,6 +259,15 @@ def process_document(
 
     logging.info(f"파일 생성 완료: {output_dir}")
 
+    # 생성된 파일 경로들을 반환
+    return {
+        "output_dir": output_dir,
+        "src_md": path_src,
+        "target_md": path_target,
+        "combined_md": path_combined,
+        "html_path": path_html,
+    }
+
 # 이 스크립트가 직접 실행될 때만 아래 코드가 동작합니다.
 if __name__ == "__main__":
     # 커맨드 라인 인자를 처리하기 위한 ArgumentParser 객체를 생성합니다.

@@ -58,6 +58,14 @@ You can specify the source language with the `-f` (`--from`) option and the targ
 python main.py "samples/1706.03762v7.pdf" -f en -t de
 ```
 
+### 3. Launch Web Viewer
+
+You can upload and translate PDFs via a user-friendly web interface.
+
+```bash
+streamlit run app.py
+```
+
 ### 🎨 Output Example
 
 The translated output (`_combined.md`) is generated with original and translated sentences side-by-side, making it very convenient to read and compare.
