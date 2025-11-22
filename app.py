@@ -7,6 +7,18 @@ from pathlib import Path
 import streamlit.components.v1 as components
 from main import process_document
 
+# Docling 관련 임포트
+from docling.document_converter import (
+    DocumentConverter,
+    PdfFormatOption,
+    WordFormatOption,
+    PowerpointFormatOption,
+    HTMLFormatOption,
+    ImageFormatOption
+)
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+
 # 페이지 설정
 st.set_page_config(
     page_title="Docling Translate Web Viewer",
@@ -68,6 +80,31 @@ def inject_images(html_content, folder_path):
 
 def main():
     st.title("📄 Docling PDF Translator")
+
+    # DocumentConverter 초기화 (한 번만 수행)
+    pipeline_options = PdfPipelineOptions()
+    pipeline_options.do_ocr = False
+    pipeline_options.do_table_structure = True
+    pipeline_options.generate_picture_images = True
+    pipeline_options.generate_table_images = True
+    pipeline_options.images_scale = 2.0
+    
+    global_converter = DocumentConverter(
+        allowed_formats=[
+            InputFormat.PDF,
+            InputFormat.DOCX,
+            InputFormat.PPTX,
+            InputFormat.HTML,
+            InputFormat.IMAGE
+        ],
+        format_options={
+            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
+            InputFormat.DOCX: WordFormatOption(),
+            InputFormat.PPTX: PowerpointFormatOption(),
+            InputFormat.HTML: HTMLFormatOption(),
+            InputFormat.IMAGE: ImageFormatOption()
+        }
+    )
     
     # 사이드바: 히스토리 및 설정
     with st.sidebar:
@@ -135,7 +172,14 @@ def main():
                     tmp_path = tmp_file.name
 
                 # main.py의 process_document 호출
-                result_paths = process_document(tmp_path, src_lang, dest_lang, engine, max_workers)
+                result_paths = process_document(
+                    tmp_path, 
+                    global_converter, # converter 인자 추가
+                    src_lang, 
+                    dest_lang, 
+                    engine, 
+                    max_workers
+                )
                 all_results.append(result_paths)
                 
             except Exception as e:

@@ -353,7 +353,8 @@ def process_single_file(
 
 
 def process_document(
-    pdf_path: str,
+    file_path: str, # 변경: pdf_path -> file_path
+    converter: DocumentConverter, # 인자 추가
     source_lang: str = "en",
     dest_lang: str = "ko",
     engine: str = "google",
@@ -363,7 +364,8 @@ def process_document(
     단일 문서(PDF, DOCX, PPTX, HTML, Image)를 번역하는 wrapper 함수 (app.py 호환용)
     
     Args:
-        pdf_path: 문서 파일 경로 (이름은 pdf_path이지만 다양한 포맷 지원)
+        file_path: 문서 파일 경로 (이름은 pdf_path이지만 다양한 포맷 지원)
+        converter: DocumentConverter 인스턴스
         source_lang: 원본 언어 코드
         dest_lang: 목표 언어 코드
         engine: 번역 엔진 ('google', 'deepl', 'gemini')
@@ -372,7 +374,7 @@ def process_document(
     Returns:
         dict: output_dir, html_path, combined_md를 포함하는 딕셔너리
     """
-    # PDF 전용 옵션 설정
+    # PDF 전용 옵션 설정은 여전히 필요할 수 있으나, converter는 외부에서 주입받음
     pipeline_options = PdfPipelineOptions()
     pipeline_options.do_ocr = False
     pipeline_options.do_table_structure = True
@@ -380,28 +382,10 @@ def process_document(
     pipeline_options.generate_table_images = True
     pipeline_options.images_scale = 2.0
     
-    # 다양한 포맷 지원을 위한 DocumentConverter 초기화
-    converter = DocumentConverter(
-        allowed_formats=[
-            InputFormat.PDF,
-            InputFormat.DOCX,
-            InputFormat.PPTX,
-            InputFormat.HTML,
-            InputFormat.IMAGE
-        ],
-        format_options={
-            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
-            InputFormat.DOCX: WordFormatOption(),
-            InputFormat.PPTX: PowerpointFormatOption(),
-            InputFormat.HTML: HTMLFormatOption(),
-            InputFormat.IMAGE: ImageFormatOption()
-        }
-    )
-    
-    # process_single_file 호출 (내부적으로 converter 사용)
+    # process_single_file 호출 (전달받은 converter 사용)
     return process_single_file(
-        pdf_path=pdf_path,
-        converter=converter,
+        pdf_path=file_path, # 변경: pdf_path -> file_path
+        converter=converter, # 전달받은 converter 사용
         source_lang=source_lang,
         target_lang=dest_lang,
         engine=engine,
