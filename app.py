@@ -245,19 +245,20 @@ def main():
         # 탭 구성
         tab1, tab2 = st.tabs(["인터랙티브 뷰 (Interactive)", "다운로드 (Download)"])
         
-                    with tab1:
-                        st.info("💡 **팁:** 결과물 페이지 우측 상단의 버튼을 눌러 뷰 모드(좌우 병렬 / 펼치기)를 변경할 수 있습니다.")
-                        # HTML 파일 읽어서 표시
-                        if html_path.exists():
-                            with open(html_path, "r", encoding="utf-8") as f:
-                                html_content = f.read()
-                            
-                            # ⚠️ 웹 뷰어 표시용으로 이미지 경로를 Base64로 변환하여 주입
-                            # 원본 파일은 건드리지 않음
-                            html_content_view = inject_images(html_content, output_dir)
-                            
-                            # iframe으로 임베딩 (높이 조절 가능)
-                            components.html(html_content_view, height=800, scrolling=True)            else:
+        with tab1:
+            st.info("💡 **팁:** 결과물 페이지 우측 상단의 버튼을 눌러 뷰 모드(좌우 병렬 / 펼치기)를 변경할 수 있습니다.")
+            # HTML 파일 읽어서 표시
+            if html_path.exists():
+                with open(html_path, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                
+                # ⚠️ 웹 뷰어 표시용으로 이미지 경로를 Base64로 변환하여 주입
+                # 원본 파일은 건드리지 않음
+                html_content_view = inject_images(html_content, output_dir)
+                
+                # iframe으로 임베딩 (높이 조절 가능)
+                components.html(html_content_view, height=800, scrolling=True)
+            else:
                 st.error("HTML 파일을 찾을 수 없습니다.")
 
         with tab2:
