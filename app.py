@@ -246,6 +246,7 @@ def main():
         tab1, tab2 = st.tabs(["인터랙티브 뷰 (Interactive)", "다운로드 (Download)"])
         
         with tab1:
+            st.info("💡 **팁:** 결과물 페이지 우측 상단의 버튼을 눌러 뷰 모드(좌우 병렬 / 펼치기)를 변경할 수 있습니다.")
             # HTML 파일 읽어서 표시
             if html_path.exists():
                 with open(html_path, "r", encoding="utf-8") as f:
