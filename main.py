@@ -287,6 +287,58 @@ def process_single_file(
     bench.end(f"Translation & Save: {file_name}")
     bench.end(f"Total Process: {file_name}")
     logging.info(f"[{file_name}] 파일 생성 완료: {output_dir}")
+    
+    # app.py에서 사용하기 위한 딕셔너리 반환
+    return {
+        "output_dir": output_dir,
+        "html_path": path_html,
+        "combined_md": path_combined
+    }
+
+
+def process_document(
+    pdf_path: str,
+    source_lang: str = "en",
+    dest_lang: str = "ko",
+    engine: str = "google",
+    max_workers: int = 8
+) -> dict:
+    """
+    단일 PDF 문서를 번역하는 wrapper 함수 (app.py 호환용)
+    
+    Args:
+        pdf_path: PDF 파일 경로
+        source_lang: 원본 언어 코드
+        dest_lang: 목표 언어 코드
+        engine: 번역 엔진 ('google', 'deepl', 'gemini')
+        max_workers: 병렬 처리 워커 수 (기본값: 8)
+    
+    Returns:
+        dict: output_dir, html_path, combined_md를 포함하는 딕셔너리
+    """
+    # DocumentConverter 초기화
+    pipeline_options = PdfPipelineOptions()
+    pipeline_options.do_ocr = False
+    pipeline_options.do_table_structure = True
+    pipeline_options.generate_picture_images = True
+    pipeline_options.generate_table_images = True
+    pipeline_options.images_scale = 2.0
+    
+    converter = DocumentConverter(
+        format_options={
+            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
+        }
+    )
+    
+    # process_single_file 호출
+    return process_single_file(
+        pdf_path=pdf_path,
+        converter=converter,
+        source_lang=source_lang,
+        target_lang=dest_lang,
+        engine=engine,
+        max_workers=max_workers
+    )
 
 
 def main():

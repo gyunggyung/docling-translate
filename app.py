@@ -81,6 +81,14 @@ def main():
             src_lang = st.selectbox("원본 언어 (Source)", ["auto", "en", "ko", "ja", "zh"], index=1)
             dest_lang = st.selectbox("대상 언어 (Target)", ["en", "ko", "ja", "zh"], index=1)
             engine = st.selectbox("번역 엔진", ["google", "deepl", "gemini"], index=0)
+            max_workers = st.number_input(
+                "병렬 처리 워커 수 (Workers)", 
+                min_value=1, 
+                max_value=16, 
+                value=8,
+                step=1,
+                help="높을수록 빠르지만 시스템 리소스를 많이 사용합니다. 권장: 8"
+            )
         
         translate_btn = st.button("새로 번역 시작", type="primary", disabled=not uploaded_files)
 
@@ -119,7 +127,7 @@ def main():
                     tmp_path = tmp_file.name
 
                 # main.py의 process_document 호출
-                result_paths = process_document(tmp_path, src_lang, dest_lang, engine)
+                result_paths = process_document(tmp_path, src_lang, dest_lang, engine, max_workers)
                 all_results.append(result_paths)
                 
             except Exception as e:
