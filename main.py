@@ -67,6 +67,8 @@ HTML_HEADER = """
         /* 1. Side-by-Side Mode (Default) */
         .view-mode-side .row { display: grid; grid-template-columns: 1fr 1fr; }
         .view-mode-side .src { border-right: 1px solid var(--border); }
+        /* 이미지/표가 있는 행은 그리드 대신 블록으로 전체 너비 사용 */
+        .view-mode-side .row.full-width { display: block; border-right: none; }
         
         /* 2. Inline (Expand) Mode */
         .view-mode-inline .row { display: block; }
