@@ -74,7 +74,11 @@ def main():
         st.header("설정")
         
         # 1. 파일 업로드
-        uploaded_files = st.file_uploader("PDF 파일 업로드 (여러 개 선택 가능)", type=["pdf"], accept_multiple_files=True)
+        uploaded_files = st.file_uploader(
+            "문서 업로드 (PDF, DOCX, PPTX, HTML, Image 등)", 
+            type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"], 
+            accept_multiple_files=True
+        )
         
         # 2. 언어 및 엔진 설정
         with st.expander("번역 옵션", expanded=True):
@@ -122,7 +126,11 @@ def main():
             
             try:
                 # 임시 파일로 저장
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                suffix = Path(uploaded_file.name).suffix
+                if not suffix:
+                    suffix = ".pdf" # Fallback
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
                     tmp_file.write(uploaded_file.getvalue())
                     tmp_path = tmp_file.name
 
