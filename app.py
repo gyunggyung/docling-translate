@@ -7,6 +7,18 @@ from pathlib import Path
 import streamlit.components.v1 as components
 from main import process_document
 
+# Docling 관련 임포트
+from docling.document_converter import (
+    DocumentConverter,
+    PdfFormatOption,
+    WordFormatOption,
+    PowerpointFormatOption,
+    HTMLFormatOption,
+    ImageFormatOption
+)
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+
 # 페이지 설정
 st.set_page_config(
     page_title="Docling Translate Web Viewer",
@@ -68,13 +80,42 @@ def inject_images(html_content, folder_path):
 
 def main():
     st.title("📄 Docling PDF Translator")
+
+    # DocumentConverter 초기화 (한 번만 수행)
+    pipeline_options = PdfPipelineOptions()
+    pipeline_options.do_ocr = False
+    pipeline_options.do_table_structure = True
+    pipeline_options.generate_picture_images = True
+    pipeline_options.generate_table_images = True
+    pipeline_options.images_scale = 2.0
+    
+    global_converter = DocumentConverter(
+        allowed_formats=[
+            InputFormat.PDF,
+            InputFormat.DOCX,
+            InputFormat.PPTX,
+            InputFormat.HTML,
+            InputFormat.IMAGE
+        ],
+        format_options={
+            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
+            InputFormat.DOCX: WordFormatOption(),
+            InputFormat.PPTX: PowerpointFormatOption(),
+            InputFormat.HTML: HTMLFormatOption(),
+            InputFormat.IMAGE: ImageFormatOption()
+        }
+    )
     
     # 사이드바: 히스토리 및 설정
     with st.sidebar:
         st.header("설정")
         
         # 1. 파일 업로드
-        uploaded_files = st.file_uploader("PDF 파일 업로드 (여러 개 선택 가능)", type=["pdf"], accept_multiple_files=True)
+        uploaded_files = st.file_uploader(
+            "문서 업로드 (PDF, DOCX, PPTX, HTML, Image 등)", 
+            type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"], 
+            accept_multiple_files=True
+        )
         
         # 2. 언어 및 엔진 설정
         with st.expander("번역 옵션", expanded=True):
@@ -122,12 +163,23 @@ def main():
             
             try:
                 # 임시 파일로 저장
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                suffix = Path(uploaded_file.name).suffix
+                if not suffix:
+                    suffix = ".pdf" # Fallback
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
                     tmp_file.write(uploaded_file.getvalue())
                     tmp_path = tmp_file.name
 
                 # main.py의 process_document 호출
-                result_paths = process_document(tmp_path, src_lang, dest_lang, engine, max_workers)
+                result_paths = process_document(
+                    tmp_path, 
+                    global_converter, # converter 인자 추가
+                    src_lang, 
+                    dest_lang, 
+                    engine, 
+                    max_workers
+                )
                 all_results.append(result_paths)
                 
             except Exception as e:

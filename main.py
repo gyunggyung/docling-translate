@@ -26,7 +26,14 @@ load_dotenv()
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
 
 # docling 라이브러리에서 필요한 클래스들을 가져옵니다.
-from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.document_converter import (
+    DocumentConverter,
+    PdfFormatOption,
+    WordFormatOption,
+    PowerpointFormatOption,
+    HTMLFormatOption,
+    ImageFormatOption
+)
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem
@@ -164,7 +171,7 @@ def process_single_file(
     max_workers: int = 1
 ):
     """
-    단일 PDF 파일을 처리하는 함수 (Bulk Translation 적용)
+    단일 파일(PDF, DOCX, PPTX 등)을 처리하는 함수 (Bulk Translation 적용)
     """
     file_name = Path(pdf_path).name
     bench.start(f"Total Process: {file_name}")
@@ -184,14 +191,14 @@ def process_single_file(
 
     # 3. Docling 변환
     bench.start(f"Conversion: {file_name}")
-    logging.info(f"[{file_name}] PDF 변환 중...")
+    logging.info(f"[{file_name}] 문서 변환 중...")
     try:
         doc: DoclingDocument = converter.convert(pdf_path).document
     except Exception as e:
-        logging.error(f"[{file_name}] PDF 변환 오류: {e}", exc_info=True)
+        logging.error(f"[{file_name}] 문서 변환 오류: {e}", exc_info=True)
         return
     bench.end(f"Conversion: {file_name}")
-    logging.info(f"[{file_name}] PDF 변환 성공.")
+    logging.info(f"[{file_name}] 문서 변환 성공.")
 
     # 4. 번역 및 파일 저장 (Bulk Translation Strategy)
     bench.start(f"Translation & Save: {file_name}")
@@ -346,17 +353,19 @@ def process_single_file(
 
 
 def process_document(
-    pdf_path: str,
+    file_path: str, # 변경: pdf_path -> file_path
+    converter: DocumentConverter, # 인자 추가
     source_lang: str = "en",
     dest_lang: str = "ko",
     engine: str = "google",
     max_workers: int = 8
 ) -> dict:
     """
-    단일 PDF 문서를 번역하는 wrapper 함수 (app.py 호환용)
+    단일 문서(PDF, DOCX, PPTX, HTML, Image)를 번역하는 wrapper 함수 (app.py 호환용)
     
     Args:
-        pdf_path: PDF 파일 경로
+        file_path: 문서 파일 경로 (이름은 pdf_path이지만 다양한 포맷 지원)
+        converter: DocumentConverter 인스턴스
         source_lang: 원본 언어 코드
         dest_lang: 목표 언어 코드
         engine: 번역 엔진 ('google', 'deepl', 'gemini')
@@ -365,7 +374,7 @@ def process_document(
     Returns:
         dict: output_dir, html_path, combined_md를 포함하는 딕셔너리
     """
-    # DocumentConverter 초기화
+    # PDF 전용 옵션 설정은 여전히 필요할 수 있으나, converter는 외부에서 주입받음
     pipeline_options = PdfPipelineOptions()
     pipeline_options.do_ocr = False
     pipeline_options.do_table_structure = True
@@ -373,16 +382,10 @@ def process_document(
     pipeline_options.generate_table_images = True
     pipeline_options.images_scale = 2.0
     
-    converter = DocumentConverter(
-        format_options={
-            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
-        }
-    )
-    
-    # process_single_file 호출
+    # process_single_file 호출 (전달받은 converter 사용)
     return process_single_file(
-        pdf_path=pdf_path,
-        converter=converter,
+        pdf_path=file_path, # 변경: pdf_path -> file_path
+        converter=converter, # 전달받은 converter 사용
         source_lang=source_lang,
         target_lang=dest_lang,
         engine=engine,
@@ -391,8 +394,8 @@ def process_document(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="PDF 문서를 문장 단위로 번역합니다.")
-    parser.add_argument("pdf_path", type=str, help="번역할 PDF 파일 또는 폴더의 경로")
+    parser = argparse.ArgumentParser(description="문서를 문장 단위로 번역합니다. (PDF, DOCX, PPTX, HTML, Image 지원)")
+    parser.add_argument("pdf_path", type=str, help="번역할 파일 또는 폴더의 경로")
     parser.add_argument('-f', '--from', dest='source_lang', type=str, default='en', help="번역할 원본 언어 코드 (기본값: en)")
     parser.add_argument('-t', '--to', dest='target_lang', type=str, default='ko', help="번역 결과물 언어 코드 (기본값: ko)")
     parser.add_argument('-e', '--engine', dest='engine', type=str, choices=['google', 'deepl', 'gemini'], default='google', help="번역 엔진 선택")
@@ -420,21 +423,49 @@ def main():
     pdf_files = []
 
     if input_path.is_dir():
-        pdf_files = list(input_path.glob("*.pdf"))
+        # 다양한 포맷 지원
+        for ext in ["*.pdf", "*.docx", "*.pptx", "*.html", "*.png", "*.jpg", "*.jpeg"]:
+            pdf_files.extend(list(input_path.glob(ext)))
+        
         if not pdf_files:
-            logging.warning(f"폴더 내에 PDF 파일이 없습니다: {input_path}")
+            logging.warning(f"폴더 내에 지원되는 문서 파일이 없습니다: {input_path}")
             return
     else:
         pdf_files = [input_path]
 
     logging.info(f"총 {len(pdf_files)}개의 파일을 처리합니다.")
 
-    # 1. Docling 초기화 (한 번만 수행)
+    # 1. Docling 초기화 (한 번만 수행) - 이제 process_document 내부에서 생성하지 않고,
+    # 멀티프로세싱을 위해 converter 객체를 공유하려면 여기서 생성해서 넘겨야 하지만,
+    # 현재 구조는 process_single_file 내부에서 converter를 인자로 받도록 되어 있음.
+    # 그러나 process_single_file을 직접 호출하는 것이 아니라 concurrent.futures로 호출하므로,
+    # converter를 미리 생성해서 넘겨주는 것이 좋음.
+    
     bench.start("Initialization")
     logging.info("Docling 파이프라인 초기화 중...")
-    pipeline_options = PdfPipelineOptions(generate_picture_images=True, generate_table_images=True, images_scale=2.0)
+    
+    pipeline_options = PdfPipelineOptions()
+    pipeline_options.do_ocr = False
+    pipeline_options.do_table_structure = True
+    pipeline_options.generate_picture_images = True
+    pipeline_options.generate_table_images = True
+    pipeline_options.images_scale = 2.0
+    
     converter = DocumentConverter(
-        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)}
+        allowed_formats=[
+            InputFormat.PDF,
+            InputFormat.DOCX,
+            InputFormat.PPTX,
+            InputFormat.HTML,
+            InputFormat.IMAGE
+        ],
+        format_options={
+            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
+            InputFormat.DOCX: WordFormatOption(),
+            InputFormat.PPTX: PowerpointFormatOption(),
+            InputFormat.HTML: HTMLFormatOption(),
+            InputFormat.IMAGE: ImageFormatOption()
+        }
     )
     bench.end("Initialization")
 
