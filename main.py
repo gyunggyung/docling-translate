@@ -49,34 +49,76 @@ HTML_HEADER = """
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docling Translation Result</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
-        .sentence-container { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .translated { cursor: pointer; color: #333; font-weight: 500; }
-        .translated:hover { color: #0056b3; }
-        .original { font-size: 0.95em; color: #666; margin-top: 8px; padding-left: 12px; border-left: 4px solid #ddd; display: none; background-color: #f1f1f1; padding: 8px; border-radius: 4px; }
-        img { max-width: 100%; height: auto; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .caption { text-align: center; font-size: 0.9em; color: #777; margin-top: 10px; }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        :root { --bg-color: #f4f6f8; --card-bg: #fff; --border: #eee; --hover: #eef7ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; }
+        .controls { text-align: right; margin-bottom: 15px; position: sticky; top: 10px; z-index: 100; }
+        .btn-toggle { padding: 8px 16px; background: #333; color: #fff; border: none; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        
+        /* 공통 스타일 */
+        .row { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        .row:hover { background-color: var(--hover); }
+        .src, .tgt { padding: 14px 20px; line-height: 1.6; }
+        .src { color: #666; font-size: 0.95em; background-color: #fafafa; }
+        .tgt { color: #222; font-weight: 500; }
+        
+        /* 1. Side-by-Side Mode (Default) */
+        .view-mode-side .row { display: grid; grid-template-columns: 1fr 1fr; }
+        .view-mode-side .src { border-right: 1px solid var(--border); }
+        
+        /* 2. Inline (Expand) Mode */
+        .view-mode-inline .row { display: block; }
+        .view-mode-inline .src { display: none; border-left: 4px solid #ccc; margin: 0 20px 10px; border-right: none; background: #f1f1f1; border-radius: 4px; }
+        .view-mode-inline .tgt { cursor: pointer; }
+        .view-mode-inline .tgt::after { content: ' ▾'; color: #999; font-size: 0.8em; }
+        .view-mode-inline .row.active .src { display: block; } /* JS로 active 토글 */
+
+        /* 이미지/표 공통 */
+        .full-width { grid-column: 1 / -1; padding: 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        /* 모바일 반응형 (강제 Inline) */
+        @media (max-width: 768px) {
+            .view-mode-side .row { grid-template-columns: 1fr; }
+            .view-mode-side .src { border-right: none; border-bottom: 1px dashed #ddd; }
+        }
     </style>
     <script>
-        function toggleOriginal(el) {
-            const next = el.nextElementSibling;
-            if (next.style.display === 'none' || next.style.display === '') {
-                next.style.display = 'block';
+        function toggleMode() {
+            const container = document.getElementById('content-container');
+            const btn = document.getElementById('mode-btn');
+            if (container.classList.contains('view-mode-side')) {
+                container.classList.remove('view-mode-side');
+                container.classList.add('view-mode-inline');
+                btn.innerText = 'Switch to Side-by-Side View';
             } else {
-                next.style.display = 'none';
+                container.classList.remove('view-mode-inline');
+                container.classList.add('view-mode-side');
+                btn.innerText = 'Switch to Inline View';
+            }
+        }
+        
+        function toggleInline(el) {
+            // Inline 모드일 때만 동작
+            const container = document.getElementById('content-container');
+            if (container.classList.contains('view-mode-inline')) {
+                el.parentElement.classList.toggle('active');
             }
         }
     </script>
 </head>
 <body>
+    <div class="controls">
+        <button id="mode-btn" class="btn-toggle" onclick="toggleMode()">Switch to Inline View</button>
+    </div>
     <h1>Translation Result</h1>
+    <div id="content-container" class="container view-mode-side">
 """
 
 HTML_FOOTER = """
+    </div> <!-- Close content-container -->
 </body>
 </html>
 """
@@ -245,9 +287,9 @@ def process_single_file(
                     orig_safe = html.escape(orig_sent)
                     trans_safe = html.escape(trans_sent)
                     f_html.write(f"""
-                    <div class="sentence-container">
-                        <div class="translated" onclick="toggleOriginal(this)">{trans_safe} {page_num_str}</div>
-                        <div class="original">{orig_safe}</div>
+                    <div class="row">
+                        <div class="src">{orig_safe} {page_num_str}</div>
+                        <div class="tgt" onclick="toggleInline(this)">{trans_safe} {page_num_str}</div>
                     </div>
                     """)
                 f_comb.write("\n")
@@ -263,8 +305,12 @@ def process_single_file(
                     f_target.write(md_link)
                     f_comb.write(md_link)
                     
-                    f_html.write(f'<img src="{image_path}" alt="{alt_text}">\n')
-
+                    # New HTML structure for images/tables
+                    f_html.write(f"""
+                    <div class="row full-width">
+                        <div><img src="{image_path}" alt="{alt_text}"></div>
+                    """)
+                    
                     orig_caption = item.caption_text(doc)
                     if orig_caption:
                         # 캡션 번역 조회
@@ -278,8 +324,9 @@ def process_single_file(
                         f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
-                        f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n')
-
+                        f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n') # Caption inside full-width row
+                    
+                    f_html.write(f"</div>\n") # Close the full-width row
                     f_comb.write("---\n\n")
         
         f_html.write(HTML_FOOTER)
