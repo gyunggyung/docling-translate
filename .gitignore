@@ -15,5 +15,9 @@ __pycache__/
 !samples/1706.03762v7.pdf
 *.docx
 
+# Debug and test files
+test_*.py
+debug_*.txt
+
 .gemini/
 gha-creds-*.json

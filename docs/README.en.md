@@ -1,123 +1,68 @@
 # docling-translate
 
 <p align="center">
-  <img src="logo.png" alt="docling-translate logo" width="600"/>
+  <img src="logo.png" alt="docling-translate logo"/>
 </p>
 
-[한국어로 읽기](../README.md)
+> **Structure-Preserving Parallel Translation Tool for Technical Documents**  
+> Translate PDF, Word, PPT, and more sentence-by-sentence without breaking the format.
 
-**Technical PDFs, now perfectly understood by comparing original and translated sentences side-by-side.**
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](../requirements.txt)
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+## Overview
 
-`docling-translate` is a fast and intuitive open-source translation tool that helps non-native English-speaking students, engineers, and researchers read and understand technical PDF documents with ease.
+`docling-translate` is an open-source tool that leverages IBM's [docling](https://github.com/ds4sd/docling) library to analyze complex document structures (tables, images, multi-column layouts) and provide a **sentence-level 1:1 mapping** between the source and translated text.
 
----
+Designed to overcome the **imperfections and context loss** often encountered in machine translation. It goes beyond simple text replacement by providing **Side-by-Side** and **Interactive (Click-to-Reveal)** views, allowing users to instantly check the original text and ensure accurate understanding.
 
-## 🤔 Why use `docling-translate`?
+## Key Features
 
-Have you ever faced these challenges when translating technical documents?
+- **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, and `HTML` formats into Markdown.
+- **Sentence-Level Parallel Translation**: Precisely matches one source sentence to one translated sentence for maximum readability.
+- **Layout Preservation**: Maintains tables and images within the document during translation.
+- **Flexible Engine Selection**: Supports Google Translate (Free), DeepL (High Quality), and Gemini (Context Aware).
+- **High Performance**: Fast parallel processing for large volumes of documents using multi-threading (`max_workers`).
 
-*   📄 Copying content from a PDF breaks the formatting, making it difficult to even paste into a translator.
-*   😵 Existing translators provide awkward, context-free results that are hard to trust.
-*   📑 You waste time switching between the original and translated texts, constantly losing your flow.
+## Quick Start
 
-`docling-translate` solves all these problems by combining the powerful document analysis capabilities of the **`docling` library** with a **sentence-by-sentence parallel view**.
+### 1. Installation
 
-## ✨ Core Features
-
-| Feature | Description |
-| :--- | :--- |
-| **📖 Side-by-Side Sentence Comparison** | Compare the original and translated text sentence by sentence to accurately grasp even the subtlest nuances of technical terms. |
-| **🏗️ Flawless PDF Structure Analysis** | Accurately parses complex layouts, including multi-column text, tables, and images, preserving the original structure as much as possible using the `docling` library. |
-| **📄 Flexible Triple-Format Output** | Generates the original text (`_en.md`), the translated text (`_ko.md`), and a combined version (`_combined.md`) for versatile use. |
-| **🏷️ Quick Reference to Original** | Displays the original PDF page number `(p. N)` next to every text block, allowing for quick reference back to the source. |
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
+Requires Python 3.10 or higher.
 
 ```bash
+git clone https://github.com/gyunggyung/docling-translate.git
+cd docling-translate
 pip install -r requirements.txt
 ```
 
-### 2. Usage
+### 2. CLI Usage
 
-For example, to translate the sample file included in the project (the 'Attention Is All You Need' paper) with default settings (English->Korean), run the following command:
+This is the most basic usage. Specify a PDF file to generate a translated Markdown file.
 
 ```bash
-# Translate a single file
-python main.py "path/to/your/document.pdf"
+# Basic translation (English -> Korean)
+python main.py sample.pdf
 
-# Translate all PDFs in a folder
-python main.py "path/to/your/folder/"
-
-# With options (Source/Target language, Engine)
-python main.py "document.pdf" -f en -t ko -e deepl
-
-# Parallel processing for faster translation (default: 4 workers)
-python main.py "document.pdf" --max-workers 8
-
-# Measure performance metrics
-python main.py "document.pdf" --benchmark
+# With options (Use DeepL engine, translate to Japanese)
+python main.py sample.pdf --engine deepl --to ja
 ```
 
-**💡 Performance Tip**: Using `--max-workers 8` improves translation speed by **4.7x**! (239s → 51s)
+### 3. Web UI Usage
 
-### 3. Launch Web Viewer
-
-You can upload and translate PDFs via a user-friendly web interface.
+Use the intuitive web interface to upload files and visually verify results.
 
 ```bash
 streamlit run app.py
 ```
 
-### 🎨 Output Example
+## Detailed Guide
 
-The translated output (`_combined.md`) is generated with original and translated sentences side-by-side, making it very convenient to read and compare.
+For more detailed usage and configuration instructions, please refer to the documents below.
 
----
-**Original (English)** (p. 1)
-> This assignment marks the foundation of your project journey, so please complete it thoroughly and thoughtfully.
+- [📖 **Detailed Usage Guide (USAGE.md)**](USAGE.md): Full CLI options, API key setup, format specifics.
+- [🛠 **Contributing Guide (CONTRIBUTING.md)**](CONTRIBUTING.md): Project structure, development workflow, testing methods.
 
-**Translated (Korean)** (p. 1)
-> 이 과제는 프로젝트 여정의 기초를 마련하는 것이므로 철저하고 신중하게 완료하십시오.
-***
-**Original (English)** (p. 1)
-> List at least 3–5 planned features and system requirements.
+## License
 
-**Translated (Korean)** (p. 1)
-> 최소 3~5개의 계획된 기능과 시스템 요구사항을 나열하십시오.
----
-
-## 🗺️ Development Roadmap
-
-- [x] **PDF → Markdown Conversion**: Accurate structure analysis using `docling`
-- [x] **Triple-Format Output**: Generate original/translated/combined Markdown + interactive HTML files
-- [x] **Page Number Display**: Reference original page numbers in `(p. N)` format
-- [x] **Sentence-level Translation & Comparison**: High-readability side-by-side view
-- [x] **Folder-level Translation**: Translate all PDFs in a folder at once
-- [x] **Parallel Processing for Performance**: **4.7x speedup** using multithreading 🚀
-- [x] **Multi-Engine Translation Support**: Google Translate, DeepL, Gemini API available
-- [x] **Multi-language Support**: Expand translation capabilities to multiple languages
-- [ ] **Web UI Parallel Processing**: Integrate parallel processing into Streamlit app
-- [ ] **Additional Translation Engines**: GPT API, local LLMs, and other state-of-the-art models
-
-## 📚 Development Resources
-
-This project heavily relies on the `docling` library. To understand its features and usage, referring to the official documentation is highly recommended.
-
-*   **`docling` Official Docs Site:** [https://docling-project.github.io/docling/](https://docling-project.github.io/docling/)
-*   **`docling` Example Code (GitHub):** [https://github.com/docling-project/docling/tree/main/docs/examples](https://github.com/docling-project/docling/tree/main/docs/examples)
-
-## 🤝 Contributing
-
-This project welcomes contributions of all kinds, whether it's bug fixes, new features, or documentation improvements.
-
-For a detailed development workflow and contribution methods, please refer to the [**Contribution Guidelines (CONTRIBUTING.md)**](CONTRIBUTING.md).
-
-Also, please adhere to our [**Code of Conduct (CODE_OF_CONDUCT.md)**](CODE_OF_CONDUCT.md) to foster a healthy and respectful community.
-
-## 📜 License
-
-This project is licensed under the **Apache License 2.0**. For more details, see the `LICENSE` file.
+This project follows the [Apache License 2.0](../LICENSE).
