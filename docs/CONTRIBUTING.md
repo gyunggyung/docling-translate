@@ -1,63 +1,74 @@
-# 기여 가이드라인
+# 기여 가이드 (Contributing Guide)
 
-`docling-translate`에 기여하는 데 관심을 가져주셔서 감사합니다! 버그 리포트부터 새로운 기능 추가까지 모든 기여를 환영합니다. 원활하고 협력적인 과정을 위해, 우리는 GitHub Flow 워크플로우를 따릅니다.
+`docling-translate` 프로젝트에 관심을 가져주셔서 감사합니다. 여러분의 기여는 이 프로젝트를 더 유용하고 강력하게 만드는 데 큰 힘이 됩니다.
 
-## 개발 워크플로우 (GitHub Flow)
+## 프로젝트 구조 (Architecture)
 
-핵심 원칙은 `main` 브랜치가 항상 안정적이고 배포 가능한 상태여야 한다는 것입니다. 모든 새로운 작업은 별도의 브랜치에서 수행됩니다.
+이 프로젝트는 크게 3가지 핵심 모듈로 구성되어 있습니다.
 
-### 1단계: 이슈 생성
+### 1. `main.py` (CLI Entry Point & Orchestrator)
+- 사용자의 명령줄 입력을 파싱하고 전체 번역 파이프라인을 조율합니다.
+- **역할**:
+    - 파일 입출력 관리 (단일 파일 및 폴더 스캔).
+    - `docling`을 이용한 문서 변환(`DocumentConverter`) 초기화.
+    - 병렬 처리(`ThreadPoolExecutor`) 관리.
+    - 최종 결과물(Markdown, HTML) 생성 및 저장.
 
-작업을 시작하기 전, 먼저 [이슈(issue)](https://github.com/gyunggyung/docling-translate/issues)를 생성하여 해결하려는 버그, 추가하려는 기능, 또는 개선점에 대해 논의해주세요. 이를 통해 다른 사람들과 논의하고, 작업 방향이 프로젝트의 목표와 일치하는지 확인할 수 있습니다.
+### 2. `translator.py` (Translation Logic)
+- 실제 텍스트 번역을 담당하며, 다양한 번역 엔진을 추상화합니다.
+- **역할**:
+    - **Engine Adapters**: `GoogleTranslator`, `deepl`, `google.genai` SDK를 래핑하여 통일된 인터페이스 제공.
+    - **Text Processing**: `nltk`를 사용한 문장 분리(Tokenization).
+    - **Bulk Translation**: 다수의 문장을 효율적으로 병렬 번역하는 로직 포함.
 
-### 2단계: 브랜치 생성
+### 3. `app.py` (Web Interface)
+- `streamlit` 기반의 웹 애플리케이션입니다.
+- **역할**:
+    - 파일 업로드 UI 및 옵션 선택 핸들링.
+    - `main.py`의 로직을 재사용하여 번역 수행.
+    - 번역 결과를 인터랙티브한 HTML/Markdown 뷰어로 렌더링.
 
-이슈가 정해지면, `main` 브랜치에서 새로운 브랜치를 만듭니다. 브랜치 이름은 아래 규칙에 따라 작업 내용을 잘 설명하도록 지어주세요.
+## 개발 워크플로우 (Workflow)
 
-*   새로운 기능: `feat/<description>` (예: `feat/add-multi-language-support`)
-*   버그 수정: `fix/<description>` (예: `fix/pdf-parsing-error`)
-*   문서 작업: `docs/<description>` (예: `docs/update-contributing-guide`)
+우리는 체계적인 개발을 위해 **Plan-First** 접근 방식을 따릅니다.
 
-```bash
-# main 브랜치로 이동하여 최신 버전으로 업데이트합니다.
-git checkout main
-git pull origin main
+1.  **Issue 생성**: 버그 제보 또는 기능 제안을 위해 GitHub Issue를 생성합니다.
+2.  **Plan 작성**: `plans/` 폴더에 `issue-[번호]-[설명].md` 형식으로 계획 파일을 작성합니다. 구현할 기능의 설계, 변경할 파일, 테스트 계획을 상세히 기술합니다.
+3.  **구현 (Implementation)**: 승인된 계획에 따라 코드를 작성합니다.
+4.  **테스트 (Test)**: 로컬 환경에서 변경 사항을 검증합니다.
+5.  **Pull Request**: 변경 사항을 PR로 제출합니다.
 
-# 새로운 브랜치를 생성합니다.
-git checkout -b feat/your-feature-name
-```
-
-### 3단계: 개발 및 커밋
-
-새로 만든 브랜치에서 변경사항을 만들고, 작업한 내용을 설명하는 명확한 메시지와 함께 작고 논리적인 단위로 커밋해주세요.
-
-```bash
-# 변경사항을 스테이징합니다.
-git add .
-
-# 변경사항을 커밋합니다.
-git commit -m "feat: Add support for Spanish translation"
-```
-
-### 4단계: 풀 리퀘스트(PR) 생성
-
-작업이 끝나 리뷰받을 준비가 되면, 브랜치를 GitHub에 푸시하고 `main` 브랜치로 Pull Request(PR)를 생성합니다.
+## 개발 환경 설정
 
 ```bash
-# 원격 저장소에 브랜치를 푸시합니다.
-git push origin feat/your-feature-name
+# 저장소 클론
+git clone https://github.com/gyunggyung/docling-translate.git
+cd docling-translate
+
+# 가상환경 생성 (권장)
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# .venv\Scripts\activate   # Windows
+
+# 의존성 설치
+pip install -r requirements.txt
 ```
 
-그 다음, `docling-translate` GitHub 저장소 페이지로 이동하면 당신의 브랜치로 PR을 생성하라는 안내가 보일 것입니다. PR에 명확한 제목과 상세한 설명을 작성하고, 관련 있는 이슈를 링크해주세요 (예: "Closes #123").
+## 테스트 방법
 
-### 5단계: 코드 리뷰 (선택적)
+현재 별도의 자동화된 테스트 스위트는 없으나(추후 도입 예정), 다음과 같은 방법으로 수동 테스트를 권장합니다.
 
-PR이 생성되면, 다른 기여자(또는 AI 에이전트)가 코드를 리뷰합니다. 이는 코드의 품질, 일관성, 정확성을 보장하기 위한 협업 과정입니다. 특히 중요한 코드 변경의 경우 리뷰를 거치는 것을 권장하지만, 오타 수정과 같은 간단한 문서 변경에는 이 단계를 건너뛸 수 있습니다.
+1.  **CLI 테스트**: `samples/` 폴더의 예제 파일을 사용하여 정상 동작 확인.
+    ```bash
+    python main.py samples/1706.03762v7.pdf --max-workers 2
+    ```
+2.  **Web UI 테스트**: 스트림릿 앱을 실행하여 UI 깨짐이 없는지 확인.
+    ```bash
+    streamlit run app.py
+    ```
 
-피드백에 열린 자세를 유지하고, 요청 시 추가적인 변경사항을 적용할 준비를 해주세요.
+## 코드 스타일
 
-### 6단계: 병합 (Merge)
-
-PR이 리뷰를 통과하고 승인되면, 프로젝트 관리자가 `main` 브랜치에 병합합니다. 이제 당신의 기여가 프로젝트의 일부가 되었습니다!
-
-`docling-translate`를 더 나은 프로젝트로 만들어주셔서 감사합니다!
+- **Type Hinting**: 모든 함수에 타입 힌트를 명시하여 가독성을 높여주세요.
+- **Comments**: 복잡한 로직에는 한국어 주석을 달아주세요.
+- **Documentation**: 기능 변경 시 `README.md` 또는 `docs/USAGE.md`를 함께 업데이트해주세요.
