@@ -4,11 +4,12 @@
   <img src="logo.png" alt="docling-translate logo"/>
 </p>
 
-> **Structure-Preserving Parallel Translation Tool for Technical Documents**  
-> Translate PDF, Word, PPT, and more sentence-by-sentence without breaking the format.
+> **Docling-based Translator for Technical Documents**  
+> Supports PDF, DOCX, PPTX, HTML & Images with interactive structure-preserving comparison.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](../requirements.txt)
+[![Korean](https://img.shields.io/badge/lang-한국어-blue.svg)](../README.md)
 
 ## Overview
 
@@ -18,7 +19,7 @@ Designed to overcome the **imperfections and context loss** often encountered in
 
 ## Key Features
 
-- **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, and `HTML` formats into Markdown.
+- **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, `HTML`, and `Image` formats into an **Interactive Viewer (HTML)**.
 - **Sentence-Level Parallel Translation**: Precisely matches one source sentence to one translated sentence for maximum readability.
 - **Layout Preservation**: Maintains tables and images within the document during translation.
 - **Flexible Engine Selection**: Supports Google Translate (Free), DeepL (High Quality), and Gemini (Context Aware).
@@ -38,7 +39,7 @@ pip install -r requirements.txt
 
 ### 2. CLI Usage
 
-This is the most basic usage. Specify a PDF file to generate a translated Markdown file.
+This is the most basic usage. Specify a PDF file to generate translated Markdown and interactive HTML files.
 
 ```bash
 # Basic translation (English -> Korean)
@@ -62,6 +63,19 @@ For more detailed usage and configuration instructions, please refer to the docu
 
 - [📖 **Detailed Usage Guide (USAGE.md)**](USAGE.md): Full CLI options, API key setup, format specifics.
 - [🛠 **Contributing Guide (CONTRIBUTING.md)**](CONTRIBUTING.md): Project structure, development workflow, testing methods.
+
+## Acknowledgments
+
+This project is built upon the [Docling](https://github.com/docling-project/docling) library.
+
+```bibtex
+@techreport{Docling,
+  author = {Deep Search Team},
+  title = {Docling Technical Report},
+  url = {https://arxiv.org/abs/2408.09869},
+  year = {2024}
+}
+```
 
 ## License
 
