@@ -4,11 +4,12 @@
   <img src="docs/logo.png" alt="docling-translate logo"/>
 </p>
 
-> **기술 문서를 위한 구조 보존형 병렬 번역 도구**  
-> PDF, Word, PPT 등 다양한 문서를 포맷 파괴 없이 문장 단위로 번역합니다.
+> **Docling 기반의 구조 보존형 문서 번역 도구**  
+> PDF, DOCX, PPTX, HTML, 이미지의 구조를 유지하며 인터랙티브 비교 뷰를 제공합니다.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](requirements.txt)
+[![English](https://img.shields.io/badge/lang-English-red.svg)](docs/README.en.md)
 
 ## 개요
 
@@ -18,7 +19,7 @@
 
 ## 주요 기능
 
-- **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML` 포맷을 마크다운으로 변환 및 번역.
+- **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
 - **유연한 엔진 선택**: Google Translate(무료), DeepL(고품질), Gemini(문맥 이해) 지원.
@@ -38,7 +39,7 @@ pip install -r requirements.txt
 
 ### 2. CLI 실행
 
-가장 기본적인 사용법입니다. PDF 파일을 지정하면 번역된 Markdown 파일이 생성됩니다.
+가장 기본적인 사용법입니다. PDF 파일을 지정하면 번역된 마크다운 및 인터랙티브 HTML 파일이 생성됩니다.
 
 ```bash
 # 기본 번역 (영어 -> 한국어)
@@ -62,6 +63,19 @@ streamlit run app.py
 
 - [📖 **상세 사용 가이드 (USAGE.md)**](docs/USAGE.md): CLI 전체 옵션, API 키 설정, 포맷별 특징.
 - [🛠 **기여 가이드 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md): 프로젝트 구조, 개발 워크플로우, 테스트 방법.
+
+## Acknowledgments
+
+이 프로젝트는 [Docling](https://github.com/docling-project/docling) 라이브러리를 기반으로 합니다.
+
+```bibtex
+@techreport{Docling,
+  author = {Deep Search Team},
+  title = {Docling Technical Report},
+  url = {https://arxiv.org/abs/2408.09869},
+  year = {2024}
+}
+```
 
 ## 라이선스
 
