@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ### 2. CLI Usage
 
-This is the most basic usage. Specify a PDF file to generate translated Markdown and interactive HTML files.
+This is the most basic usage. Specify a PDF file to generate an **interactive HTML file**.
 
 ```bash
 # Basic translation (English -> Korean)

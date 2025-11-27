@@ -1,40 +1,40 @@
-# translator.py
-# 번역 엔진들을 한 곳에서 관리하는 모듈입니다.
+"""
+번역 엔진 통합 모듈
 
+지원 엔진:
+- Google Translate (deep-translator 기반)
+- DeepL (공식 SDK)
+- Gemini (google-genai SDK)
+- OpenAI GPT (openai SDK)
+
+각 엔진은 실패 시 재시도 로직과 Google Translate fallback을 포함합니다.
+"""
 import os
 import time
 import logging
 import concurrent.futures
-from typing import List, Tuple  # (지금은 거의 안 쓰지만, 일단 유지)
+from typing import List, Tuple
 
-from deep_translator import GoogleTranslator  # deep-translator 기반
+from deep_translator import GoogleTranslator
 import deepl
-import nltk  # 문장 단위 분리를 위한 NLTK
+import nltk
 
-# Gemini SDK는 선택 사항이므로, 설치 안 돼 있으면 None 처리
+# Gemini SDK (선택 사항)
 try:
-    from google import genai  # google-genai 공식 SDK
+    from google import genai
 except ImportError:
     genai = None
 
-# OpenAI SDK도 선택 사항이므로, 설치 안 돼 있으면 None 처리
+# OpenAI SDK (선택 사항)
 try:
-    from openai import OpenAI  # openai 공식 SDK
+    from openai import OpenAI
 except ImportError:
     OpenAI = None
 
-# 기본 로깅 설정
 logging.basicConfig(level=logging.INFO)
 _log = logging.getLogger(__name__)
 
-# ------------------------------
-# 전역 설정 (환경 변수)
-# ------------------------------
-
-# 번역 엔진 선택은 이제 main.py 인자로 받으므로,
-# 여기서는 엔진 전역(ENGINE)은 더 이상 사용하지 않는다.
-
-# DeepL / Gemini API 키
+# 전역 설정
 DEEPL_API_KEY = os.getenv("DEEPL_API_KEY", "").strip()
 
 _deepl_client = None
