@@ -17,6 +17,12 @@ try:
 except ImportError:
     genai = None
 
+# OpenAI SDK도 선택 사항이므로, 설치 안 돼 있으면 None 처리
+try:
+    from openai import OpenAI  # openai 공식 SDK
+except ImportError:
+    OpenAI = None
+
 # 기본 로깅 설정
 logging.basicConfig(level=logging.INFO)
 _log = logging.getLogger(__name__)
@@ -36,6 +42,48 @@ if DEEPL_API_KEY:
     _deepl_client = deepl.DeepLClient(DEEPL_API_KEY)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+# Gemini 클라이언트 전역 초기화 (OpenAI/DeepL 패턴과 동일)
+_gemini_client = None
+if genai is not None and GEMINI_API_KEY:
+    try:
+        _gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        _log.info("Gemini 클라이언트 초기화 성공")
+    except Exception as e:
+        _log.warning("Gemini 클라이언트 초기화 실패: %s", e)
+        _gemini_client = None
+
+# OpenAI API 키
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+
+# OpenAI 클라이언트 전역 초기화 (DeepL 패턴과 동일)
+_openai_client = None
+if OpenAI is not None and OPENAI_API_KEY:
+    try:
+        _openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        _log.info("OpenAI 클라이언트 초기화 성공")
+    except Exception as e:
+        _log.warning("OpenAI 클라이언트 초기화 실패: %s", e)
+        _openai_client = None
+
+# ------------------------------
+# 언어 코드 → 언어명 매핑 (OpenAI 프롬프트 명확화용)
+# ------------------------------
+LANGUAGE_NAMES = {
+    'en': 'English',
+    'ko': 'Korean',
+    'ja': 'Japanese',
+    'zh': 'Chinese',
+    'fr': 'French',
+    'de': 'German',
+    'es': 'Spanish',
+    'ru': 'Russian',
+    'it': 'Italian',
+    'pt': 'Portuguese',
+    'ar': 'Arabic',
+    'hi': 'Hindi',
+    'auto': 'the source language',  # 자동 감지
+}
 
 # ------------------------------
 # NLTK 모델 준비
@@ -113,42 +161,45 @@ def _translate_with_gemini(text: str, src: str, dest: str) -> str:
     - 503 / 429 같은 에러가 나면 몇 번 재시도
     - 그래도 안 되면 Google 번역으로 fallback
     """
-    # SDK 자체가 없는 경우 → 바로 Google로 fallback
-    if genai is None:
-        _log.error(
-            "google-genai 패키지가 설치되어 있지 않아 Gemini를 사용할 수 없습니다. "
-            "Google 번역으로 fallback 합니다."
-        )
+    # 클라이언트가 초기화되지 않은 경우 → Google로 fallback
+    if _gemini_client is None:
+        if genai is None:
+            _log.error(
+                "google-genai 패키지가 설치되어 있지 않아 Gemini를 사용할 수 없습니다. "
+                "Google 번역으로 fallback 합니다."
+            )
+        else:
+            _log.error("GEMINI_API_KEY가 설정되지 않았거나 클라이언트 초기화 실패. Google 번역으로 fallback.")
         return _translate_with_google(text, src, dest)
 
-    if not GEMINI_API_KEY:
-        _log.error("GEMINI_API_KEY가 설정되어 있지 않아 Gemini를 사용할 수 없습니다.")
-        return text
-
-    try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        _log.error("Gemini 클라이언트 초기화 실패, Google로 fallback: %s", e)
-        return _translate_with_google(text, src, dest)
+    # 언어 코드를 전체 언어명으로 변환 (Gemini가 명확하게 이해하도록)
+    src_name = LANGUAGE_NAMES.get(src, src)
+    dest_name = LANGUAGE_NAMES.get(dest, dest)
 
     # 최대 3번까지 재시도 (0,1,2번째 시도)
     last_error = None
     for attempt in range(3):
         try:
+            # XML 태그로 명확히 구분 (GPT가 지시사항과 번역 텍스트를 혼동하지 않도록)
             prompt = (
-                f"Translate the following text from {src} to {dest}.\n"
-                f"Return only the translated text, without quotes.\n\n"
-                f"{text}"
+                f"Translate the text from {src_name} to {dest_name}.\n"
+                f"Maintain technical terms and formatting.\n"
+                f"Do not include the XML tags in your response.\n"
+                f"Return only the translation.\n\n"
+                f"<text>\n{text}\n</text>"
             )
 
-            resp = client.models.generate_content(
+            resp = _gemini_client.models.generate_content(
                 model="gemini-2.5-flash",   # 현재 사용 중인 모델명
                 contents=prompt,
             )
 
             # 정상 응답
             if hasattr(resp, "text") and resp.text:
-                return resp.text.strip()
+                result = resp.text.strip()
+                # XML 태그 제거 (혹시 GPT가 태그를 포함했을 경우 대비)
+                result = result.replace("<text>", "").replace("</text>", "").strip()
+                return result
 
             # text가 비어 있는 희한한 경우 → 에러 취급하고 재시도
             raise RuntimeError("Gemini 응답에 text가 없습니다.")
@@ -185,6 +236,84 @@ def _translate_with_gemini(text: str, src: str, dest: str) -> str:
     return _translate_with_google(text, src, dest)
 
 
+def _translate_with_openai(
+    text: str,
+    src: str,
+    dest: str,
+    model: str = "gpt-5-nano"
+) -> str:
+    """
+    OpenAI GPT-5-nano 모델로 번역
+    - Responses API 사용 (client.responses.create)
+    - 429 / 503 에러 시 재시도 (최대 3번)
+    - 실패 시 Google 번역으로 fallback
+    """
+    # 클라이언트가 초기화되지 않은 경우 → Google로 fallback
+    if _openai_client is None:
+        if OpenAI is None:
+            _log.error("openai 패키지가 설치되어 있지 않습니다. Google 번역으로 fallback.")
+        else:
+            _log.error("OPENAI_API_KEY가 설정되지 않았거나 클라이언트 초기화 실패. Google 번역으로 fallback.")
+        return _translate_with_google(text, src, dest)
+
+    # 언어 코드를 전체 언어명으로 변환 (GPT가 명확하게 이해하도록)
+    src_name = LANGUAGE_NAMES.get(src, src)
+    dest_name = LANGUAGE_NAMES.get(dest, dest)
+
+    # 최대 3번까지 재시도
+    for attempt in range(3):
+        try:
+            # XML 태그로 명확히 구분 (GPT가 지시사항과 번역 텍스트를 혼동하지 않도록)
+            translation_input = (
+                f"Translate the text from {src_name} to {dest_name}.\n"
+                f"Maintain technical terms and formatting.\n"
+                f"Do not include the XML tags in your response.\n"
+                f"Return only the translation.\n\n"
+                f"<text>\n{text}\n</text>"
+            )
+
+            # OpenAI Responses API 호출 (GPT-5-nano)
+            response = _openai_client.responses.create(
+                model=model,
+                input=translation_input
+            )
+
+            # 정상 응답: output_text 속성 사용
+            if hasattr(response, 'output_text') and response.output_text:
+                result = response.output_text.strip()
+                # XML 태그 제거 (혹시 GPT가 태그를 포함했을 경우 대비)
+                result = result.replace("<text>", "").replace("</text>", "").strip()
+                return result
+
+            raise RuntimeError("OpenAI 응답에 output_text가 없습니다.")
+
+        except Exception as e:
+            msg = str(e)
+
+            # 429 / 503 같이 재시도 가능한 에러
+            retriable = (
+                "429" in msg or "503" in msg
+                or "rate_limit" in msg.lower()
+                or "overloaded" in msg.lower()
+            )
+
+            if retriable and attempt < 2:
+                wait = 2 ** attempt  # 1초 → 2초 → 4초
+                _log.warning(
+                    "OpenAI 호출 실패(시도 %d/3, %ss 후 재시도): %s",
+                    attempt + 1, wait, msg
+                )
+                time.sleep(wait)
+                continue
+
+            # 재시도 불가하거나 마지막 시도
+            _log.error("OpenAI 번역 최종 실패, Google로 fallback: %s", msg)
+            break
+
+    # 모든 재시도 실패 → Google 번역으로 fallback
+    return _translate_with_google(text, src, dest)
+
+
 # ------------------------------
 # 공개 함수: translate_text / translate_by_sentence
 # ------------------------------
@@ -202,6 +331,7 @@ def translate_text(
       - "google" (기본값)
       - "deepl"
       - "gemini"
+      - "openai"
     """
     if not text or not text.strip():
         return ""
@@ -216,6 +346,8 @@ def translate_text(
             translated = _translate_with_deepl(text, src, dest)
         elif engine == "gemini":
             translated = _translate_with_gemini(text, src, dest)
+        elif engine == "openai":
+            translated = _translate_with_openai(text, src, dest)
         else:
             _log.warning(
                 f"알 수 없는 번역 엔진 '{engine}' 이므로 google로 fallback 합니다."

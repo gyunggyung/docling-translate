@@ -22,7 +22,7 @@
 - **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
-- **유연한 엔진 선택**: Google Translate(무료), DeepL(고품질), Gemini(문맥 이해) 지원.
+- **유연한 엔진 선택**: Google Translate(무료), DeepL(고품질), Gemini(문맥 이해), **OpenAI GPT-5-nano(최신 AI)** 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
 ## 빠른 시작 (Quick Start)
@@ -47,7 +47,29 @@ python main.py sample.pdf
 
 # 옵션 사용 (DeepL 엔진, 일본어 번역)
 python main.py sample.pdf --engine deepl --to ja
+
+# OpenAI GPT-5-nano 사용
+python main.py sample.pdf --engine openai --to ko
 ```
+
+### API 키 설정 (선택 사항)
+
+DeepL, Gemini, OpenAI를 사용하려면 `.env` 파일에 API 키를 설정해야 합니다.
+
+```bash
+# .env.example을 .env로 복사
+cp .env.example .env
+
+# .env 파일 편집에 API 키 입력
+OPENAI_API_KEY=sk-proj-your-api-key-here
+DEEPL_API_KEY=your-deepl-key-here
+GEMINI_API_KEY=your-gemini-key-here
+```
+
+**API 키 발급 링크**:
+- [OpenAI API Keys](https://platform.openai.com/api-keys) - GPT-5-nano 사용 (입력 $0.05/1M, 출력 $0.40/1M 토큰)
+- [DeepL API](https://www.deepl.com/pro-api)
+- [Google AI Studio](https://aistudio.google.com/app/apikey) - Gemini 사용
 
 ### 3. Web UI 실행
 

@@ -327,7 +327,7 @@ def main():
             )
             engine = st.selectbox(
                 t("engine_label"),
-                ["google", "deepl", "gemini"],
+                ["google", "deepl", "gemini", "openai"],
                 index=0,
             )
             max_workers = st.number_input(
