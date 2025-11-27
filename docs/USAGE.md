@@ -63,10 +63,10 @@ streamlit run app.py
 ### 주요 기능
 - **Drag & Drop**: PDF, DOCX, PPTX, HTML, 이미지 파일을 드래그하여 업로드합니다.
 - **실시간 옵션 변경**: 언어 및 번역 엔진을 UI에서 선택할 수 있습니다.
-- **Interactive View**:
-    - **Side-by-Side**: 원문과 번역문을 좌우로 나란히 비교합니다.
-    - **Inline**: 원문을 숨기고 번역문만 보다가, 클릭하여 원문을 확인할 수 있습니다.
-- **Download**: 번역된 Markdown 파일과 HTML 파일을 다운로드할 수 있습니다.
+- **Interactive HTML Viewer**:
+    - **읽기 모드 (Reading Mode)**: 번역문만 표시하며, 문장에 마우스를 올리면 툴팁으로 원문을 확인할 수 있습니다.
+    - **검수 모드 (Inspection Mode)**: 원문과 번역문을 문장 단위로 좌우 대조하여 비교할 수 있습니다.
+- **Download**: 번역된 HTML 파일 또는 전체 결과(이미지 포함)를 ZIP으로 다운로드할 수 있습니다.
 
 ---
 

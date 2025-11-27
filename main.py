@@ -1,11 +1,12 @@
-# argparse: 커맨드 라인 인자를 파싱하기 위해 사용합니다.
-# os: 운영 체제와 상호 작용하기 위해 사용합니다. (예: 경로 확인)
-# pathlib.Path: 파일 시스템 경로를 객체 지향적으로 다루기 위해 사용합니다.
-# logging: 프로그램 실행 중 정보를 기록하기 위해 사용합니다.
+"""
+Docling을 사용한 문서 번역 CLI
+다양한 포맷(PDF, DOCX, PPTX, HTML, Image)을 지원하며,
+문장 단위 병렬 번역을 통해 원문과 번역문을 HTML로 제공합니다.
+"""
 import time
 import sys
 
-# 1. Import Time 측정 시작
+# Import Time 측정 시작
 _t0_import = time.time()
 
 import argparse
@@ -19,13 +20,12 @@ import html
 from typing import List, Tuple
 from dotenv import load_dotenv
 
-# .env 파일 내용 환경변수로 로드
-load_dotenv()
+load_dotenv()  # .env 파일 내용 환경변수로 로드
 
 # Hugging Face Hub 관련 환경 변수 설정 (심볼릭 링크 비활성화)
 os.environ['HF_HUB_DISABLE_SYMLINKS'] = '1'
 
-# docling 라이브러리에서 필요한 클래스들을 가져옵니다.
+# Docling 라이브러리 임포트
 from docling.document_converter import (
     DocumentConverter,
     PdfFormatOption,
@@ -38,17 +38,13 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem, DocItemLabel
 
-# translator.py에서 구현한 번역 함수들을 가져옵니다.
-from translator import translate_by_sentence, translate_text
-
-# 벤치마크 유틸리티
+from translator import translate_by_sentence, translate_text, translate_sentences_bulk
 from benchmark import global_benchmark as bench
 
 # Import Time 측정 종료
 _t1_import = time.time()
 _import_duration = _t1_import - _t0_import
 
-# 기본 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 HTML_HEADER = """
@@ -543,18 +539,11 @@ def process_single_file(
     bench.add_stat("Translation (Sentences)", t_trans_end - t_trans_start, count=len(unique_sentences), volume=total_chars, unit="chars")
     logging.info(f"[{file_name}] 일괄 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
 
-    # --- Phase 3: Generation (파일 생성) ---
-    path_src = output_dir / f"{base_filename}_{source_lang}.md"
-    path_target = output_dir / f"{base_filename}_{target_lang}.md"
-    path_combined = output_dir / f"{base_filename}_combined.md"
+    # --- Phase 3: HTML 파일 생성 ---
     path_html = output_dir / f"{base_filename}_interactive.html"
-
     counters = {"table": 0, "picture": 0}
 
-    with open(path_src, "w", encoding="utf-8") as f_src, \
-         open(path_target, "w", encoding="utf-8") as f_target, \
-         open(path_combined, "w", encoding="utf-8") as f_comb, \
-         open(path_html, "w", encoding="utf-8") as f_html:
+    with open(path_html, "w", encoding="utf-8") as f_html:
         
         f_html.write(HTML_HEADER)
 
@@ -586,18 +575,6 @@ def process_single_file(
                 
                 original_paragraph = " ".join([pair[0] for pair in sentence_pairs])
                 translated_paragraph = " ".join([pair[1] for pair in sentence_pairs])
-
-                # Markdown 파일 쓰기 (기존 유지)
-                f_src.write(f"{original_paragraph} {page_num_str}\n\n")
-                f_target.write(f"{translated_paragraph} {page_num_str}\n\n")
-
-                for orig_sent, trans_sent in sentence_pairs:
-                    f_comb.write(f"**Original ({source_lang})** {page_num_str}\n\n")
-                    f_comb.write(f"{orig_sent}\n\n")
-                    f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n\n")
-                    f_comb.write(f"{trans_sent}\n\n")
-                    f_comb.write("---\n")
-                f_comb.write("\n")
 
                 # --- HTML 생성 로직 개선 (Issue #35) ---
                 
@@ -682,13 +659,8 @@ def process_single_file(
                 
                 if image_path:
                     alt_text = "table" if isinstance(item, TableItem) else "image"
-                    md_link = f"![{alt_text}]({image_path}) {page_num_str}\n\n"
                     
-                    f_src.write(md_link)
-                    f_target.write(md_link)
-                    f_comb.write(md_link)
-                    
-                    # New HTML structure for images/tables
+                    # HTML structure for images/tables
                     f_html.write(f"""
                     <div class="full-width">
                         <img src="{image_path}" alt="{alt_text}">
@@ -698,19 +670,9 @@ def process_single_file(
                     if orig_caption:
                         # 캡션 번역 조회
                         trans_caption = translation_map.get(orig_caption, "")
-                        
-                        f_src.write(f"**Caption:** {orig_caption} {page_num_str}\n\n")
-                        f_target.write(f"**Caption:** {trans_caption} {page_num_str}\n\n")
-                        
-                        f_comb.write(f"**Original Caption ({source_lang}):** {orig_caption} {page_num_str}\n\n")
-                        f_comb.write(f"> {orig_caption}\n\n")
-                        f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
-                        f_comb.write(f"> {trans_caption}\n\n")
-
                         f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n') 
                     
-                    f_html.write(f"</div>\n") 
-                    f_comb.write("---\n\n")
+                    f_html.write(f"</div>\n")
         
         f_html.write(HTML_FOOTER)
 
@@ -721,8 +683,7 @@ def process_single_file(
     # app.py에서 사용하기 위한 딕셔너리 반환
     return {
         "output_dir": output_dir,
-        "html_path": path_html,
-        "combined_md": path_combined
+        "html_path": path_html
     }
 
 
@@ -746,7 +707,7 @@ def process_document(
         max_workers: 병렬 처리 워커 수 (기본값: 8)
     
     Returns:
-        dict: output_dir, html_path, combined_md를 포함하는 딕셔너리
+        dict: output_dir, html_path를 포함하는 딕셔너리
     """
     # PDF 전용 옵션 설정은 여전히 필요할 수 있으나, converter는 외부에서 주입받음
     pipeline_options = PdfPipelineOptions()

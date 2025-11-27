@@ -436,17 +436,13 @@ def main():
     elif selected_history:
         # 히스토리 폴더에서 파일 경로 추론
         folder = selected_history
-        # 파일명 규칙: 폴더명에서 타임스탬프 등을 제외하고 추론하거나, glob으로 찾음
-        # 여기서는 간단히 glob으로 주요 파일 찾기
         try:
             html_files = list(folder.glob("*_interactive.html"))
-            combined_md_files = list(folder.glob("*_combined.md"))
 
-            if html_files and combined_md_files:
+            if html_files:
                 st.session_state.current_result = {
                     "output_dir": folder,
                     "html_path": html_files[0],
-                    "combined_md": combined_md_files[0],
                 }
             else:
                 st.warning(t("history_missing_files"))

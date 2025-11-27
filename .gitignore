@@ -19,5 +19,10 @@ __pycache__/
 test_*.py
 debug_*.txt
 
+# IDE settings
+.idea/
+*.swp
+*.swo
+
 .gemini/
 gha-creds-*.json
