@@ -26,6 +26,10 @@ TRANSLATIONS = {
         "lang_option_ko": "Korean",
         "lang_option_en": "English",
 
+        # 업로더 텍스트 (CSS Hack용)
+        "uploader_text": "Drag and drop files here",
+        "uploader_limit": "Limit 200MB per file • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
+
         # 타이틀 / 사이드바
         "app_title": "Docling PDF Translator",
         "sidebar_header": "Settings",
@@ -63,7 +67,7 @@ TRANSLATIONS = {
         # HTML / 폴더 관련
         "html_not_found": "Could not find the HTML file.",
         "open_folder": "📂 Open result folder",
-        "open_folder_primary": "📂 Open result folder (Open Folder)",
+        "open_folder_primary": "📂 Open result folder",
         "open_folder_failed": "Failed to open the folder: {error}",
         "open_folder_success": "Opened folder: {path}",
 
@@ -82,6 +86,10 @@ TRANSLATIONS = {
         # 언어 선택 라벨
         "lang_option_ko": "한국어",
         "lang_option_en": "영어",
+
+        # 업로더 텍스트 (CSS Hack용)
+        "uploader_text": "파일을 이곳에 드래그 앤 드롭하세요",
+        "uploader_limit": "파일당 200MB 제한 • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
 
         # 타이틀 / 사이드바
         "app_title": "Docling PDF 번역기",
@@ -120,7 +128,7 @@ TRANSLATIONS = {
         # HTML / 폴더 관련
         "html_not_found": "HTML 파일을 찾을 수 없습니다.",
         "open_folder": "📂 결과 폴더 열기",
-        "open_folder_primary": "📂 결과 폴더 열기 (Open Folder)",
+        "open_folder_primary": "📂 결과 폴더 열기",
         "open_folder_failed": "폴더를 열 수 없습니다: {error}",
         "open_folder_success": "폴더를 열었습니다: {path}",
 
@@ -223,28 +231,51 @@ def inject_images(html_content: str, folder_path: Path) -> str:
 
 
 def main():
-    # 상단: 언어 선택 + 타이틀
-    col_lang, col_title = st.columns([1, 5])
-
-    with col_lang:
-        current_lang = get_current_lang()
-        # 라디오에 표시될 라벨(현재 언어에 맞게 번역됨)
-        lang_options = [t("lang_option_ko"), t("lang_option_en")]
-        index = 0 if current_lang == "ko" else 1
-        selected_label = st.radio(
-            "🌐",
-            options=lang_options,
-            index=index,
-            label_visibility="collapsed",
-        )
-        # 선택된 라벨을 다시 언어 코드로 매핑
-        if selected_label == t("lang_option_ko"):
-            set_current_lang("ko")
-        else:
-            set_current_lang("en")
+    # 상단: 타이틀 + 언어 선택 (우측 정렬)
+    col_title, col_lang = st.columns([5, 1])
 
     with col_title:
         st.title(f"📄 {t('app_title')}")
+
+    with col_lang:
+        st.write("") # Vertical spacer to align with title
+        current_lang = get_current_lang()
+        # 토글 버튼: 현재 언어의 반대 언어를 라벨로 표시
+        next_lang = "en" if current_lang == "ko" else "ko"
+        btn_label = "English" if current_lang == "ko" else "한국어"
+
+        if st.button(btn_label, key="lang_toggle"):
+            set_current_lang(next_lang)
+            st.rerun()
+
+    # CSS Hack: 파일 업로더 텍스트 번역 (수정됨: 레이아웃 깨짐 방지)
+    # font-size: 0 기법을 사용하여 원본 텍스트만 숨기고 레이아웃은 유지
+    uploader_css = f"""
+    <style>
+    /* 1. 메인 텍스트 (Drag and drop files here) */
+    [data-testid="stFileUploaderDropzoneInstructions"] > div:first-child {{
+        font-size: 0;
+    }}
+    [data-testid="stFileUploaderDropzoneInstructions"] > div:first-child::after {{
+        content: "{t('uploader_text')}";
+        font-size: 1rem;
+        font-weight: bold;
+        display: block;
+    }}
+    
+    /* 2. 서브 텍스트 (Limit 200MB...) */
+    [data-testid="stFileUploaderDropzoneInstructions"] small {{
+        font-size: 0;
+        display: block;
+    }}
+    [data-testid="stFileUploaderDropzoneInstructions"] small::after {{
+        content: "{t('uploader_limit')}";
+        font-size: 0.85rem;
+        display: block;
+    }}
+    </style>
+    """
+    st.markdown(uploader_css, unsafe_allow_html=True)
 
     # Docling DocumentConverter 초기화 (한 번만 설정)
     pipeline_options = PdfPipelineOptions()
