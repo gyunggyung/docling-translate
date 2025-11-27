@@ -65,6 +65,8 @@ TRANSLATIONS = {
         "open_folder": "📂 Open result folder",
         "open_folder_primary": "📂 Open result folder (Open Folder)",
         "open_folder_failed": "Failed to open the folder: {error}",
+        "open_folder_success": "Opened folder: {path}",
+
 
         # 단일 결과 영역
         "single_result_header": "Result: {name}",
@@ -120,6 +122,8 @@ TRANSLATIONS = {
         "open_folder": "📂 결과 폴더 열기",
         "open_folder_primary": "📂 결과 폴더 열기 (Open Folder)",
         "open_folder_failed": "폴더를 열 수 없습니다: {error}",
+        "open_folder_success": "폴더를 열었습니다: {path}",
+
 
         # 단일 결과 영역
         "single_result_header": "결과: {name}",
@@ -333,7 +337,7 @@ def main():
         status_text = st.empty()
 
         total_files = len(uploaded_files)
-        all_results = []
+        all_results = []    # 모든 결과를 저장
 
         for i, uploaded_file in enumerate(uploaded_files):
             # 진행 상태 표시
@@ -350,7 +354,7 @@ def main():
                 # 업로드된 파일을 임시 파일로 저장
                 suffix = Path(uploaded_file.name).suffix
                 if not suffix:
-                    suffix = ".pdf"
+                    suffix = ".pdf" #Fallback
 
                 with tempfile.NamedTemporaryFile(
                     delete=False, suffix=suffix
@@ -361,7 +365,7 @@ def main():
                 # main.py의 process_document 호출
                 result_paths = process_document(
                     tmp_path,
-                    global_converter,
+                    global_converter, # converter 인자 추가
                     src_lang,
                     dest_lang,
                     engine,
@@ -399,7 +403,10 @@ def main():
 
     # 히스토리에서 결과 선택
     elif selected_history:
+        # 히스토리 폴더에서 파일 경로 추론
         folder = selected_history
+        # 파일명 규칙: 폴더명에서 타임스탬프 등을 제외하고 추론하거나, glob으로 찾음
+        # 여기서는 간단히 glob으로 주요 파일 찾기
         try:
             html_files = list(folder.glob("*_interactive.html"))
             combined_md_files = list(folder.glob("*_combined.md"))
@@ -461,6 +468,9 @@ def main():
                     ):
                         try:
                             os.startfile(output_dir)
+                            st.success(
+                                t("open_folder_success").format(path=str(output_dir))
+                            )
                         except Exception as e:
                             st.error(
                                 t("open_folder_failed").format(error=str(e))
@@ -531,6 +541,9 @@ def main():
             ):
                 try:
                     os.startfile(output_dir)
+                    st.success(
+                        t("open_folder_success").format(path=str(output_dir))
+                    )
                 except Exception as e:
                     st.error(
                         t("open_folder_failed").format(error=str(e))
