@@ -36,7 +36,7 @@ from docling.document_converter import (
 )
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
-from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem
+from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItem, DocItemLabel
 
 # translator.py에서 구현한 번역 함수들을 가져옵니다.
 from translator import translate_by_sentence, translate_text
@@ -71,6 +71,8 @@ HTML_HEADER = """
             --btn-border: #dddddd;
             --btn-hover-bg: #f0f0f0;
             --shadow: 0 2px 5px rgba(0,0,0,0.05);
+            --highlight-bg: rgba(255, 255, 0, 0.2);
+            --active-bg: rgba(0, 123, 255, 0.1);
         }
         [data-theme="dark"] {
             --bg-color: #1a1a1a;
@@ -84,6 +86,8 @@ HTML_HEADER = """
             --btn-border: #555555;
             --btn-hover-bg: #4d4d4d;
             --shadow: 0 2px 5px rgba(0,0,0,0.2);
+            --highlight-bg: rgba(255, 255, 0, 0.3);
+            --active-bg: rgba(0, 123, 255, 0.2);
         }
         
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
@@ -113,45 +117,118 @@ HTML_HEADER = """
             gap: 6px;
         }
         .btn:hover { background: var(--btn-hover-bg); }
+        .btn.active { background-color: var(--active-bg); border-color: #007bff; color: #007bff; }
         
         .container { 
-            max-width: 1200px; 
+            max-width: 1000px; 
             margin: 0 auto; 
             background: var(--card-bg); 
             box-shadow: var(--shadow); 
             border-radius: 8px; 
+            padding: 40px;
             overflow: hidden; 
             transition: background 0.3s;
         }
         
-        /* 공통 스타일 */
-        .row { border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
-        .row:hover { background-color: var(--hover-color); }
-        .src, .tgt { padding: 14px 20px; line-height: 1.6; }
-        .src { color: var(--sub-text-color); font-size: 0.95em; background-color: rgba(0,0,0,0.02); }
-        .tgt { color: var(--text-color); font-weight: 500; }
+        /* --- Document Structure --- */
+        .page-marker {
+            border-bottom: 2px solid var(--border-color);
+            color: var(--sub-text-color);
+            margin: 40px 0 20px;
+            padding-bottom: 5px;
+            font-size: 0.85em;
+            text-align: right;
+            font-weight: bold;
+        }
         
-        /* 1. Side-by-Side Mode (Default) */
-        .view-mode-side .row { display: grid; grid-template-columns: 1fr 1fr; }
-        .view-mode-side .src { border-right: 1px solid var(--border-color); }
-        .view-mode-side .row.full-width { display: block; border-right: none; }
+        .doc-header {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            line-height: 1.3;
+        }
+        .doc-header h1 { font-size: 2em; }
+        .doc-header h2 { font-size: 1.6em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .doc-header h3 { font-size: 1.3em; }
         
-        /* 2. Inline (Expand) Mode */
-        .view-mode-inline .row { display: block; }
-        .view-mode-inline .src { display: none; border-left: 4px solid #ccc; margin: 0 20px 10px; border-right: none; background: rgba(0,0,0,0.05); border-radius: 4px; }
-        .view-mode-inline .tgt { cursor: pointer; }
-        .view-mode-inline .tgt::after { content: ' ▾'; color: var(--sub-text-color); font-size: 0.8em; }
-        .view-mode-inline .row.active .src { display: block; }
+        .doc-list-item {
+            margin-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .paragraph-row {
+            margin-bottom: 20px;
+            line-height: 1.8;
+            position: relative;
+        }
+        
+        /* --- Reading Mode (Default) --- */
+        .src-block { display: none; } /* Hide source by default in reading mode */
+        .tgt-block { color: var(--text-color); }
+        
+        .sent {
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+        .sent:hover { background-color: var(--active-bg); }
+        .sent.highlight { background-color: var(--highlight-bg); }
+
+        /* Tooltip-like interaction for source text in Reading Mode */
+        .sent[data-src]:hover::after {
+            content: attr(data-src-text);
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 100%;
+            background: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            z-index: 1000;
+            white-space: normal;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            pointer-events: none;
+            margin-bottom: 5px;
+        }
+        
+        /* --- Inspection Mode (Side-by-Side Line View) --- */
+        .view-mode-inspect .paragraph-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .view-mode-inspect .src-block { 
+            display: block; 
+            color: var(--sub-text-color); 
+            font-size: 0.95em;
+        }
+        
+        .view-mode-inspect .sent {
+            display: block; /* Force line break per sentence */
+            margin-bottom: 8px;
+            padding: 4px;
+        }
+        
+        .view-mode-inspect .sent[data-src]:hover::after {
+            display: none; /* Disable tooltip in inspection mode */
+        }
 
         /* 이미지/표 공통 */
-        .full-width { grid-column: 1 / -1; padding: 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .full-width { margin: 30px 0; text-align: center; }
         img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .caption { color: var(--sub-text-color); margin-top: 10px; font-style: italic; }
+        .caption { color: var(--sub-text-color); margin-top: 10px; font-style: italic; font-size: 0.9em; }
 
         /* 모바일 반응형 */
         @media (max-width: 768px) {
-            .view-mode-side .row { grid-template-columns: 1fr; }
-            .view-mode-side .src { border-right: none; border-bottom: 1px dashed var(--border-color); }
+            .view-mode-inspect .paragraph-row { grid-template-columns: 1fr; }
+            .container { padding: 20px; }
         }
     </style>
     <script>
@@ -159,16 +236,16 @@ HTML_HEADER = """
             en: {
                 theme_dark: "Dark Mode",
                 theme_light: "Light Mode",
-                layout_side: "Side-by-Side",
-                layout_inline: "Inline Expand",
+                mode_read: "Reading Mode",
+                mode_inspect: "Inspection Mode",
                 lang_ui: "한국어",
                 title: "Translation Result"
             },
             ko: {
                 theme_dark: "다크 모드",
                 theme_light: "라이트 모드",
-                layout_side: "좌우 병렬",
-                layout_inline: "펼쳐 보기",
+                mode_read: "읽기 모드",
+                mode_inspect: "검수 모드",
                 lang_ui: "English",
                 title: "번역 결과"
             }
@@ -177,11 +254,8 @@ HTML_HEADER = """
         let currentUiLang = 'ko';
         
         function init() {
-            // 테마 복원
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
-            
-            // UI 언어 초기화
             updateUiText();
         }
 
@@ -194,15 +268,16 @@ HTML_HEADER = """
             updateUiText();
         }
 
-        function toggleLayout() {
+        function toggleMode() {
             const container = document.getElementById('content-container');
+            const btn = document.getElementById('btn-mode');
             
-            if (container.classList.contains('view-mode-side')) {
-                container.classList.remove('view-mode-side');
-                container.classList.add('view-mode-inline');
+            if (container.classList.contains('view-mode-inspect')) {
+                container.classList.remove('view-mode-inspect');
+                btn.classList.remove('active');
             } else {
-                container.classList.remove('view-mode-inline');
-                container.classList.add('view-mode-side');
+                container.classList.add('view-mode-inspect');
+                btn.classList.add('active');
             }
             updateUiText();
         }
@@ -215,19 +290,12 @@ HTML_HEADER = """
         function updateUiText() {
             const t = UI_STRINGS[currentUiLang];
             const isDark = document.body.getAttribute('data-theme') === 'dark';
-            const isSide = document.getElementById('content-container').classList.contains('view-mode-side');
+            const isInspect = document.getElementById('content-container').classList.contains('view-mode-inspect');
             
             document.getElementById('btn-theme').innerText = isDark ? t.theme_light : t.theme_dark;
-            document.getElementById('btn-layout').innerText = isSide ? t.layout_inline : t.layout_side;
+            document.getElementById('btn-mode').innerText = isInspect ? t.mode_read : t.mode_inspect;
             document.getElementById('btn-lang').innerText = t.lang_ui;
             document.getElementById('page-title').innerText = t.title;
-        }
-
-        function toggleInline(el) {
-            const container = document.getElementById('content-container');
-            if (container.classList.contains('view-mode-inline')) {
-                el.parentElement.classList.toggle('active');
-            }
         }
         
         window.onload = init;
@@ -236,11 +304,11 @@ HTML_HEADER = """
 <body>
     <div class="controls">
         <button id="btn-theme" class="btn" onclick="toggleTheme()">다크 모드</button>
-        <button id="btn-layout" class="btn" onclick="toggleLayout()">한줄 보기</button>
+        <button id="btn-mode" class="btn" onclick="toggleMode()">검수 모드</button>
         <button id="btn-lang" class="btn" onclick="toggleUiLang()">English</button>
     </div>
-    <h1 id="page-title">번역 결과</h1>
-    <div id="content-container" class="container view-mode-side">
+    <h1 id="page-title" style="text-align: center; margin-bottom: 40px;">번역 결과</h1>
+    <div id="content-container" class="container">
 """
 
 HTML_FOOTER = """
@@ -383,8 +451,19 @@ def process_single_file(
         f_html.write(HTML_HEADER)
 
         # 저장해둔 아이템 리스트 사용
+        current_page = -1
+        
         for item, _ in doc_items:
-            page_num_str = f"(p. {item.prov[0].page_no})" if item.prov and item.prov[0].page_no else ""
+            # 페이지 마커 처리
+            item_page = -1
+            if item.prov and item.prov[0].page_no:
+                item_page = item.prov[0].page_no
+            
+            if item_page > 0 and item_page != current_page:
+                f_html.write(f'<div class="page-marker">Page {item_page}</div>')
+                current_page = item_page
+
+            page_num_str = f"(p. {item_page})" if item_page > 0 else ""
 
             if isinstance(item, TextItem):
                 if not item.text or not item.text.strip():
@@ -394,12 +473,13 @@ def process_single_file(
                 sentences = nltk.sent_tokenize(item.text)
                 sentence_pairs = []
                 for s in sentences:
-                    trans = translation_map.get(s, "") # 없으면 빈 문자열 (이론상 없으면 안됨)
+                    trans = translation_map.get(s, "") # 없으면 빈 문자열
                     sentence_pairs.append((s, trans))
                 
                 original_paragraph = " ".join([pair[0] for pair in sentence_pairs])
                 translated_paragraph = " ".join([pair[1] for pair in sentence_pairs])
 
+                # Markdown 파일 쓰기 (기존 유지)
                 f_src.write(f"{original_paragraph} {page_num_str}\n\n")
                 f_target.write(f"{translated_paragraph} {page_num_str}\n\n")
 
@@ -409,16 +489,61 @@ def process_single_file(
                     f_comb.write(f"**Translated ({target_lang})** {page_num_str}\n\n")
                     f_comb.write(f"{trans_sent}\n\n")
                     f_comb.write("---\n")
+                f_comb.write("\n")
+
+                # --- HTML 생성 로직 개선 (Issue #35) ---
+                
+                # 1. 헤더 (Title, Section Header)
+                if item.label in [DocItemLabel.TITLE, DocItemLabel.SECTION_HEADER]:
+                    # 헤더는 문장 분리 없이 통으로 표시 (단, 번역은 문장 단위로 되어 있으므로 합침)
+                    # 헤더 태그 결정 (TITLE -> h1, SECTION_HEADER -> h2/h3)
+                    tag = "h1" if item.label == DocItemLabel.TITLE else "h2"
                     
-                    orig_safe = html.escape(orig_sent)
-                    trans_safe = html.escape(trans_sent)
+                    # 툴팁용 원문 (전체 합침)
+                    full_orig = html.escape(original_paragraph)
+                    full_trans = html.escape(translated_paragraph)
+                    
                     f_html.write(f"""
-                    <div class="row">
-                        <div class="src">{orig_safe} {page_num_str}</div>
-                        <div class="tgt" onclick="toggleInline(this)">{trans_safe} {page_num_str}</div>
+                    <div class="doc-header">
+                        <{tag} title="{full_orig}">{full_trans}</{tag}>
                     </div>
                     """)
-                f_comb.write("\n")
+                
+                # 2. 리스트 아이템
+                elif item.label == DocItemLabel.LIST_ITEM:
+                    # 리스트는 간단하게 표시
+                    f_html.write(f"""
+                    <div class="doc-list-item">
+                        <span>• {html.escape(translated_paragraph)}</span>
+                    </div>
+                    """)
+                
+                # 3. 페이지 헤더/푸터 (무시)
+                elif item.label in [DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER]:
+                    continue
+
+                # 4. 일반 본문 (Paragraph, Text 등)
+                else:
+                    # 문단 시작
+                    f_html.write('<div class="paragraph-row">')
+                    
+                    # 원문 블록 (검수 모드용)
+                    f_html.write('<div class="src-block">')
+                    for idx, (orig, _) in enumerate(sentence_pairs):
+                        safe_orig = html.escape(orig)
+                        f_html.write(f'<span class="sent" id="src-{id(item)}-{idx}">{safe_orig}</span> ')
+                    f_html.write('</div>')
+                    
+                    # 번역문 블록 (읽기 모드 메인)
+                    f_html.write('<div class="tgt-block">')
+                    for idx, (orig, trans) in enumerate(sentence_pairs):
+                        safe_orig = html.escape(orig)
+                        safe_trans = html.escape(trans)
+                        # data-src-text는 툴팁용
+                        f_html.write(f'<span class="sent" id="tgt-{id(item)}-{idx}" data-src="src-{id(item)}-{idx}" data-src-text="{safe_orig}">{safe_trans}</span> ')
+                    f_html.write('</div>')
+                    
+                    f_html.write('</div>') # End paragraph-row
 
             elif isinstance(item, (TableItem, PictureItem)):
                 image_path = save_and_get_image_path(item, doc, output_dir, base_filename, counters)
@@ -433,8 +558,8 @@ def process_single_file(
                     
                     # New HTML structure for images/tables
                     f_html.write(f"""
-                    <div class="row full-width">
-                        <div><img src="{image_path}" alt="{alt_text}"></div>
+                    <div class="full-width">
+                        <img src="{image_path}" alt="{alt_text}">
                     """)
                     
                     orig_caption = item.caption_text(doc)
@@ -450,9 +575,9 @@ def process_single_file(
                         f_comb.write(f"**Translated Caption ({target_lang}):** {trans_caption} {page_num_str}\n\n")
                         f_comb.write(f"> {trans_caption}\n\n")
 
-                        f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n') # Caption inside full-width row
+                        f_html.write(f'<div class="caption">{html.escape(trans_caption)}</div>\n') 
                     
-                    f_html.write(f"</div>\n") # Close the full-width row
+                    f_html.write(f"</div>\n") 
                     f_comb.write("---\n\n")
         
         f_html.write(HTML_FOOTER)
