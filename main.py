@@ -71,8 +71,9 @@ HTML_HEADER = """
             --btn-border: #dddddd;
             --btn-hover-bg: #f0f0f0;
             --shadow: 0 2px 5px rgba(0,0,0,0.05);
-            --highlight-bg: rgba(255, 255, 0, 0.2);
+            --highlight-bg: rgba(255, 255, 0, 0.3);
             --active-bg: rgba(0, 123, 255, 0.1);
+            --related-bg: rgba(0, 123, 255, 0.15); /* 하이라이트 연동 색상 */
         }
         [data-theme="dark"] {
             --bg-color: #1a1a1a;
@@ -88,6 +89,7 @@ HTML_HEADER = """
             --shadow: 0 2px 5px rgba(0,0,0,0.2);
             --highlight-bg: rgba(255, 255, 0, 0.3);
             --active-bg: rgba(0, 123, 255, 0.2);
+            --related-bg: rgba(0, 123, 255, 0.25);
         }
         
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
@@ -99,7 +101,13 @@ HTML_HEADER = """
             margin-bottom: 20px; 
             position: sticky; 
             top: 10px; 
-            z-index: 100; 
+            z-index: 1000; 
+            background: var(--bg-color); /* 배경색 추가 */
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            opacity: 0.95;
+            backdrop-filter: blur(5px);
         }
         
         .btn { 
@@ -147,15 +155,20 @@ HTML_HEADER = """
             color: var(--text-color);
             line-height: 1.3;
         }
-        .doc-header h1 { font-size: 2em; }
-        .doc-header h2 { font-size: 1.6em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .doc-header h3 { font-size: 1.3em; }
+        /* 헤더 스타일은 유지하되, 내부 span에 스타일 적용 */
+        .doc-header .sent { font-weight: bold; display: inline; }
+        .doc-header h1 .sent { font-size: 2em; }
+        .doc-header h2 .sent { font-size: 1.6em; }
+        .doc-header h3 .sent { font-size: 1.3em; }
         
         .doc-list-item {
             margin-left: 20px;
             margin-bottom: 8px;
             line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
         }
+        .doc-list-marker { margin-right: 8px; }
 
         .paragraph-row {
             margin-bottom: 20px;
@@ -174,6 +187,7 @@ HTML_HEADER = """
         }
         .sent:hover { background-color: var(--active-bg); }
         .sent.highlight { background-color: var(--highlight-bg); }
+        .sent.related-highlight { background-color: var(--related-bg); } /* 연동 하이라이트 */
 
         /* Tooltip-like interaction for source text in Reading Mode */
         .sent[data-src]:hover::after {
@@ -257,6 +271,7 @@ HTML_HEADER = """
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             updateUiText();
+            setupHighlighting();
         }
 
         function toggleTheme() {
@@ -296,6 +311,48 @@ HTML_HEADER = """
             document.getElementById('btn-mode').innerText = isInspect ? t.mode_read : t.mode_inspect;
             document.getElementById('btn-lang').innerText = t.lang_ui;
             document.getElementById('page-title').innerText = t.title;
+        }
+
+        // 양방향 하이라이트 설정
+        function setupHighlighting() {
+            const sents = document.querySelectorAll('.sent');
+            sents.forEach(el => {
+                el.addEventListener('mouseover', function() {
+                    const id = this.id; // e.g., src-123-0 or tgt-123-0
+                    if (!id) return;
+                    
+                    const parts = id.split('-');
+                    const type = parts[0]; // src or tgt
+                    const itemId = parts[1];
+                    const idx = parts[2];
+                    
+                    const targetType = type === 'src' ? 'tgt' : 'src';
+                    const targetId = `${targetType}-${itemId}-${idx}`;
+                    
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.classList.add('related-highlight');
+                    }
+                });
+                
+                el.addEventListener('mouseout', function() {
+                    const id = this.id;
+                    if (!id) return;
+                    
+                    const parts = id.split('-');
+                    const type = parts[0];
+                    const itemId = parts[1];
+                    const idx = parts[2];
+                    
+                    const targetType = type === 'src' ? 'tgt' : 'src';
+                    const targetId = `${targetType}-${itemId}-${idx}`;
+                    
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.classList.remove('related-highlight');
+                    }
+                });
+            });
         }
         
         window.onload = init;
@@ -499,24 +556,48 @@ def process_single_file(
                     # 헤더 태그 결정 (TITLE -> h1, SECTION_HEADER -> h2/h3)
                     tag = "h1" if item.label == DocItemLabel.TITLE else "h2"
                     
-                    # 툴팁용 원문 (전체 합침)
-                    full_orig = html.escape(original_paragraph)
-                    full_trans = html.escape(translated_paragraph)
+                    # 헤더도 paragraph-row 구조를 사용하여 검수 모드 지원
+                    f_html.write('<div class="paragraph-row">')
                     
-                    f_html.write(f"""
-                    <div class="doc-header">
-                        <{tag} title="{full_orig}">{full_trans}</{tag}>
-                    </div>
-                    """)
+                    # 원문 (검수 모드)
+                    f_html.write('<div class="src-block">')
+                    # 헤더는 보통 한 줄이므로 통으로 처리
+                    safe_orig = html.escape(original_paragraph)
+                    # ID 부여 (헤더는 문장 분리 안함)
+                    f_html.write(f'<span class="sent" id="src-{id(item)}-0">{safe_orig}</span>')
+                    f_html.write('</div>')
+                    
+                    # 번역문 (읽기 모드) - 헤더 스타일 적용
+                    f_html.write('<div class="tgt-block doc-header">')
+                    safe_trans = html.escape(translated_paragraph)
+                    # 헤더 태그 내부에 span을 두어 하이라이트 적용
+                    f_html.write(f'<{tag}><span class="sent" id="tgt-{id(item)}-0" data-src="src-{id(item)}-0" data-src-text="{safe_orig}">{safe_trans}</span></{tag}>')
+                    f_html.write('</div>')
+                    
+                    f_html.write('</div>')
                 
                 # 2. 리스트 아이템
                 elif item.label == DocItemLabel.LIST_ITEM:
-                    # 리스트는 간단하게 표시
-                    f_html.write(f"""
-                    <div class="doc-list-item">
-                        <span>• {html.escape(translated_paragraph)}</span>
-                    </div>
-                    """)
+                    f_html.write('<div class="paragraph-row doc-list-item">')
+                    
+                    # 원문
+                    f_html.write('<div class="src-block">')
+                    f_html.write('<span class="doc-list-marker">•</span>')
+                    for idx, (orig, _) in enumerate(sentence_pairs):
+                        safe_orig = html.escape(orig)
+                        f_html.write(f'<span class="sent" id="src-{id(item)}-{idx}">{safe_orig}</span> ')
+                    f_html.write('</div>')
+                    
+                    # 번역문
+                    f_html.write('<div class="tgt-block">')
+                    f_html.write('<span class="doc-list-marker">•</span>')
+                    for idx, (orig, trans) in enumerate(sentence_pairs):
+                        safe_orig = html.escape(orig)
+                        safe_trans = html.escape(trans)
+                        f_html.write(f'<span class="sent" id="tgt-{id(item)}-{idx}" data-src="src-{id(item)}-{idx}" data-src-text="{safe_orig}">{safe_trans}</span> ')
+                    f_html.write('</div>')
+                    
+                    f_html.write('</div>')
                 
                 # 3. 페이지 헤더/푸터 (무시)
                 elif item.label in [DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER]:
