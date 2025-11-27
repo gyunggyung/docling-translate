@@ -28,7 +28,7 @@ TRANSLATIONS = {
 
         # 업로더 텍스트 (CSS Hack용)
         "uploader_text": "Drag and drop files here",
-        "uploader_limit": "Limit 200MB per file • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
+        "uploader_limit": "Limit 50GB per file • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
 
         # 타이틀 / 사이드바
         "app_title": "Docling PDF Translator",
@@ -89,7 +89,7 @@ TRANSLATIONS = {
 
         # 업로더 텍스트 (CSS Hack용)
         "uploader_text": "파일을 이곳에 드래그 앤 드롭하세요",
-        "uploader_limit": "파일당 200MB 제한 • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
+        "uploader_limit": "파일당 50GB 제한 • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
 
         # 타이틀 / 사이드바
         "app_title": "Docling PDF 번역기",
