@@ -22,7 +22,7 @@ Designed to overcome the **imperfections and context loss** often encountered in
 - **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, `HTML`, and `Image` formats into an **Interactive Viewer (HTML)**.
 - **Sentence-Level Parallel Translation**: Precisely matches one source sentence to one translated sentence for maximum readability.
 - **Layout Preservation**: Maintains tables and images within the document during translation.
-- **Flexible Engine Selection**: Supports Google Translate (Free), DeepL (High Quality), and Gemini (Context Aware).
+- **Flexible Engine Selection**: Supports Google Translate (Free), DeepL (High Quality), Gemini (Context Aware), and **OpenAI GPT-5-nano (Latest AI)**.
 - **High Performance**: Fast parallel processing for large volumes of documents using multi-threading (`max_workers`).
 
 ## Quick Start
@@ -47,7 +47,29 @@ python main.py sample.pdf
 
 # With options (Use DeepL engine, translate to Japanese)
 python main.py sample.pdf --engine deepl --to ja
+
+# Use OpenAI GPT-5-nano
+python main.py sample.pdf --engine openai --to ko
 ```
+
+### API Key Setup (Optional)
+
+To use DeepL, Gemini, or OpenAI, configure API keys in the `.env` file.
+
+```bash
+# Copy .env.example to .env
+cp .env.example .env
+
+# Edit .env file and add your API keys
+OPENAI_API_KEY=sk-proj-your-api-key-here
+DEEPL_API_KEY=your-deepl-key-here
+GEMINI_API_KEY=your-gemini-key-here
+```
+
+**API Key Links**:
+- [OpenAI API Keys](https://platform.openai.com/api-keys) - For GPT-5-nano ($0.05/1M input, $0.40/1M output tokens)
+- [DeepL API](https://www.deepl.com/pro-api)
+- [Google AI Studio](https://aistudio.google.com/app/apikey) - For Gemini
 
 ### 3. Web UI Usage
 
