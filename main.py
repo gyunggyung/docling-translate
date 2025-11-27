@@ -516,7 +516,7 @@ def main():
     parser.add_argument('-f', '--from', dest='source_lang', type=str, default='en', help="번역할 원본 언어 코드 (기본값: en)")
     parser.add_argument('-t', '--to', dest='target_lang', type=str, default='ko', help="번역 결과물 언어 코드 (기본값: ko)")
     parser.add_argument('-e', '--engine', dest='engine', type=str, choices=['google', 'deepl', 'gemini'], default='google', help="번역 엔진 선택")
-    parser.add_argument('--max-workers', type=int, default=4, help="병렬 처리를 위한 최대 워커 수 (기본값: 4)")
+    parser.add_argument('--max-workers', type=int, default=8, help="병렬 처리를 위한 최대 워커 수 (기본값: 8)")
     
     # 벤치마크 옵션
     parser.add_argument('-b', '--benchmark', action='store_true', help="상세 벤치마크 리포트 생성")
