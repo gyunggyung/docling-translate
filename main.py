@@ -284,6 +284,44 @@ HTML_HEADER = """
         }
 
         function toggleMode() {
+            // 1. Find the best anchor element (closest to top of viewport)
+            const sents = document.querySelectorAll('.sent');
+            let anchor = null;
+            let minDist = Infinity;
+            
+            for (let sent of sents) {
+                // Skip hidden elements
+                if (sent.offsetParent === null) continue;
+                
+                const rect = sent.getBoundingClientRect();
+                
+                // Check if element is visible (or partially visible)
+                if (rect.bottom > 0 && rect.top < window.innerHeight) {
+                    // Calculate distance from top of viewport
+                    // We prefer elements near the top (reading line)
+                    const dist = Math.abs(rect.top);
+                    
+                    if (dist < minDist) {
+                        minDist = dist;
+                        anchor = sent;
+                    }
+                }
+            }
+
+            // Record the relative offset of the anchor before mode switch
+            let initialOffset = 0;
+            if (anchor) {
+                initialOffset = anchor.getBoundingClientRect().top;
+                
+                // If anchor is a source sentence, switch to target for stability
+                if (anchor.id.startsWith('src-')) {
+                    const tgtId = anchor.id.replace('src-', 'tgt-');
+                    const tgtEl = document.getElementById(tgtId);
+                    if (tgtEl) anchor = tgtEl;
+                }
+            }
+
+            // 2. Toggle Mode
             const container = document.getElementById('content-container');
             const btn = document.getElementById('btn-mode');
             
@@ -295,6 +333,19 @@ HTML_HEADER = """
                 btn.classList.add('active');
             }
             updateUiText();
+
+            // 3. Restore position using offset
+            if (anchor) {
+                // Force layout update to get new position
+                const newRect = anchor.getBoundingClientRect();
+                const currentScroll = window.scrollY;
+                const targetScroll = currentScroll + (newRect.top - initialOffset);
+                
+                window.scrollTo({
+                    top: targetScroll,
+                    behavior: 'auto'
+                });
+            }
         }
         
         function toggleUiLang() {
