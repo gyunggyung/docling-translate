@@ -56,73 +56,190 @@ HTML_HEADER = """
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docling Translation Result</title>
     <style>
-        :root { --bg-color: #f4f6f8; --card-bg: #fff; --border: #eee; --hover: #eef7ff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; padding: 20px; }
-        .controls { text-align: right; margin-bottom: 15px; position: sticky; top: 10px; z-index: 100; }
-        .btn-toggle { padding: 8px 16px; background: #333; color: #fff; border: none; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #222222;
+            --sub-text-color: #666666;
+            --border-color: #eeeeee;
+            --hover-color: #eef7ff;
+            --btn-bg: #ffffff;
+            --btn-text: #333333;
+            --btn-border: #dddddd;
+            --btn-hover-bg: #f0f0f0;
+            --shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --sub-text-color: #aaaaaa;
+            --border-color: #404040;
+            --hover-color: #3d3d3d;
+            --btn-bg: #3d3d3d;
+            --btn-text: #e0e0e0;
+            --btn-border: #555555;
+            --btn-hover-bg: #4d4d4d;
+            --shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
+        
+        .controls { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            position: sticky; 
+            top: 10px; 
+            z-index: 100; 
+        }
+        
+        .btn { 
+            padding: 8px 16px; 
+            background: var(--btn-bg); 
+            color: var(--btn-text); 
+            border: 1px solid var(--btn-border); 
+            border-radius: 20px; 
+            cursor: pointer; 
+            box-shadow: var(--shadow); 
+            font-size: 0.9em;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover { background: var(--btn-hover-bg); }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            box-shadow: var(--shadow); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            transition: background 0.3s;
+        }
         
         /* 공통 스타일 */
-        .row { border-bottom: 1px solid var(--border); transition: background 0.2s; }
-        .row:hover { background-color: var(--hover); }
+        .row { border-bottom: 1px solid var(--border-color); transition: background 0.2s; }
+        .row:hover { background-color: var(--hover-color); }
         .src, .tgt { padding: 14px 20px; line-height: 1.6; }
-        .src { color: #666; font-size: 0.95em; background-color: #fafafa; }
-        .tgt { color: #222; font-weight: 500; }
+        .src { color: var(--sub-text-color); font-size: 0.95em; background-color: rgba(0,0,0,0.02); }
+        .tgt { color: var(--text-color); font-weight: 500; }
         
         /* 1. Side-by-Side Mode (Default) */
         .view-mode-side .row { display: grid; grid-template-columns: 1fr 1fr; }
-        .view-mode-side .src { border-right: 1px solid var(--border); }
-        /* 이미지/표가 있는 행은 그리드 대신 블록으로 전체 너비 사용 */
+        .view-mode-side .src { border-right: 1px solid var(--border-color); }
         .view-mode-side .row.full-width { display: block; border-right: none; }
         
         /* 2. Inline (Expand) Mode */
         .view-mode-inline .row { display: block; }
-        .view-mode-inline .src { display: none; border-left: 4px solid #ccc; margin: 0 20px 10px; border-right: none; background: #f1f1f1; border-radius: 4px; }
+        .view-mode-inline .src { display: none; border-left: 4px solid #ccc; margin: 0 20px 10px; border-right: none; background: rgba(0,0,0,0.05); border-radius: 4px; }
         .view-mode-inline .tgt { cursor: pointer; }
-        .view-mode-inline .tgt::after { content: ' ▾'; color: #999; font-size: 0.8em; }
-        .view-mode-inline .row.active .src { display: block; } /* JS로 active 토글 */
+        .view-mode-inline .tgt::after { content: ' ▾'; color: var(--sub-text-color); font-size: 0.8em; }
+        .view-mode-inline .row.active .src { display: block; }
 
         /* 이미지/표 공통 */
-        .full-width { grid-column: 1 / -1; padding: 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        .full-width { grid-column: 1 / -1; padding: 20px; text-align: center; border-bottom: 1px solid var(--border-color); }
         img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .caption { color: var(--sub-text-color); margin-top: 10px; font-style: italic; }
 
-        /* 모바일 반응형 (강제 Inline) */
+        /* 모바일 반응형 */
         @media (max-width: 768px) {
             .view-mode-side .row { grid-template-columns: 1fr; }
-            .view-mode-side .src { border-right: none; border-bottom: 1px dashed #ddd; }
+            .view-mode-side .src { border-right: none; border-bottom: 1px dashed var(--border-color); }
         }
     </style>
     <script>
-        function toggleMode() {
+        const UI_STRINGS = {
+            en: {
+                theme_dark: "Dark Mode",
+                theme_light: "Light Mode",
+                layout_side: "Side-by-Side",
+                layout_inline: "Inline Expand",
+                lang_ui: "한국어",
+                title: "Translation Result"
+            },
+            ko: {
+                theme_dark: "다크 모드",
+                theme_light: "라이트 모드",
+                layout_side: "좌우 병렬",
+                layout_inline: "펼쳐 보기",
+                lang_ui: "English",
+                title: "번역 결과"
+            }
+        };
+
+        let currentUiLang = 'ko';
+        
+        function init() {
+            // 테마 복원
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            
+            // UI 언어 초기화
+            updateUiText();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateUiText();
+        }
+
+        function toggleLayout() {
             const container = document.getElementById('content-container');
-            const btn = document.getElementById('mode-btn');
+            
             if (container.classList.contains('view-mode-side')) {
                 container.classList.remove('view-mode-side');
                 container.classList.add('view-mode-inline');
-                btn.innerText = 'Switch to Side-by-Side View';
             } else {
                 container.classList.remove('view-mode-inline');
                 container.classList.add('view-mode-side');
-                btn.innerText = 'Switch to Inline View';
             }
+            updateUiText();
         }
         
+        function toggleUiLang() {
+            currentUiLang = currentUiLang === 'ko' ? 'en' : 'ko';
+            updateUiText();
+        }
+
+        function updateUiText() {
+            const t = UI_STRINGS[currentUiLang];
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const isSide = document.getElementById('content-container').classList.contains('view-mode-side');
+            
+            document.getElementById('btn-theme').innerText = isDark ? t.theme_light : t.theme_dark;
+            document.getElementById('btn-layout').innerText = isSide ? t.layout_inline : t.layout_side;
+            document.getElementById('btn-lang').innerText = t.lang_ui;
+            document.getElementById('page-title').innerText = t.title;
+        }
+
         function toggleInline(el) {
-            // Inline 모드일 때만 동작
             const container = document.getElementById('content-container');
             if (container.classList.contains('view-mode-inline')) {
                 el.parentElement.classList.toggle('active');
             }
         }
+        
+        window.onload = init;
     </script>
 </head>
 <body>
     <div class="controls">
-        <button id="mode-btn" class="btn-toggle" onclick="toggleMode()">Switch to Inline View</button>
+        <button id="btn-theme" class="btn" onclick="toggleTheme()">다크 모드</button>
+        <button id="btn-layout" class="btn" onclick="toggleLayout()">한줄 보기</button>
+        <button id="btn-lang" class="btn" onclick="toggleUiLang()">English</button>
     </div>
-    <h1>Translation Result</h1>
+    <h1 id="page-title">번역 결과</h1>
     <div id="content-container" class="container view-mode-side">
 """
 
