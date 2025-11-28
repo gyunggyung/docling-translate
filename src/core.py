@@ -109,13 +109,13 @@ def process_single_file(
     bench.start(f"Total Process: {file_name}")
 
     if progress_cb:
-        progress_cb(0.02, f"{file_name} 준비 중...")
+        progress_cb(0.02, f"📄 문서 구조 분석 및 변환 중... ({file_name})")
 
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(file_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {file_path}")
         if progress_cb:
-            progress_cb(1.0, f"{file_name} 오류: 파일을 찾을 수 없음")
+            progress_cb(1.0, f"❌ 오류: 파일을 찾을 수 없음 ({file_name})")
         return {}
 
     # 2. 출력 경로 설정
@@ -127,9 +127,6 @@ def process_single_file(
     
     logging.info(f"[{file_name}] 문서 처리 시작 (엔진: {engine})")
 
-    if progress_cb:
-        progress_cb(0.05, f"{file_name} 출력 경로 준비 완료")
-
     # 3. Docling 변환
     bench.start(f"Conversion: {file_name}")
     logging.info(f"[{file_name}] 문서 변환 중...")
@@ -138,13 +135,13 @@ def process_single_file(
     except Exception as e:
         logging.error(f"[{file_name}] 문서 변환 오류: {e}", exc_info=True)
         if progress_cb:
-            progress_cb(1.0, f"{file_name} 오류: 문서 변환 실패")
+            progress_cb(1.0, f"❌ 오류: 문서 변환 실패 ({file_name})")
         return {}
     bench.end(f"Conversion: {file_name}")
     logging.info(f"[{file_name}] 문서 변환 성공.")
 
     if progress_cb:
-        progress_cb(0.25, f"{file_name} 문서 변환 완료")
+        progress_cb(0.20, f"📝 텍스트 및 캡션 추출 중... ({file_name})")
 
     # 4. 텍스트 수집 및 번역
     bench.start(f"Translation & Save: {file_name}")
@@ -173,23 +170,20 @@ def process_single_file(
     logging.info(f"[{file_name}] 총 {len(all_sentences)}개 문장 수집 (고유 문장: {len(unique_sentences)}개)")
 
     if progress_cb:
-        progress_cb(0.45, f"{file_name} 텍스트 수집 완료 ({len(unique_sentences)}문장)")
+        progress_cb(0.25, f"🤖 번역 시작... ({len(unique_sentences)} 문장)")
 
     # --- Phase 2: Translation (번역) ---
     t_trans_start = time.time()
     
-    # 진행률 계산을 위한 상수
-    TRANSLATE_BASE = 0.5
-    TRANSLATE_SPAN = 0.3
-
-    if progress_cb:
-        progress_cb(TRANSLATE_BASE, f"{file_name} 번역 시작")
+    # 진행률 계산을 위한 상수 (번역 비중 60%)
+    TRANSLATE_BASE = 0.25
+    TRANSLATE_SPAN = 0.60
 
     # 번역 엔진의 진행률 콜백 래퍼
     def _translate_progress(local_ratio: float, msg: str):
         if progress_cb:
             global_ratio = TRANSLATE_BASE + TRANSLATE_SPAN * local_ratio
-            progress_cb(global_ratio, f"{file_name} {msg}")
+            progress_cb(global_ratio, f"🤖 {msg}")
 
     # Translator 인스턴스 생성 및 일괄 번역 실행
     translator = create_translator(engine)
@@ -218,21 +212,34 @@ def process_single_file(
     logging.info(f"[{file_name}] 일괄 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
 
     # --- Phase 3: HTML Generation (HTML 생성) ---
+    if progress_cb:
+        progress_cb(0.85, f"💾 결과 파일 생성 및 이미지 저장 중... ({file_name})")
+
     path_html = output_dir / f"{base_filename}_interactive.html"
     
+    # HTML 생성 시 이미지 저장 진행률 반영 (나머지 15%)
+    GEN_BASE = 0.85
+    GEN_SPAN = 0.15
+    
+    def _gen_progress(local_ratio: float, msg: str):
+        if progress_cb:
+            global_ratio = GEN_BASE + GEN_SPAN * local_ratio
+            progress_cb(global_ratio, f"💾 {msg}")
+
     html_content = generate_html_content(
         doc,
         doc_items,
         translation_map,
         output_dir,
-        base_filename
+        base_filename,
+        progress_cb=_gen_progress
     )
 
     with open(path_html, "w", encoding="utf-8") as f:
         f.write(html_content)
     
     if progress_cb:
-        progress_cb(1.0, f"{file_name} 처리 완료")
+        progress_cb(1.0, f"✅ 모든 작업 완료! ({file_name})")
     
     bench.end(f"Translation & Save: {file_name}")
     bench.end(f"Total Process: {file_name}")

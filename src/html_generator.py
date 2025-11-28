@@ -387,12 +387,18 @@ HTML_FOOTER = """
 </html>
 """
 
+from typing import Optional, Callable
+
+# 진행률 콜백 타입 정의
+ProgressCallback = Callable[[float, str], None]
+
 def generate_html_content(
     doc: DoclingDocument,
     doc_items: list,
     translation_map: dict,
     output_dir: Path,
-    base_filename: str
+    base_filename: str,
+    progress_cb: Optional[ProgressCallback] = None
 ) -> str:
     """
     Docling 문서 아이템과 번역 맵을 결합하여 인터랙티브 HTML 컨텐츠를 생성합니다.
@@ -403,6 +409,7 @@ def generate_html_content(
         translation_map (dict): 원문 문장 -> 번역 문장 매핑
         output_dir (Path): 이미지 저장 경로
         base_filename (str): 이미지 파일명 접두사
+        progress_cb (Optional[ProgressCallback]): 진행률 콜백
         
     Returns:
         str: 완성된 HTML 문자열
@@ -410,8 +417,24 @@ def generate_html_content(
     html_parts = [HTML_HEADER]
     counters = {"table": 0, "picture": 0}
     current_page = -1
+    
+    # 이미지/테이블 저장 진행률 계산용
+    total_items = len(doc_items)
+    processed_count = 0
 
     for item, _ in doc_items:
+        processed_count += 1
+        
+        # 진행률 업데이트 (너무 잦은 호출 방지: 10개 단위 또는 이미지 처리 시)
+        is_image = isinstance(item, (TableItem, PictureItem))
+        if progress_cb and (is_image or processed_count % 50 == 0):
+            ratio = processed_count / total_items
+            if is_image:
+                progress_cb(ratio, f"이미지 저장 중... ({processed_count}/{total_items})")
+            else:
+                progress_cb(ratio, f"결과 생성 중... ({processed_count}/{total_items})")
+
+        # 페이지 마커 처리
         # 페이지 마커 처리
         item_page = -1
         if item.prov and item.prov[0].page_no:

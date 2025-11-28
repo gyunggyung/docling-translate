@@ -61,23 +61,31 @@ class BaseTranslator(ABC):
             return []
 
         if max_workers > 1:
-            # 병렬 처리
+            # 병렬 처리 (as_completed 사용으로 실시간 진행률 업데이트)
+            results_map = {} # {index: translated_text}
+            
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                # map을 사용하면 입력 순서대로 결과가 반환됨
-                translated_list = list(executor.map(
-                    lambda s: self.translate(s, src, dest),
-                    sentences
-                ))
+                # Future 객체와 원본 인덱스 매핑
+                future_to_idx = {
+                    executor.submit(self.translate, s, src, dest): i 
+                    for i, s in enumerate(sentences)
+                }
                 
-                # None이 반환된 경우 빈 문자열로 대체 (안전장치)
-                translated_list = [t if t is not None else "" for t in translated_list]
-
-                if progress_cb:
-                    # map은 완료될 때까지 블로킹되므로, 여기서는 완료 후 100% 알림만 가능
-                    # 더 세밀한 진행률이 필요하면 as_completed를 사용해야 하지만 순서 보장이 복잡해짐
-                    progress_cb(1.0, "번역 완료")
-                
-                return translated_list
+                completed_count = 0
+                for future in concurrent.futures.as_completed(future_to_idx):
+                    idx = future_to_idx[future]
+                    try:
+                        translated_text = future.result()
+                        results_map[idx] = translated_text if translated_text is not None else ""
+                    except Exception as e:
+                        results_map[idx] = "" # 에러 시 빈 문자열
+                    
+                    completed_count += 1
+                    if progress_cb:
+                        progress_cb(completed_count / total, f"번역 중... ({completed_count}/{total})")
+            
+            # 인덱스 순서대로 결과 리스트 재구성
+            return [results_map[i] for i in range(total)]
         else:
             # 순차 처리
             results = []
