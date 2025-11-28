@@ -364,21 +364,47 @@ def main():
 
     # 새로 번역 실행
     if translate_btn and uploaded_files:
-        progress_bar = st.progress(0)
+        progress_bar = st.progress(0.0)
         status_text = st.empty()
 
         total_files = len(uploaded_files)
         all_results = []    # 모든 결과를 저장
 
         for i, uploaded_file in enumerate(uploaded_files):
+            file_name = uploaded_file.name
+
             # 진행 상태 표시
             status_text.text(
                 t("status_processing").format(
                     current=i + 1,
                     total=total_files,
-                    filename=uploaded_file.name,
+                    filename=file_name,
                 )
             )
+            # 이 파일의 진행률 업데이트 콜백
+            def on_progress(ratio: float, message: str, *, file_index=i, name=file_name):
+                """
+                ratio: 0.0~1.0 (이 파일 하나에 대한 진행률)
+                전체 작업 기준 퍼센트 = (file_index + ratio) / total_files
+                """
+                overall = (file_index + ratio) / total_files
+                percent = int(overall * 100)
+
+                # Streamlit progress bar 업데이트
+                progress_bar.progress(
+                    overall,
+                    text=f"{percent}% · {name} · {message}",
+                )
+
+                # 상태 텍스트도 퍼센트 포함해서 갱신
+                status_text.text(
+                    t("status_processing").format(
+                        current=file_index + 1,
+                        total=total_files,
+                        filename=name,
+                    ) + f" ({percent}%)"
+                )
+
 
             tmp_path = None
             try:
@@ -401,6 +427,7 @@ def main():
                     dest_lang,
                     engine,
                     max_workers,
+                    progress_cb=on_progress,
                 )
                 all_results.append(result_paths)
 
@@ -416,9 +443,6 @@ def main():
                 # 임시 파일 정리
                 if tmp_path and os.path.exists(tmp_path):
                     os.unlink(tmp_path)
-
-            # 진행률 업데이트
-            progress_bar.progress((i + 1) / total_files)
 
         # 전체 작업 완료 메시지
         status_text.text(t("status_all_done"))

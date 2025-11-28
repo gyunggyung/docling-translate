@@ -17,7 +17,7 @@ from datetime import datetime
 import concurrent.futures
 
 import html
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Optional
 from dotenv import load_dotenv
 
 load_dotenv()  # .env 파일 내용 환경변수로 로드
@@ -46,6 +46,9 @@ _t1_import = time.time()
 _import_duration = _t1_import - _t0_import
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# 진행률 콜백 타입: 0.0~1.0 사이 비율, 상태 메시지 문자열
+ProgressCallback = Callable[[float, str], None]
 
 HTML_HEADER = """
 <!DOCTYPE html>
@@ -457,17 +460,25 @@ def process_single_file(
     source_lang: str,
     target_lang: str,
     engine: str,
-    max_workers: int = 1
+    max_workers: int = 1,
+    progress_cb: Optional[ProgressCallback] = None,
+
 ):
     """
     단일 파일(PDF, DOCX, PPTX 등)을 처리하는 함수 (Bulk Translation 적용)
     """
     file_name = Path(pdf_path).name
     bench.start(f"Total Process: {file_name}")
-    
+
+    # 0% 근처: 준비 시작
+    if progress_cb:
+        progress_cb(0.02, f"{file_name} 준비 중...")
+
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(pdf_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {pdf_path}")
+        if progress_cb:
+            progress_cb(1.0, f"{file_name} 오류: 파일을 찾을 수 없음")
         return
 
     # 2. 출력 경로 설정
@@ -478,6 +489,9 @@ def process_single_file(
     
     logging.info(f"[{file_name}] 문서 처리 시작 (엔진: {engine})")
 
+    if progress_cb:
+        progress_cb(0.05, f"{file_name} 출력 경로 준비 완료")
+
     # 3. Docling 변환
     bench.start(f"Conversion: {file_name}")
     logging.info(f"[{file_name}] 문서 변환 중...")
@@ -485,9 +499,15 @@ def process_single_file(
         doc: DoclingDocument = converter.convert(pdf_path).document
     except Exception as e:
         logging.error(f"[{file_name}] 문서 변환 오류: {e}", exc_info=True)
+        if progress_cb:
+            progress_cb(1.0, f"{file_name} 오류: 문서 변환 실패")
         return
     bench.end(f"Conversion: {file_name}")
     logging.info(f"[{file_name}] 문서 변환 성공.")
+
+    if progress_cb:
+        progress_cb(0.25, f"{file_name} 문서 변환 완료")
+
 
     # 4. 번역 및 파일 저장 (Bulk Translation Strategy)
     bench.start(f"Translation & Save: {file_name}")
@@ -515,8 +535,15 @@ def process_single_file(
     unique_sentences = list(set(all_sentences))
     logging.info(f"[{file_name}] 총 {len(all_sentences)}개 문장 수집 (고유 문장: {len(unique_sentences)}개)")
 
+    if progress_cb:
+        progress_cb(0.45, f"{file_name} 텍스트 수집 완료 ({len(unique_sentences)}문장)")
+
+
     # --- Phase 2: Bulk Translation (일괄 병렬 번역) ---
     t_trans_start = time.time()
+
+    if progress_cb:
+        progress_cb(0.5, f"{file_name} 번역 시작")
     
     # translator.py에 새로 추가한 함수 사용
     from translator import translate_sentences_bulk
@@ -538,6 +565,9 @@ def process_single_file(
     total_chars = sum(len(s) for s in unique_sentences)
     bench.add_stat("Translation (Sentences)", t_trans_end - t_trans_start, count=len(unique_sentences), volume=total_chars, unit="chars")
     logging.info(f"[{file_name}] 일괄 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
+
+    if progress_cb:
+        progress_cb(0.8, f"{file_name} 번역 완료, HTML 생성 중...")
 
     # --- Phase 3: HTML 파일 생성 ---
     path_html = output_dir / f"{base_filename}_interactive.html"
@@ -675,7 +705,10 @@ def process_single_file(
                     f_html.write(f"</div>\n")
         
         f_html.write(HTML_FOOTER)
-
+    
+    if progress_cb:
+        progress_cb(1.0, f"{file_name} 처리 완료")
+    
     bench.end(f"Translation & Save: {file_name}")
     bench.end(f"Total Process: {file_name}")
     logging.info(f"[{file_name}] 파일 생성 완료: {output_dir}")
@@ -693,7 +726,8 @@ def process_document(
     source_lang: str = "en",
     dest_lang: str = "ko",
     engine: str = "google",
-    max_workers: int = 8
+    max_workers: int = 8,
+    progress_cb: Optional[ProgressCallback] = None,
 ) -> dict:
     """
     단일 문서(PDF, DOCX, PPTX, HTML, Image)를 번역하는 wrapper 함수 (app.py 호환용)
@@ -724,7 +758,8 @@ def process_document(
         source_lang=source_lang,
         target_lang=dest_lang,
         engine=engine,
-        max_workers=max_workers
+        max_workers=max_workers,
+        progress_cb=progress_cb,
     )
 
 
