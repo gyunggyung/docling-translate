@@ -362,23 +362,96 @@ def main():
     if "current_result" not in st.session_state:
         st.session_state.current_result = None
 
+    # 진행률 관련 세션 상태 초기화
+    if "progress_ratio" not in st.session_state:
+        st.session_state["progress_ratio"] = 0.0  # 0.0 ~ 1.0
+    if "progress_done" not in st.session_state:
+        st.session_state["progress_done"] = False  # 작업 완료 여부
+    if "progress_current" not in st.session_state:
+        st.session_state["progress_current"] = 0   # 현재 몇 번째 파일
+    if "progress_total" not in st.session_state:
+        st.session_state["progress_total"] = 0     # 전체 파일 개수
+    if "progress_filename" not in st.session_state:
+        st.session_state["progress_filename"] = "" # 현재 처리 중인 파일 이름
+
+    # 항상 같은 위치에 진행바 / 상태 텍스트 렌더링
+    progress_bar = st.progress(st.session_state["progress_ratio"])
+    status_text = st.empty()
+
+    # 이전 상태가 있으면 그걸로 텍스트 표시
+    if st.session_state["progress_total"] > 0:
+        percent = int(st.session_state["progress_ratio"] * 100)
+        if st.session_state["progress_done"]:
+            # 완료 상태면 완료 문구
+            status_text.text(t("status_all_done"))
+        else:
+            # 진행 중이면 현재 상태 문구
+            status_text.text(
+                t("status_processing").format(
+                    current=st.session_state["progress_current"],
+                    total=st.session_state["progress_total"],
+                    filename=st.session_state["progress_filename"] or "-",
+                ) + f" ({percent}%)"
+            )
+
+
+    
     # 새로 번역 실행
     if translate_btn and uploaded_files:
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-
         total_files = len(uploaded_files)
         all_results = []    # 모든 결과를 저장
 
+        # 새 작업 시작 시 진행 상태 초기화
+        st.session_state["progress_ratio"] = 0.0
+        st.session_state["progress_done"] = False
+        st.session_state["progress_current"] = 0
+        st.session_state["progress_total"] = total_files
+        st.session_state["progress_filename"] = ""
+
+        # 화면 쪽도 0%로 초기 렌더
+        progress_bar.progress(0.0)
+        status_text.text("")
+
         for i, uploaded_file in enumerate(uploaded_files):
+            file_name = uploaded_file.name
+
             # 진행 상태 표시
             status_text.text(
                 t("status_processing").format(
                     current=i + 1,
                     total=total_files,
-                    filename=uploaded_file.name,
+                    filename=file_name,
                 )
             )
+            # 이 파일의 진행률 업데이트 콜백
+            def on_progress(ratio: float, message: str, *, file_index=i, name=file_name):
+                """
+                ratio: 0.0~1.0 (이 파일 하나에 대한 진행률)
+                전체 작업 기준 퍼센트 = (file_index + ratio) / total_files
+                """
+                overall = (file_index + ratio) / total_files
+                percent = int(overall * 100)
+
+                # 세션 상태 갱신 (rerun 후에도 유지되도록)
+                st.session_state["progress_ratio"] = overall
+                st.session_state["progress_current"] = file_index + 1
+                st.session_state["progress_total"] = total_files
+                st.session_state["progress_filename"] = name
+                st.session_state["progress_done"] = False
+
+                # 진행바 업데이트
+                progress_bar.progress(overall)
+
+                # 상태 텍스트 갱신 (i18n 기반)
+                status_text.text(
+                    t("status_processing").format(
+                        current=file_index + 1,
+                        total=total_files,
+                        filename=name,
+                    ) + f" ({percent}%)"
+                )
+
+
 
             tmp_path = None
             try:
@@ -401,6 +474,7 @@ def main():
                     dest_lang,
                     engine,
                     max_workers,
+                    progress_cb=on_progress,
                 )
                 all_results.append(result_paths)
 
@@ -417,20 +491,20 @@ def main():
                 if tmp_path and os.path.exists(tmp_path):
                     os.unlink(tmp_path)
 
-            # 진행률 업데이트
-            progress_bar.progress((i + 1) / total_files)
-
         # 전체 작업 완료 메시지
+        st.session_state["progress_ratio"] = 1.0
+        st.session_state["progress_done"] = True
         status_text.text(t("status_all_done"))
+        progress_bar.progress(1.0)
 
         # 배치 결과를 세션에 저장
         st.session_state.batch_results = all_results
         st.session_state.current_result = None
 
-        st.success(
-            t("batch_success").format(n=len(all_results))
-        )
-        st.info(t("batch_hint"))
+        # 마지막 배치 번역 파일 개수를 세션에 저장
+        st.session_state["last_batch_count"] = len(all_results)
+
+
 
     # 히스토리에서 결과 선택
     elif selected_history:
@@ -454,11 +528,21 @@ def main():
     # 배치(여러 파일) 결과 표시
     if "batch_results" in st.session_state and st.session_state.batch_results:
         st.divider()
+
+        # 마지막 번역 결과에 대한 성공/힌트 메시지 (언어 바꿔도 유지)
+        if "last_batch_count" in st.session_state:
+            st.success(
+                t("batch_success").format(n=st.session_state["last_batch_count"])
+            )
+            st.info(t("batch_hint"))
+
         st.subheader(
             t("batch_result_header").format(
                 n=len(st.session_state.batch_results)
             )
         )
+        ...
+
 
         tab_labels = [res["output_dir"].name for res in st.session_state.batch_results]
         tabs = st.tabs(tab_labels)

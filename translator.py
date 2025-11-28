@@ -13,7 +13,7 @@ import os
 import time
 import logging
 import concurrent.futures
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Optional
 
 from deep_translator import GoogleTranslator
 import deepl
@@ -84,6 +84,9 @@ LANGUAGE_NAMES = {
     'hi': 'Hindi',
     'auto': 'the source language',  # 자동 감지
 }
+
+# bulk 번역 진행률 콜백: 0.0~1.0, 상태 메시지
+BulkProgressCallback = Callable[[float, str], None]
 
 # ------------------------------
 # NLTK 모델 준비
@@ -423,6 +426,7 @@ def translate_sentences_bulk(
     dest: str,
     engine: str = "google",
     max_workers: int = 1,
+    progress_cb: Optional[BulkProgressCallback] = None,
 ) -> list[str]:
     """
     다수의 문장을 병렬로 번역하여 반환합니다. (Bulk Translation)
@@ -437,22 +441,47 @@ def translate_sentences_bulk(
     Returns:
         list[str]: 번역된 문장 리스트 (입력 순서 유지)
     """
-    if not sentences:
+    total = len(sentences)
+    if total == 0:
         return []
+
 
     # 워커 수가 1 이하이면 순차 처리
     if max_workers <= 1:
-        return [translate_text(s, src, dest, engine) for s in sentences]
+        results: list[str] = []
+        for idx, s in enumerate(sentences, start=1):
+            translated = translate_text(s, src, dest, engine)
+            results.append(translated)
+
+            if progress_cb:
+                local_ratio = idx / total  # 0.0 ~ 1.0
+                progress_cb(local_ratio, f"번역 중... ({idx}/{total})")
+
+        return results
 
     # 병렬 처리
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         try:
-            # map을 사용하여 입력 순서대로 결과 반환
-            return list(executor.map(
+            translated_list = list(executor.map(
                 lambda s: translate_text(s, src, dest, engine),
                 sentences
             ))
+
+            if progress_cb:
+                for idx, _ in enumerate(translated_list, start=1):
+                    local_ratio = idx / total
+                    progress_cb(local_ratio, f"번역 중... ({idx}/{total})")
+
+            return translated_list
+
         except Exception as e:
             _log.error(f"Bulk 병렬 번역 중 오류 발생: {e}")
             # 오류 발생 시 순차 처리로 폴백
-            return [translate_text(s, src, dest, engine) for s in sentences]
+            results: list[str] = []
+            for idx, s in enumerate(sentences, start=1):
+                translated = translate_text(s, src, dest, engine)
+                results.append(translated)
+                if progress_cb:
+                    local_ratio = idx / total
+                    progress_cb(local_ratio, f"번역 중... ({idx}/{total})")
+            return results
