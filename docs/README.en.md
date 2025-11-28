@@ -79,6 +79,13 @@ Use the intuitive web interface to upload files and visually verify results.
 streamlit run app.py
 ```
 
+### Web UI Key Features
+
+- **Focus Mode**: Hides the sidebar and controls to let you focus solely on the translation results.
+- **View Mode Control**: Switch between "Inspection Mode" (Side-by-Side) and "Reading Mode" (Translation Only).
+- **Real-time Progress**: View detailed status and real-time progress for each step, including document conversion, text extraction, translation, and image saving.
+- **History Management**: Automatically saves and loads previous translation results.
+
 ## Detailed Guide
 
 For more detailed usage and configuration instructions, please refer to the documents below.

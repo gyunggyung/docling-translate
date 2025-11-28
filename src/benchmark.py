@@ -1,3 +1,14 @@
+"""
+src/benchmark.py
+================
+성능 측정 및 벤치마킹을 위한 모듈입니다.
+
+이 모듈은 다음 기능을 수행합니다:
+1.  **시간 측정**: 특정 작업 구간의 실행 시간을 측정하고 기록합니다.
+2.  **통계 수집**: 처리된 문자 수, 단어 수 등의 통계 데이터를 수집합니다.
+3.  **리포트 생성**: 수집된 데이터를 바탕으로 성능 분석 리포트를 생성하고 파일로 저장합니다.
+"""
+
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
