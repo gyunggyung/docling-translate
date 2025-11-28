@@ -462,7 +462,6 @@ def process_single_file(
     engine: str,
     max_workers: int = 1,
     progress_cb: Optional[ProgressCallback] = None,
-
 ):
     """
     단일 파일(PDF, DOCX, PPTX 등)을 처리하는 함수 (Bulk Translation 적용)
@@ -542,32 +541,46 @@ def process_single_file(
     # --- Phase 2: Bulk Translation (일괄 병렬 번역) ---
     t_trans_start = time.time()
 
+    # 번역 구간을 전체 진행률의 50%~80%로 사용
+    TRANSLATE_BASE = 0.5
+    TRANSLATE_SPAN = 0.3
+
+    total_unique = len(unique_sentences) or 1
+
     if progress_cb:
-        progress_cb(0.5, f"{file_name} 번역 시작")
-    
-    # translator.py에 새로 추가한 함수 사용
-    from translator import translate_sentences_bulk
-    
+        progress_cb(TRANSLATE_BASE, f"{file_name} 번역 시작 (0/{total_unique})")
+
+    # translator 내부 local_ratio(0.0~1.0)를 전체 0.5~0.8로 매핑
+    def _translate_progress(local_ratio: float, msg: str):
+        if progress_cb:
+            global_ratio = TRANSLATE_BASE + TRANSLATE_SPAN * local_ratio
+            progress_cb(global_ratio, f"{file_name} {msg}")
+
     translated_results = translate_sentences_bulk(
         unique_sentences,
         src=source_lang,
         dest=target_lang,
         engine=engine,
-        max_workers=max_workers
+        max_workers=max_workers,
+        progress_cb=_translate_progress,  
     )
-    
+
     t_trans_end = time.time()
-    
-    # 번역 맵 생성 (원문 -> 번역문)
+
+    # 번역 맵 생성
     translation_map = dict(zip(unique_sentences, translated_results))
-    
+
     # 통계 기록
     total_chars = sum(len(s) for s in unique_sentences)
-    bench.add_stat("Translation (Sentences)", t_trans_end - t_trans_start, count=len(unique_sentences), volume=total_chars, unit="chars")
+    bench.add_stat(
+        "Translation (Sentences)",
+        t_trans_end - t_trans_start,
+        count=len(unique_sentences),
+        volume=total_chars,
+        unit="chars",
+    )
     logging.info(f"[{file_name}] 일괄 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
 
-    if progress_cb:
-        progress_cb(0.8, f"{file_name} 번역 완료, HTML 생성 중...")
 
     # --- Phase 3: HTML 파일 생성 ---
     path_html = output_dir / f"{base_filename}_interactive.html"
