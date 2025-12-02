@@ -22,7 +22,7 @@
 - **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
-- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-4o, Qwen(Local), Yanolja(Local) 지원.
+- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-4o, Qwen(Local), LFM2(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
 ## 빠른 시작 (Quick Start)
@@ -37,8 +37,8 @@ cd docling-translate
 pip install -r requirements.txt
 ```
 
-**(선택) 로컬 번역 모델(Qwen) 사용 시**
-Qwen 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_hub`를 추가로 설치해야 합니다.
+**(선택) 로컬 번역 모델(Qwen, LFM2, Yanolja) 사용 시**
+Qwen, LFM2 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_hub`를 추가로 설치해야 합니다.
 - **Windows 사용자**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) 설치 ("C++를 사용한 데스크톱 개발" 체크) 후:
   ```bash
   pip install llama-cpp-python huggingface_hub
@@ -57,10 +57,13 @@ Qwen 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_hub`�
 python main.py sample.pdf
 
 # 옵션 사용 (DeepL 엔진, 일본어 번역)
-python main.py sample.pdf --engine deepl --to ja
+python main.py sample.pdf --engine deepl --target ja
 
 # OpenAI GPT-5-nano 사용
-python main.py sample.pdf --engine openai --to ko
+python main.py sample.pdf --engine openai --target ko
+
+# LFM2 로컬 모델 사용
+python main.py sample.pdf --engine lfm2 --target ko
 ```
 
 ### API 키 설정 (선택 사항)
@@ -106,7 +109,7 @@ streamlit run app.py
 
 ## Acknowledgments
 
-이 프로젝트는 [Docling](https://github.com/docling-project/docling) 라이브러리를 기반으로 합니다. 또한, 로컬 번역 기능을 위해 [Qwen](https://github.com/QwenLM/Qwen2.5) 및 [Yanolja](https://huggingface.co/yanolja)의 오픈소스 모델을 활용합니다.
+이 프로젝트는 [Docling](https://github.com/docling-project/docling) 라이브러리를 기반으로 합니다. 또한, 로컬 번역 기능을 위해 [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF)의 오픈소스 모델을 활용합니다.
 
 ```bibtex
 @techreport{Docling,
@@ -132,6 +135,17 @@ streamlit run app.py
   journal = {Hugging Face repository},
   howpublished = {\\url{https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511}}
 }
+
+@article{liquidai2025lfm2technicalreport,
+      title={LFM2 Technical Report}, 
+      author={Liquid AI},
+      year={2025},
+      eprint={2511.23404},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2511.23404}, 
+}
+
 ```
 
 ## 라이선스
