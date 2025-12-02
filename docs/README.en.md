@@ -106,7 +106,7 @@ For more detailed usage and configuration instructions, please refer to the docu
 
 ## Acknowledgments
 
-This project is built upon the [Docling](https://github.com/docling-project/docling) library. It also utilizes open-source models from [Qwen](https://github.com/QwenLM/Qwen2.5) and [Yanolja](https://huggingface.co/yanolja) for local translation capabilities.
+This project is built upon the [Docling](https://github.com/docling-project/docling) library. It also utilizes open-source models from [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), and [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF) for local translation capabilities.
 
 ```bibtex
 @techreport{Docling,
@@ -132,6 +132,17 @@ This project is built upon the [Docling](https://github.com/docling-project/docl
   journal = {Hugging Face repository},
   howpublished = {\\url{https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511}}
 }
+
+@article{liquidai2025lfm2technicalreport,
+      title={LFM2 Technical Report}, 
+      author={Liquid AI},
+      year={2025},
+      eprint={2511.23404},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2511.23404}, 
+}
+
 ```
 
 ## License
