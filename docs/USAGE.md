@@ -20,7 +20,7 @@ python main.py <input_path> [options]
 | :--- | :--- | :--- | :--- |
 | `--from` | `-f` | `en` | 원본 문서의 언어 코드 (예: `en`, `ja`, `zh`). |
 | `--to` | `-t` | `ko` | 번역할 목표 언어 코드. |
-| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen`). |
+| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen-0.6b`, `yanolja`). |
 | `--max-workers` | | `4` | 병렬 처리를 위한 스레드 수. 시스템 사양에 따라 조절하세요. |
 | `--benchmark` | `-b` | `False` | 번역 성능 측정 리포트를 출력합니다. |
 
