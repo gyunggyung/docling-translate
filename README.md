@@ -22,7 +22,7 @@
 - **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
-- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-4o, Qwen(Local), Yanolja(Local) 지원.
+- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-4o, Qwen(Local), LFM2(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
 ## 빠른 시작 (Quick Start)
@@ -57,10 +57,10 @@ Qwen 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_hub`�
 python main.py sample.pdf
 
 # 옵션 사용 (DeepL 엔진, 일본어 번역)
-python main.py sample.pdf --engine deepl --to ja
+python main.py sample.pdf --engine deepl --target ja
 
 # OpenAI GPT-5-nano 사용
-python main.py sample.pdf --engine openai --to ko
+python main.py sample.pdf --engine openai --target ko
 ```
 
 ### API 키 설정 (선택 사항)
@@ -131,6 +131,13 @@ streamlit run app.py
   publisher = {Hugging Face},
   journal = {Hugging Face repository},
   howpublished = {\\url{https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511}}
+}
+
+@misc{lfm2,
+  title  = {LFM2-1.2B},
+  url    = {https://huggingface.co/LiquidAI/LFM2-1.2B},
+  author = {LiquidAI},
+  year   = {2025}
 }
 ```
 
