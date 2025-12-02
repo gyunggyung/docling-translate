@@ -14,13 +14,14 @@ from .engines.deepl import DeepLTranslator
 from .engines.gemini import GeminiTranslator
 from .engines.openai import OpenAITranslator
 from .engines.qwen import QwenTranslator
+from .engines.yanolja import YanoljaTranslator
 
 def create_translator(engine_name: str) -> BaseTranslator:
     """
     지정된 이름의 번역 엔진 인스턴스를 생성하여 반환합니다.
     
     Args:
-        engine_name (str): 번역 엔진 이름 ('google', 'deepl', 'gemini', 'openai', 'qwen')
+        engine_name (str): 번역 엔진 이름 ('google', 'deepl', 'gemini', 'openai', 'qwen', 'yanolja')
         
     Returns:
         BaseTranslator: 생성된 번역 엔진 인스턴스
@@ -35,6 +36,7 @@ def create_translator(engine_name: str) -> BaseTranslator:
         "openai": OpenAITranslator,
         "qwen": QwenTranslator,
         "qwen-0.6b": QwenTranslator,
+        "yanolja": YanoljaTranslator,
     }
     
     engine_class = engines.get(engine_name.lower())
