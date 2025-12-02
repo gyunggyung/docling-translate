@@ -20,7 +20,7 @@ python main.py <input_path> [options]
 | :--- | :--- | :--- | :--- |
 | `--from` | `-f` | `en` | 원본 문서의 언어 코드 (예: `en`, `ja`, `zh`). |
 | `--to` | `-t` | `ko` | 번역할 목표 언어 코드. |
-| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`). |
+| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen`). |
 | `--max-workers` | | `4` | 병렬 처리를 위한 스레드 수. 시스템 사양에 따라 조절하세요. |
 | `--benchmark` | `-b` | `False` | 번역 성능 측정 리포트를 출력합니다. |
 
@@ -76,7 +76,7 @@ streamlit run app.py
 
 ## 3. 환경 설정 (API Key)
 
-`google` 엔진(Google Translate)은 별도의 설정 없이 무료로 사용할 수 있지만, `deepl`이나 `gemini`를 사용하려면 API 키 설정이 필요합니다.
+`google` 엔진(Google Translate)과 `qwen` 엔진(Local LLM)은 별도의 설정 없이 무료로 사용할 수 있지만, `deepl`, `gemini`, `openai`를 사용하려면 API 키 설정이 필요합니다.
 
 프로젝트 루트 디렉토리에 `.env` 파일을 생성하고 아래와 같이 입력하세요.
 
@@ -124,3 +124,6 @@ A. `GEMINI_API_KEY`가 올바른지 확인하세요. 또한 Gemini API는 분당
 
 **Q. 이미지가 번역되지 않습니다.**
 A. 현재 버전에서는 이미지 자체를 번역(인페인팅)하는 기능은 지원하지 않으며, 이미지 내의 **텍스트를 추출**하여 마크다운 텍스트로 번역합니다. 캡션은 정상적으로 번역됩니다.
+
+**Q. Windows에서 `qwen` 엔진 사용 시 `llama-cpp-python` 설치 에러가 발생합니다.**
+A. `llama-cpp-python`은 C++ 컴파일러가 필요합니다. [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)를 설치하고 "Desktop development with C++" 워크로드를 선택하여 설치해주세요. 설치 후 재부팅이 필요할 수 있습니다.

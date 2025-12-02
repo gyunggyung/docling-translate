@@ -37,6 +37,17 @@ cd docling-translate
 pip install -r requirements.txt
 ```
 
+**(선택) 로컬 번역 모델(Qwen) 사용 시**
+Qwen 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_hub`를 추가로 설치해야 합니다.
+- **Windows 사용자**: [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) 설치 ("C++를 사용한 데스크톱 개발" 체크) 후:
+  ```bash
+  pip install llama-cpp-python huggingface_hub
+  ```
+- **Mac/Linux 사용자**:
+  ```bash
+  pip install llama-cpp-python huggingface_hub
+  ```
+
 ### 2. CLI 실행
 
 가장 기본적인 사용법입니다. PDF 파일을 지정하면 **인터랙티브 HTML 파일**이 생성됩니다.

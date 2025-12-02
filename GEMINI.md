@@ -22,7 +22,7 @@
 
 2.  **참고 자료 우선순위 (Reference Priority):** 코드 구현 시, 제공된 공식 문서(`@docling-docs`)를 최우선으로 참고하여 `docling` 라이브러리의 의도에 맞는 방식으로 코드를 작성해야 합니다.
 
-3.  **모듈성 및 유지보수성 (Modularity & Maintainability):** 기능별로 코드를 모듈화하여 (예: `main.py`, `translator.py`) 가독성과 유지보수성을 높입니다.
+3.  **모듈성 및 유지보수성 (Modularity & Maintainability):** 기능별로 코드를 모듈화하여 (예: `src/translation/`, `src/core.py`) 가독성과 유지보수성을 높입니다.
 
 4.  **점진적 개발 (Iterative Development):** 복잡한 기능은 한 번에 구현하기보다, 작은 단위로 나누어 점진적으로 개발하고 각 단계에서 확인을 받습니다.
 
