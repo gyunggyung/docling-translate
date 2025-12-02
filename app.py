@@ -90,13 +90,14 @@ def main():
         source_lang = st.selectbox(t("src_label"), ["en", "fr", "de", "es", "it", "ja", "zh", "ko"], index=0)
         target_lang = st.selectbox(t("dest_label"), ["ko", "en", "fr", "de", "es", "it", "ja", "zh"], index=0)
         
-        engine = st.selectbox(t("engine_label"), ["google", "deepl", "gemini", "openai"], index=0)
+        engine = st.selectbox(t("engine_label"), ["google", "deepl", "gemini", "openai", "qwen-0.6b"], index=0)
         
+        default_workers = 1 if engine == "qwen-0.6b" else 8
         max_workers = st.number_input(
             t("workers_label"), 
             min_value=1, 
             max_value=16, 
-            value=8,
+            value=default_workers,
             help=t("workers_help")
         )
 

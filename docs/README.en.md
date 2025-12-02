@@ -37,6 +37,17 @@ cd docling-translate
 pip install -r requirements.txt
 ```
 
+**(Optional) For Local Translation Model (Qwen)**
+To use local LLMs like Qwen, you need to install `llama-cpp-python` and `huggingface_hub`.
+- **Windows Users**: Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Check "Desktop development with C++") then:
+  ```bash
+  pip install llama-cpp-python huggingface_hub
+  ```
+- **Mac/Linux Users**:
+  ```bash
+  pip install llama-cpp-python huggingface_hub
+  ```
+
 ### 2. CLI Usage
 
 This is the most basic usage. Specify a PDF file to generate an **interactive HTML file**.

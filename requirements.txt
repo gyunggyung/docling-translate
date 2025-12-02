@@ -7,3 +7,4 @@ python-dotenv>=1.0.0
 openai>=2.8.0
 streamlit>=1.30.0
 watchdog>=3.0.0
+
