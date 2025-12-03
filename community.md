@@ -35,7 +35,7 @@ permalink: /community/
         </a>
 
         <!-- Contributing -->
-        <a href="https://docling-translate.readthedocs.io/ko/latest/contribution.html" class="feature-card" style="text-decoration: none;">
+        <a href="https://github.com/gyunggyung/docling-translate?tab=contributing-ov-file" class="feature-card" style="text-decoration: none;">
             <div class="feature-icon">🤝</div>
             <h3 class="feature-title">Contributing</h3>
             <p class="feature-desc">
@@ -50,7 +50,7 @@ permalink: /community/
             <h3 class="feature-title">Contact Us</h3>
             <p class="feature-desc">
                 비공개 문의나 보안 관련 이슈는 이메일로 연락해 주세요.<br>
-                <strong>newhiwoong@gmail.com</strong>
+                <a href="mailto:newhiwoong@gmail.com" style="color: var(--primary-blue); font-weight: bold;">newhiwoong@gmail.com</a>
             </p>
         </div>
     </div>

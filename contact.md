@@ -34,24 +34,14 @@ permalink: /contact/
             </p>
         </a>
 
-        <!-- Mailing List (Placeholder) -->
-        <div class="feature-card" style="opacity: 0.7;">
-            <div class="feature-icon">📰</div>
-            <h3 class="feature-title">Mailing List</h3>
+        <!-- Issues -->
+        <a href="https://github.com/gyunggyung/docling-translate/issues" class="feature-card" style="text-decoration: none;">
+            <div class="feature-icon">🐛</div>
+            <h3 class="feature-title">Issue Tracker</h3>
             <p class="feature-desc">
-                주요 업데이트 소식을 메일로 받아보세요.<br>
-                (현재 준비 중입니다)
+                공개적인 질문이 있으시거나 새로운 기능이 필요하신가요?<br>
+                이슈 트래커에 등록해 주시면 빠르게 확인하겠습니다.
             </p>
-        </div>
-
-        <!-- Twitter (Placeholder) -->
-        <div class="feature-card" style="opacity: 0.7;">
-            <div class="feature-icon">🐦</div>
-            <h3 class="feature-title">Social Media</h3>
-            <p class="feature-desc">
-                트위터에서 최신 소식을 확인하세요.<br>
-                (현재 준비 중입니다)
-            </p>
-        </div>
+        </a>
     </div>
 </div>
