@@ -1,3 +1,9 @@
+# Docling Translate - Project Website
+
+이 브랜치(`gh-pages`)는 **Docling Translate** 프로젝트의 공식 웹사이트 소스 코드를 담고 있습니다.
+
+---
+
 # Docling Translate - Project Status
 
 이 브랜치(`gh-pages`)는 **Docling Translate** 프로젝트의 공식 웹사이트 소스 코드를 담고 있습니다.
@@ -22,18 +28,19 @@
 - **필수 섹션 구현**: Homepage, Feature Showcase, Community, Contact 정보 포함.
 
 ### 3. 디자인 리뉴얼 (Design Overhaul)
-- **Dark Mode 테마**: `docling.ai`를 벤치마킹한 프리미엄 다크 모드(#02040A) 적용.
-- **Bento Grid 레이아웃**: 기능을 직관적으로 보여주는 2열 카드 그리드 디자인 구현.
-- **Hero Section 개선**: AI 생성 배경 이미지와 터미널 UI를 결합하여 개발자 친화적인 인상 제공.
+- **Dark Mode 테마**: `docling.ai`를 벤치마킹한 프리미엄 다크 모드(#0B0E14) 적용.
+- **Glassmorphism 효과**: 헤더에 강화된 backdrop blur(20px)와 box shadow 적용.
+- ** 애니메이션**: Hero 섹션에 pulsing gradient 배경과 fade-in 애니메이션 구현.
+- **그라데이션 강화**: 깊이감 있는 다중 컬러 그라데이션 (Blue, Purple, Cyan).
+- **카드 디자인**: Feature cards에 gradient 배경과 상단 accent border 추가.
+- **호버 효과**: 버튼, 카드, 아이콘에 풍부한 interactive 효과 구현.
 - **타이포그래피 강화**: `Pretendard` 및 `JetBrains Mono` 폰트 적용으로 가독성 향상.
+- **반응형 최적화**: 모바일 환경에서도 완벽한 사용자 경험 제공.
 
 ---
 
 ## 📝 예정된 작업 (To-Do)
-- [ ] **Premium Design 구현**: `docling.ai` 스타일의 고품질 디자인 적용.
-    - [ ] **Dark Mode & Gradients**: 깊이감 있는 다크 테마와 브랜드 컬러 그라데이션.
-    - [ ] **Glassmorphism**: 헤더와 카드에 블러 효과 적용.
-    - [ ] **Typography**: 가독성 높은 최신 폰트 및 타이포그래피 계층 구조 확립.
 - [ ] **콘텐츠 최신화**: 프로젝트 업데이트에 따른 웹사이트 정보 동기화.
 - [ ] **커뮤니티 활성화**: GitHub Discussions 및 Issues 연동 강화.
 - [ ] **SEO 최적화**: 검색 엔진 노출을 위한 메타 태그 및 구조화된 데이터 보강.
+- [ ] **추가 페이지**: Features, Community, Contact 페이지 콘텐츠 완성.
