@@ -1,0 +1,191 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API 레퍼런스 (API Reference) &mdash; Docling Translate 0.1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d6a8a7ef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="이 문서 정보" href="about.html" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+    <link rel="next" title="유지보수 및 문제 해결 (Maintenance and Troubleshooting)" href="maintenance.html" />
+    <link rel="prev" title="기술 개요 (Technical Overview)" href="technical_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Docling Translate
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">사용자 가이드</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">프로젝트 소개 (About)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">시작하기 (Getting Started)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#usage-guide">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#id2">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">설정 가이드 (Configuration Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">자주 묻는 질문 (FAQ)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">기술 문서</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="technical_overview.html">기술 개요 (Technical Overview)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API 레퍼런스 (API Reference)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#converter">Converter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src-converter-pdfconverter"><code class="docutils literal notranslate"><span class="pre">src.converter.PDFConverter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#translator">Translator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src-translator-translatorengine"><code class="docutils literal notranslate"><span class="pre">src.translator.TranslatorEngine</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#html-generator">HTML Generator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#src-html-generator-create-html"><code class="docutils literal notranslate"><span class="pre">src.html_generator.create_html</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">유지보수 및 문제 해결 (Maintenance and Troubleshooting)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">커뮤니티 및 업데이트</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html#contributing-guide">기여 가이드 (Contributing Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">릴리즈 노트 (Release Notes)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Docling Translate</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API 레퍼런스 (API Reference)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_reference.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-api-reference">
+<h1>API 레퍼런스 (API Reference)<a class="headerlink" href="#api-api-reference" title="Link to this heading"></a></h1>
+<p>이 섹션은 Docling Translate의 내부 API를 설명합니다. 이 도구는 주로 CLI로 사용되지만, 개발자가 프로젝트를 확장하고자 할 때 유용합니다.</p>
+<section id="converter">
+<h2>Converter<a class="headerlink" href="#converter" title="Link to this heading"></a></h2>
+<section id="src-converter-pdfconverter">
+<h3><code class="docutils literal notranslate"><span class="pre">src.converter.PDFConverter</span></code><a class="headerlink" href="#src-converter-pdfconverter" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PDFConverter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        파일 경로를 받아 컨버터를 초기화합니다.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        PDF를 구조화된 Document 객체로 변환합니다.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="translator">
+<h2>Translator<a class="headerlink" href="#translator" title="Link to this heading"></a></h2>
+<section id="src-translator-translatorengine">
+<h3><code class="docutils literal notranslate"><span class="pre">src.translator.TranslatorEngine</span></code><a class="headerlink" href="#src-translator-translatorengine" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TranslatorEngine</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ko&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        주어진 텍스트를 목표 언어로 번역합니다.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="html-generator">
+<h2>HTML Generator<a class="headerlink" href="#html-generator" title="Link to this heading"></a></h2>
+<section id="src-html-generator-create-html">
+<h3><code class="docutils literal notranslate"><span class="pre">src.html_generator.create_html</span></code><a class="headerlink" href="#src-html-generator-create-html" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">create_html</span><span class="p">(</span><span class="n">original</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">translated</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    인터랙티브 HTML 파일을 생성합니다.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="technical_overview.html" class="btn btn-neutral float-left" title="기술 개요 (Technical Overview)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="maintenance.html" class="btn btn-neutral float-right" title="유지보수 및 문제 해결 (Maintenance and Troubleshooting)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Docling Translate Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
