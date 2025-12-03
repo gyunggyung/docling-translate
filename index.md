@@ -1,65 +1,138 @@
 ---
-layout: home
+layout: default
 title: Home
 ---
 
-<div class="hero-section">
-  <div class="hero-content">
-    <img src="assets/images/logo.png" alt="Docling Translate Logo" class="hero-logo">
-    <h1 class="hero-title">Docling Translate</h1>
-    <p class="hero-subtitle">
-      문서의 구조를 이해하는 차세대 AI 번역 도구.<br>
-      PDF, DOCX, PPTX의 레이아웃을 완벽하게 유지하며 번역하세요.
-    </p>
-    
-    <div class="badge-container">
-      <span class="badge">v1.1.0</span>
-      <span class="badge">Open Source</span>
-      <span class="badge">Python 3.10+</span>
-    </div>
-
-    <div style="margin-top: 2rem;">
-      <a href="https://docling-translate.readthedocs.io/ko/latest/getting_started.html" class="btn btn-primary">시작하기 (Get Started)</a>
-      <a href="https://github.com/gyunggyung/docling-translate" class="btn btn-secondary">GitHub 방문</a>
+<div class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span>✨</span> v1.1.0 Now Available
+        </div>
+        <h1 class="hero-title">
+          Document Translation,<br>
+          <span style="color: var(--color-primary);">Reimagined for AI.</span>
+        </h1>
+        <p class="hero-desc">
+          Docling Translate preserves perfect layout structure while translating complex PDFs, DOCX, and PPTX files. Powered by advanced local LLMs.
+        </p>
+        <div class="hero-actions">
+          <a href="https://docling-translate.readthedocs.io/ko/latest/getting_started.html" class="btn btn-primary">
+            Get Started
+          </a>
+          <a href="https://github.com/gyunggyung/docling-translate" class="btn btn-outline">
+            View on GitHub
+          </a>
+        </div>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <div class="terminal-body">
+            <div><span class="cmd-prompt">➜</span><span class="cmd-text">pip install docling-translate</span></div>
+            <div class="comment"># Installing dependencies...</div>
+            <br>
+            <div><span class="cmd-prompt">➜</span><span class="cmd-text">docling-translate input.pdf --lang ko</span></div>
+            <div class="comment"># 🚀 Processing document...</div>
+            <div class="comment"># 📄 Layout analysis complete</div>
+            <div class="comment"># 🤖 Translating with Qwen-2.5...</div>
+            <div style="color: #10B981;">✔ Translation complete: input_ko.html</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="wrapper">
-  <div class="feature-grid">
-    <div class="feature-card">
-      <span class="feature-icon">📄</span>
-      <h3 class="feature-title">완벽한 레이아웃 보존</h3>
-      <p class="feature-desc">복잡한 표, 다단 편집, 수식이 포함된 논문이나 보고서도 원본 서식 그대로 번역합니다.</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">🤖</span>
-      <h3 class="feature-title">다양한 AI 모델 지원</h3>
-      <p class="feature-desc">OpenAI GPT-4o, DeepL은 물론, Qwen, LFM2 등 최신 로컬 LLM까지 자유롭게 선택하세요.</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">👁️</span>
-      <h3 class="feature-title">인터랙티브 뷰어</h3>
-      <p class="feature-desc">생성된 HTML 결과물에서 원문과 번역문을 좌우로 대조하며 직관적으로 검토할 수 있습니다.</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">🔒</span>
-      <h3 class="feature-title">강력한 보안</h3>
-      <p class="feature-desc">로컬 모델을 사용하면 데이터가 외부로 전송되지 않아 기업 보안 환경에서도 안전합니다.</p>
-    </div>
+<div class="container">
+  <div class="section-title">
+    <h2>Why Docling Translate?</h2>
+    <p>Built for developers and researchers who need precision and privacy.</p>
   </div>
 
-  <hr style="margin: 4rem 0; border-color: #f1f5f9;">
-
-  <div style="text-align: center; max-width: 700px; margin: 0 auto;">
-    <h2>간편한 설치 및 사용</h2>
-    <p style="color: var(--text-muted); margin-bottom: 2rem;">Python 환경에서 단 한 줄의 명령어로 설치하고 바로 사용해보세요.</p>
+  <div class="bento-grid">
+    <div class="bento-card wide">
+      <div class="card-icon">📐</div>
+      <h3 class="card-title">Layout-Aware Translation</h3>
+      <p class="card-desc">
+        Unlike traditional tools that extract plain text, Docling understands the document structure. 
+        Tables, multi-column layouts, headers, and formulas are preserved exactly as they appear in the original file.
+      </p>
+    </div>
     
-    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install </span>docling-translate
-</code></pre></div></div>
+    <div class="bento-card">
+      <div class="card-icon">🔒</div>
+      <h3 class="card-title">Privacy First</h3>
+      <p class="card-desc">
+        Run completely offline with local LLMs like LFM2 and Qwen. 
+        Your sensitive documents never leave your machine.
+      </p>
+    </div>
+    
+    <div class="bento-card">
+      <div class="card-icon">⚡</div>
+      <h3 class="card-title">GenAI Ready</h3>
+      <p class="card-desc">
+        Seamlessly integrates with modern AI pipelines. 
+        Export structured data for RAG or fine-tuning.
+      </p>
+    </div>
+    
+    <div class="bento-card wide">
+      <div class="card-icon">👁️</div>
+      <h3 class="card-title">Interactive HTML Viewer</h3>
+      <p class="card-desc">
+        Review translations with our side-by-side interactive viewer. 
+        Hover over translated text to see the original source instantly.
+      </p>
+    </div>
+    
+    <div class="bento-card">
+      <div class="card-icon">🔌</div>
+      <h3 class="card-title">Easy Integration</h3>
+      <p class="card-desc">
+        Simple Python API and CLI support. 
+        Drop it into your existing workflow in minutes.
+      </p>
+    </div>
+  </div>
+</div>
 
-    <p style="margin-top: 2rem;">
-      <a href="https://docling-translate.readthedocs.io/ko/latest/" style="font-weight: 600; color: var(--brand-primary);">공식 문서에서 자세한 사용법 확인하기 →</a>
-    </p>
+<div class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Project</h4>
+        <ul class="footer-links">
+          <li><a href="https://docling-translate.readthedocs.io/ko/latest/">Documentation</a></li>
+          <li><a href="https://github.com/gyunggyung/docling-translate">GitHub Repository</a></li>
+          <li><a href="https://pypi.org/project/docling-translate/">PyPI</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <ul class="footer-links">
+          <li><a href="https://github.com/gyunggyung/docling-translate/discussions">Discussions</a></li>
+          <li><a href="https://github.com/gyunggyung/docling-translate/issues">Issue Tracker</a></li>
+          <li><a href="https://github.com/gyunggyung/docling-translate/blob/main/CONTRIBUTING.md">Contributing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul class="footer-links">
+          <li><a href="https://github.com/gyunggyung/docling-translate/blob/main/LICENSE">License (MIT)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top: 3rem; text-align: center; color: var(--color-text-muted); font-size: 0.9rem;">
+      © 2025 Docling Translate Project. Open Source Software.
+    </div>
   </div>
 </div>
