@@ -11,6 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](requirements.txt)
 [![English](https://img.shields.io/badge/lang-English-red.svg)](docs/README.en.md)
+[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate)](https://github.com/gyunggyung/docling-translate/discussions)
 
 ## 개요
 
@@ -107,6 +108,7 @@ streamlit run app.py
 
 - [📖 **상세 사용 가이드 (USAGE.md)**](docs/USAGE.md): CLI 전체 옵션, API 키 설정, 포맷별 특징.
 - [🛠 **기여 가이드 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md): 프로젝트 구조, 개발 워크플로우, 테스트 방법.
+- [🤝 **지원 가이드 (SUPPORT.md)**](SUPPORT.md): 커뮤니티 참여 및 질문 방법.
 
 ## Acknowledgments
 

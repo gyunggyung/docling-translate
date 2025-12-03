@@ -11,6 +11,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](../requirements.txt)
 [![Korean](https://img.shields.io/badge/lang-한국어-blue.svg)](../README.md)
+[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate)](https://github.com/gyunggyung/docling-translate/discussions)
 
 ## Overview
 
