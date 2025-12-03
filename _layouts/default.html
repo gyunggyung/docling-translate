@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} | Docling Translate</title>
+    <meta name="description" content="{{ page.description | default: site.description }}">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ " /assets/css/style.css" | relative_url }}">
+
+    <!-- SEO -->
+    {% seo %}
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="wrapper header-inner">
+            <a href="{{ " /" | relative_url }}" class="site-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                Docling Translate
+            </a>
+            <nav class="site-nav">
+                <a href="{{ " /community/" | relative_url }}">Community</a>
+                <a href="{{ " /contact/" | relative_url }}">Contact</a>
+                <a href="https://docling-translate.readthedocs.io/ko/latest/" target="_blank">Documentation</a>
+                <a href="https://github.com/gyunggyung/docling-translate" target="_blank" class="github-link">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-content" aria-label="Content">
+        {{ content }}
+    </main>
+
+    <footer class="site-footer">
+        <div class="wrapper">
+            <div class="footer-content">
+                <div class="footer-logo">Docling Translate</div>
+                <p class="footer-desc">The ultimate document translation tool for the AI era.</p>
+                <div class="footer-links">
+                    <a href="https://github.com/gyunggyung/docling-translate">GitHub</a>
+                    <a href="https://docling-translate.readthedocs.io">Docs</a>
+                    <a href="https://github.com/gyunggyung/docling-translate/issues">Issues</a>
+                </div>
+                <p class="copyright">© 2025 Docling Translate Project. Open Source Software.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
