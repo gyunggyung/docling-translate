@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>기술 개요 (Technical Overview) &mdash; Docling Translate 0.1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d6a8a7ef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="이 문서 정보" href="about.html" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+    <link rel="next" title="API 레퍼런스 (API Reference)" href="api_reference.html" />
+    <link rel="prev" title="자주 묻는 질문 (FAQ)" href="faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Docling Translate
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">사용자 가이드</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">프로젝트 소개 (About)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">시작하기 (Getting Started)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#usage-guide">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#id2">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">설정 가이드 (Configuration Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">자주 묻는 질문 (FAQ)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">기술 문서</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">기술 개요 (Technical Overview)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#architecture">아키텍처 (Architecture)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#core-components">핵심 컴포넌트 (Core Components)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#technologies-used">기술 스택 (Technologies Used)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API 레퍼런스 (API Reference)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">유지보수 및 문제 해결 (Maintenance and Troubleshooting)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">커뮤니티 및 업데이트</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html#contributing-guide">기여 가이드 (Contributing Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">릴리즈 노트 (Release Notes)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Docling Translate</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">기술 개요 (Technical Overview)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/technical_overview.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="technical-overview">
+<h1>기술 개요 (Technical Overview)<a class="headerlink" href="#technical-overview" title="Link to this heading"></a></h1>
+<section id="architecture">
+<h2>아키텍처 (Architecture)<a class="headerlink" href="#architecture" title="Link to this heading"></a></h2>
+<p>Docling Translate는 확장성과 유지보수성을 고려한 모듈식 아키텍처를 따릅니다.</p>
+<section id="core-components">
+<h3>핵심 컴포넌트 (Core Components)<a class="headerlink" href="#core-components" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Converter (<code class="docutils literal notranslate"><span class="pre">src/converter.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">docling</span></code> 라이브러리를 사용하여 PDF, DOCX, PPTX 등 다양한 문서를 로드합니다.</p></li>
+<li><p>텍스트와 레이아웃 정보를 추출합니다.</p></li>
+<li><p>문서를 번역하기 적합한 중간 형태로 변환합니다.</p></li>
+</ul>
+</li>
+<li><p><strong>Translator (<code class="docutils literal notranslate"><span class="pre">src/translator.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p>다양한 번역 API(OpenAI, DeepL, Google Gemini) 및 로컬 LLM(Qwen, LFM2, Yanolja)과의 연동을 관리합니다.</p></li>
+<li><p>API 사용량을 최적화하기 위해 텍스트를 분할하고 배치(Batch) 처리를 수행합니다.</p></li>
+<li><p>재시도 로직과 에러 처리를 구현합니다.</p></li>
+</ul>
+</li>
+<li><p><strong>HTML Generator (<code class="docutils literal notranslate"><span class="pre">src/html_generator.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p>원문과 번역문을 입력받습니다.</p></li>
+<li><p>인터랙티브한 HTML 파일을 생성합니다.</p></li>
+<li><p>분할 뷰(Split-view) 인터페이스를 위한 JavaScript와 CSS를 포함합니다.</p></li>
+</ul>
+</li>
+<li><p><strong>CLI &amp; App (<code class="docutils literal notranslate"><span class="pre">main.py</span></code>, <code class="docutils literal notranslate"><span class="pre">app.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">main.py</span></code>: 명령줄 인터페이스(CLI) 진입점입니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">app.py</span></code>: Streamlit 기반의 웹 애플리케이션입니다.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+</section>
+<section id="technologies-used">
+<h2>기술 스택 (Technologies Used)<a class="headerlink" href="#technologies-used" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Python</strong>: 주 프로그래밍 언어.</p></li>
+<li><p><strong>Docling</strong>: 문서 파싱 및 레이아웃 분석.</p></li>
+<li><p><strong>Streamlit</strong>: 웹 사용자 인터페이스.</p></li>
+<li><p><strong>LangChain / OpenAI / DeepL</strong>: AI 기반 번역.</p></li>
+<li><p><strong>BeautifulSoup</strong>: HTML 조작 및 생성.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="faq.html" class="btn btn-neutral float-left" title="자주 묻는 질문 (FAQ)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_reference.html" class="btn btn-neutral float-right" title="API 레퍼런스 (API Reference)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Docling Translate Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

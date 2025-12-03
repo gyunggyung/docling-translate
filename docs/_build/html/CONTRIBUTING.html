@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>기여 가이드 (Contributing Guide) &mdash; Docling Translate 0.1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d6a8a7ef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="이 문서 정보" href="about.html" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Docling Translate
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">사용자 가이드</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">프로젝트 소개 (About)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">시작하기 (Getting Started)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#usage-guide">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#id2">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">설정 가이드 (Configuration Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">자주 묻는 질문 (FAQ)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">기술 문서</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="technical_overview.html">기술 개요 (Technical Overview)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API 레퍼런스 (API Reference)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">유지보수 및 문제 해결 (Maintenance and Troubleshooting)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">커뮤니티 및 업데이트</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html#contributing-guide">기여 가이드 (Contributing Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">릴리즈 노트 (Release Notes)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Docling Translate</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">기여 가이드 (Contributing Guide)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/CONTRIBUTING.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing-guide">
+<h1>기여 가이드 (Contributing Guide)<a class="headerlink" href="#contributing-guide" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">docling-translate</span></code> 프로젝트에 관심을 가져주셔서 감사합니다. 여러분의 기여는 이 프로젝트를 더 유용하고 강력하게 만드는 데 큰 힘이 됩니다.</p>
+<section id="architecture">
+<h2>프로젝트 구조 (Architecture)<a class="headerlink" href="#architecture" title="Link to this heading"></a></h2>
+<p>이 프로젝트는 크게 3가지 핵심 모듈로 구성되어 있습니다.</p>
+<section id="main-py-cli-entry-point-orchestrator">
+<h3>1. <code class="docutils literal notranslate"><span class="pre">main.py</span></code> (CLI Entry Point &amp; Orchestrator)<a class="headerlink" href="#main-py-cli-entry-point-orchestrator" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>사용자의 명령줄 입력을 파싱하고 전체 번역 파이프라인을 조율합니다.</p></li>
+<li><p><strong>역할</strong>:</p>
+<ul>
+<li><p>파일 입출력 관리 (단일 파일 및 폴더 스캔).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docling</span></code>을 이용한 문서 변환(<code class="docutils literal notranslate"><span class="pre">DocumentConverter</span></code>) 초기화.</p></li>
+<li><p>병렬 처리(<code class="docutils literal notranslate"><span class="pre">ThreadPoolExecutor</span></code>) 관리.</p></li>
+<li><p>최종 결과물(Markdown, HTML) 생성 및 저장.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="translator-py-translation-logic">
+<h3>2. <code class="docutils literal notranslate"><span class="pre">translator.py</span></code> (Translation Logic)<a class="headerlink" href="#translator-py-translation-logic" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>실제 텍스트 번역을 담당하며, 다양한 번역 엔진을 추상화합니다.</p></li>
+<li><p><strong>역할</strong>:</p>
+<ul>
+<li><p><strong>Engine Adapters</strong>: <code class="docutils literal notranslate"><span class="pre">GoogleTranslator</span></code>, <code class="docutils literal notranslate"><span class="pre">deepl</span></code>, <code class="docutils literal notranslate"><span class="pre">google.genai</span></code> SDK를 래핑하여 통일된 인터페이스 제공.</p></li>
+<li><p><strong>Text Processing</strong>: <code class="docutils literal notranslate"><span class="pre">nltk</span></code>를 사용한 문장 분리(Tokenization).</p></li>
+<li><p><strong>Bulk Translation</strong>: 다수의 문장을 효율적으로 병렬 번역하는 로직 포함.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="app-py-web-interface">
+<h3>3. <code class="docutils literal notranslate"><span class="pre">app.py</span></code> (Web Interface)<a class="headerlink" href="#app-py-web-interface" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">streamlit</span></code> 기반의 웹 애플리케이션입니다.</p></li>
+<li><p><strong>역할</strong>:</p>
+<ul>
+<li><p>파일 업로드 UI 및 옵션 선택 핸들링.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">main.py</span></code>의 로직을 재사용하여 번역 수행.</p></li>
+<li><p>번역 결과를 인터랙티브한 HTML/Markdown 뷰어로 렌더링.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="workflow">
+<h2>개발 워크플로우 (Workflow)<a class="headerlink" href="#workflow" title="Link to this heading"></a></h2>
+<p>우리는 체계적인 개발을 위해 <strong>Plan-First</strong> 접근 방식을 따릅니다.</p>
+<ol class="arabic simple">
+<li><p><strong>Issue 생성</strong>: 버그 제보 또는 기능 제안을 위해 GitHub Issue를 생성합니다.</p></li>
+<li><p><strong>Plan 작성</strong>: <code class="docutils literal notranslate"><span class="pre">plans/</span></code> 폴더에 <code class="docutils literal notranslate"><span class="pre">issue-[번호]-[설명].md</span></code> 형식으로 계획 파일을 작성합니다. 구현할 기능의 설계, 변경할 파일, 테스트 계획을 상세히 기술합니다.</p></li>
+<li><p><strong>구현 (Implementation)</strong>: 승인된 계획에 따라 코드를 작성합니다.</p></li>
+<li><p><strong>테스트 (Test)</strong>: 로컬 환경에서 변경 사항을 검증합니다.</p></li>
+<li><p><strong>Pull Request</strong>: 변경 사항을 PR로 제출합니다.</p></li>
+</ol>
+</section>
+<section id="id1">
+<h2>개발 환경 설정<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 저장소 클론</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/gyunggyung/docling-translate.git
+<span class="nb">cd</span><span class="w"> </span>docling-translate
+
+<span class="c1"># 가상환경 생성 (권장)</span>
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># Linux/macOS</span>
+<span class="c1"># .venv\Scripts\activate   # Windows</span>
+
+<span class="c1"># 의존성 설치</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>테스트 방법<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<p>현재 별도의 자동화된 테스트 스위트는 없으나(추후 도입 예정), 다음과 같은 방법으로 수동 테스트를 권장합니다.</p>
+<ol class="arabic">
+<li><p><strong>CLI 테스트</strong>: <code class="docutils literal notranslate"><span class="pre">samples/</span></code> 폴더의 예제 파일을 사용하여 정상 동작 확인.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>main.py<span class="w"> </span>samples/1706.03762v7.pdf<span class="w"> </span>--max-workers<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Web UI 테스트</strong>: 스트림릿 앱을 실행하여 UI 깨짐이 없는지 확인.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>streamlit<span class="w"> </span>run<span class="w"> </span>app.py
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="id3">
+<h2>코드 스타일<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Type Hinting</strong>: 모든 함수에 타입 힌트를 명시하여 가독성을 높여주세요.</p></li>
+<li><p><strong>Comments</strong>: 복잡한 로직에는 한국어 주석을 달아주세요.</p></li>
+<li><p><strong>Documentation</strong>: 기능 변경 시 <code class="docutils literal notranslate"><span class="pre">README.md</span></code> 또는 <code class="docutils literal notranslate"><span class="pre">docs/USAGE.md</span></code>를 함께 업데이트해주세요.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Docling Translate Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

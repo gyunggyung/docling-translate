@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>성능 비교 결과 (Performance Comparison) &mdash; Docling Translate 0.1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d6a8a7ef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="이 문서 정보" href="about.html" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Docling Translate
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">사용자 가이드</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">프로젝트 소개 (About)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">시작하기 (Getting Started)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#usage-guide">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#id2">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">설정 가이드 (Configuration Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">자주 묻는 질문 (FAQ)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">기술 문서</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="technical_overview.html">기술 개요 (Technical Overview)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API 레퍼런스 (API Reference)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">유지보수 및 문제 해결 (Maintenance and Troubleshooting)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">커뮤니티 및 업데이트</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html#contributing-guide">기여 가이드 (Contributing Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">릴리즈 노트 (Release Notes)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Docling Translate</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">성능 비교 결과 (Performance Comparison)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PERFORMANCE_COMPARISON.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="performance-comparison">
+<h1>성능 비교 결과 (Performance Comparison)<a class="headerlink" href="#performance-comparison" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>테스트 환경<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>샘플 파일</strong>: <code class="docutils literal notranslate"><span class="pre">samples/1706.03762v7.pdf</span></code> (Attention is All You Need 논문)</p></li>
+<li><p><strong>문장 수</strong>: 405개 (고유 문장 405개)</p></li>
+<li><p><strong>번역 엔진</strong>: Google Translate</p></li>
+<li><p><strong>언어</strong>: 영어(en) → 한국어(ko)</p></li>
+</ul>
+</section>
+<section id="sequential-vs-parallel">
+<h2>성능 비교 (Sequential vs Parallel)<a class="headerlink" href="#sequential-vs-parallel" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>핵심 성과<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>지표</p></th>
+<th class="head"><p>순차 처리<br/>(max-workers=1)</p></th>
+<th class="head"><p>병렬 처리<br/>(max-workers=8)</p></th>
+<th class="head"><p>개선율</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>전체 실행 시간</strong></p></td>
+<td><p>341.21초</p></td>
+<td><p>110.03초</p></td>
+<td><p><strong>-68%</strong> (3.1배 ↑)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>번역 시간</strong></p></td>
+<td><p>239.28초</p></td>
+<td><p>50.79초</p></td>
+<td><p><strong>-79%</strong> (4.7배 ↑)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>문장당 평균 시간</strong></p></td>
+<td><p>0.5897초</p></td>
+<td><p>0.1249초</p></td>
+<td><p><strong>-79%</strong> (4.7배 ↑)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>처리량 (CPS)</strong></p></td>
+<td><p>154.9 chars/초</p></td>
+<td><p>731.7 chars/초</p></td>
+<td><p><strong>+372%</strong> (4.7배 ↑)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id3">
+<h3>상세 분석<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="max-workers-1">
+<h4>순차 처리 (max-workers=1)<a class="headerlink" href="#max-workers-1" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>전체 실행 시간: 341.21초
+├─ Import Libraries: 10.21초 (3.0%)
+├─ Initialization: 0.01초 (0.0%)
+├─ Conversion: 101.91초 (29.9%)
+└─ Translation &amp; Save: 239.28초 (70.1%)
+
+번역 통계:
+- 문장 수: 405개
+- 문장당 평균: 0.5897초
+- 처리량: 154.9 chars/초
+</pre></div>
+</div>
+</section>
+<section id="max-workers-8">
+<h4>병렬 처리 (max-workers=8)<a class="headerlink" href="#max-workers-8" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>전체 실행 시간: 110.03초
+├─ Import Libraries: 7.58초 (6.9%)
+├─ Initialization: 0.00초 (0.0%)
+├─ Conversion: 59.22초 (53.8%)
+└─ Translation &amp; Save: 50.79초 (46.2%)
+
+번역 통계:
+- 문장 수: 405개
+- 문장당 평균: 0.1249초
+- 처리량: 731.7 chars/초
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="id4">
+<h2>인사이트<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id5">
+<h3>1. 병목 구간 식별<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>순차 처리</strong>: Translation이 전체의 70% 차지 → 명확한 병목</p></li>
+<li><p><strong>병렬 처리</strong>: Translation 비중이 36%로 감소 → Conversion이 상대적으로 더 큰 비중</p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>2. 병렬 효율성<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>이론적 최대 속도</strong>: 8 workers = 8배</p></li>
+<li><p><strong>실제 달성 속도</strong>: 4.7배</p></li>
+<li><p><strong>병렬 효율</strong>: 59% (네트워크 대기, 동기화 오버헤드 고려 시 양호)</p></li>
+</ul>
+</section>
+<section id="pdf">
+<h3>3. PDF 변환 시간<a class="headerlink" href="#pdf" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Conversion 시간은 병렬화 불가 (101.91초 → 59.22초는 시스템 변동)</p></li>
+<li><p>전체 성능 향상의 한계는 Conversion 시간에 의해 결정됨 (Amdahl’s Law)</p></li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h2>권장 사항<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id8">
+<h3>최적 워커 수<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>추천</strong>: 8 workers</p></li>
+<li><p><strong>이유</strong>: 현재 테스트에서 가장 높은 처리량 달성</p></li>
+<li><p><strong>주의</strong>: 더 많은 workers는 API rate limit 위험 및 overhead 증가</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>사용 가이드<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 순차 처리 (디버깅, 작은 파일)</span>
+python<span class="w"> </span>main.py<span class="w"> </span>input.pdf<span class="w"> </span>--max-workers<span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># 병렬 처리 (일반적인 경우, 권장)</span>
+python<span class="w"> </span>main.py<span class="w"> </span>input.pdf<span class="w"> </span>--max-workers<span class="w"> </span><span class="m">8</span>
+
+<span class="c1"># 벤치마크 활성화</span>
+python<span class="w"> </span>main.py<span class="w"> </span>input.pdf<span class="w"> </span>--max-workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--benchmark
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>결론<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<p>Bulk Translation 구현으로 <strong>번역 시간 79% 단축</strong>에 성공했습니다.</p>
+<p>핵심 개선 사항:</p>
+<ul class="simple">
+<li><p>✅ 문장 단위 병렬 번역으로 네트워크 대기 시간 최소화</p></li>
+<li><p>✅ Collection → Bulk Translation → Generation 구조로 코드 명확성 향상</p></li>
+<li><p>✅ API 호출 효율성 극대화 (405개 문장을 동시 처리)</p></li>
+<li><p>✅ <strong>전체 처리 시간 68% 단축 (341초 → 110초)</strong></p></li>
+</ul>
+<hr class="docutils" />
+<p><em>최종 업데이트: 2025-11-22</em></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Docling Translate Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

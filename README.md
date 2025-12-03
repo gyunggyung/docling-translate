@@ -7,6 +7,7 @@
 > **Docling 기반의 구조 보존형 문서 번역 도구**  
 > PDF, DOCX, PPTX, HTML, 이미지의 구조를 유지하며 인터랙티브 비교 뷰를 제공합니다.
 
+[![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](requirements.txt)
 [![English](https://img.shields.io/badge/lang-English-red.svg)](docs/README.en.md)
@@ -22,7 +23,7 @@
 - **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
-- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-4o, Qwen(Local), LFM2(Local), Yanolja(Local) 지원.
+- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
 ## 빠른 시작 (Quick Start)

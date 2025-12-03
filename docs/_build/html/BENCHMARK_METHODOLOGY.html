@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>벤치마크 방법론 (Benchmark Methodology) &mdash; Docling Translate 0.1.0 문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d6a8a7ef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=afa94a99"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="이 문서 정보" href="about.html" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Docling Translate
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">사용자 가이드</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">프로젝트 소개 (About)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">시작하기 (Getting Started)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html">How to Use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#usage-guide">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_use.html#id2">상세 사용 가이드 (Usage Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">설정 가이드 (Configuration Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">자주 묻는 질문 (FAQ)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">기술 문서</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="technical_overview.html">기술 개요 (Technical Overview)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API 레퍼런스 (API Reference)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">유지보수 및 문제 해결 (Maintenance and Troubleshooting)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">커뮤니티 및 업데이트</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html#contributing-guide">기여 가이드 (Contributing Guide)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">릴리즈 노트 (Release Notes)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Docling Translate</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">벤치마크 방법론 (Benchmark Methodology)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/BENCHMARK_METHODOLOGY.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="benchmark-methodology">
+<h1>벤치마크 방법론 (Benchmark Methodology)<a class="headerlink" href="#benchmark-methodology" title="Link to this heading"></a></h1>
+<p>이 문서는 <code class="docutils literal notranslate"><span class="pre">docling-translate</span></code> 프로젝트의 성능 측정 방식과 지표를 정의합니다.</p>
+<section id="id1">
+<h2>측정 철학<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>우리는 “공정한 시간 측정(Fair Time Checking)”을 지향합니다. 사용자가 체감하는 전체 실행 시간뿐만 아니라, 각 단계별(I/O, 연산, 네트워크) 소요 시간을 정밀하게 분리하여 병목 구간을 식별하는 것을 목표로 합니다.</p>
+</section>
+<section id="metrics">
+<h2>측정 지표 (Metrics)<a class="headerlink" href="#metrics" title="Link to this heading"></a></h2>
+<section id="time-metrics">
+<h3>1. 시간 지표 (Time Metrics)<a class="headerlink" href="#time-metrics" title="Link to this heading"></a></h3>
+<p>모든 시간은 <code class="docutils literal notranslate"><span class="pre">Wall</span> <span class="pre">Time</span></code> (실제 경과 시간)을 기준으로 측정합니다.</p>
+<ul class="simple">
+<li><p><strong>Import Libraries</strong>: 프로그램 시작 후 <code class="docutils literal notranslate"><span class="pre">docling</span></code> 등 무거운 라이브러리를 로딩하는 데 걸리는 시간입니다.</p></li>
+<li><p><strong>Initialization</strong>: <code class="docutils literal notranslate"><span class="pre">DocumentConverter</span></code> 모델을 메모리에 올리고 초기화하는 시간입니다.</p></li>
+<li><p><strong>Total Batch Execution</strong>: 실제 PDF 처리(변환+번역)가 시작되어 끝날 때까지의 총 시간입니다. (병렬 처리 시 이 시간이 중요합니다.)</p></li>
+<li><p><strong>Total Process (Per File)</strong>: 개별 파일 처리에 걸린 총 시간입니다.</p></li>
+<li><p><strong>Conversion</strong>: PDF를 <code class="docutils literal notranslate"><span class="pre">DoclingDocument</span></code> 구조로 변환하는 시간입니다. (CPU/GPU 연산 위주)</p></li>
+<li><p><strong>Translation &amp; Save</strong>: 텍스트를 추출하여 번역하고 결과를 파일로 저장하는 시간입니다. (네트워크 I/O 위주)</p></li>
+</ul>
+</section>
+<section id="statistical-metrics">
+<h3>2. 통계 지표 (Statistical Metrics)<a class="headerlink" href="#statistical-metrics" title="Link to this heading"></a></h3>
+<p>단순 시간 외에 작업량 대비 속도를 측정합니다.</p>
+<ul class="simple">
+<li><p><strong>Image Save</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Count</span></code>: 저장된 이미지 개수.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Avg</span> <span class="pre">Time</span></code>: 이미지 1장당 평균 저장 시간.</p></li>
+</ul>
+</li>
+<li><p><strong>Translation (Sentences)</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Count</span></code>: 번역된 문장 수.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Avg</span> <span class="pre">Time</span></code>: 문장당 평균 번역 API 호출 시간.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Throughput</span></code>: 초당 처리된 글자 수 (Chars/sec).</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id2">
+<h3>3. 실행 메타데이터<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>벤치마크 리포트에는 다음 정보도 표시됩니다:</p>
+<ul class="simple">
+<li><p><strong>실행 모드</strong>: Sequential (순차) / Parallel (병렬)</p></li>
+<li><p><strong>워커 수 (max-workers)</strong>: 병렬 처리 스레드 수</p></li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>벤치마크 실행 방법<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id4">
+<h3>기본 실행 (벤치마크 끄기)<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>main.py<span class="w"> </span>samples/
+</pre></div>
+</div>
+<p>일반적인 사용 시에는 벤치마크 오버헤드가 없습니다.</p>
+</section>
+<section id="id5">
+<h3>벤치마크 모드<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>main.py<span class="w"> </span>samples/<span class="w"> </span>--benchmark
+</pre></div>
+</div>
+<p>상세 리포트가 콘솔에 출력되고 <code class="docutils literal notranslate"><span class="pre">docs/BENCHMARK_LOG.md</span></code>에 저장됩니다.</p>
+</section>
+<section id="id6">
+<h3>순차 실행 (비교용)<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>main.py<span class="w"> </span>samples/<span class="w"> </span>--benchmark<span class="w"> </span>--sequential
+</pre></div>
+</div>
+<p>병렬 처리를 끄고 순차적으로 실행하여 성능 차이를 비교할 수 있습니다.</p>
+</section>
+<section id="id7">
+<h3>워커 수 조절<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>main.py<span class="w"> </span>samples/<span class="w"> </span>--max-workers<span class="w"> </span><span class="m">8</span><span class="w"> </span>--benchmark
+</pre></div>
+</div>
+<p>병렬 처리 워커 수를 직접 지정할 수 있습니다. (기본값: 4)</p>
+</section>
+</section>
+<section id="id8">
+<h2>리포트 해석 가이드<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>============================================================
+벤치마크 리포트 (2025-11-22 08:04:17)
+============================================================
+실행 모드: 병렬(Parallel)      ← 순차/병렬 여부
+워커 수 (max-workers): 8       ← 병렬 처리 스레드 수
+------------------------------------------------------------
+전체 실행 시간: 110.03초
+------------------------------------------------------------
+작업명                                      | 소요 시간     
+------------------------------------------------------------
+Import Libraries                         | 7.58초      ← 라이브러리 로딩 (최적화 어려움)
+Initialization                           | 0.00초      ← 모델 초기화 (1회만 발생)
+Total Batch Execution                    | 110.02초    ← 실제 작업 시간
+Conversion: 1706.03762v7.pdf             | 59.22초     ← PDF 변환 (CPU/GPU 작업)
+Translation &amp; Save: 1706.03762v7.pdf     | 50.79초     ← 번역 및 저장 (네트워크 I/O)
+------------------------------------------------------------
+통계 항목                          | 횟수     | 평균 시간      | 처리량 (Throughput)
+------------------------------------------------------------
+Translation (Sentences)        | 405    | 0.1249초    | 731.7 chars/초
+Image Save                     | 10     | 0.0184초    | 
+------------------------------------------------------------
+</pre></div>
+</div>
+<p><strong>해석 팁</strong>:</p>
+<ul class="simple">
+<li><p><strong>Throughput</strong>이 낮다면 네트워크 상태나 API 응답 속도를 점검해야 합니다.</p></li>
+<li><p><strong>Image Save</strong> 시간이 길다면 디스크 I/O가 병목일 수 있습니다.</p></li>
+<li><p><strong>Translation &amp; Save</strong>가 전체의 큰 비중을 차지하면 병렬 처리로 개선 가능합니다.</p></li>
+</ul>
+</section>
+<section id="id9">
+<h2>결론<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<p>벤치마크 리포트를 통해:</p>
+<ul class="simple">
+<li><p>전체 처리 시간 파악 가능</p></li>
+<li><p>병목 구간 식별 (Conversion vs Translation)</p></li>
+<li><p>병렬 처리 효과 측정 가능</p></li>
+<li><p>최적 워커 수 결정에 활용</p></li>
+</ul>
+<p>벤치마크 기능을 사용하여 지속적인 성능 개선을 추구합니다.</p>
+</section>
+<hr class="docutils" />
+<section id="bulk-translation">
+<h2>Bulk Translation 전략<a class="headerlink" href="#bulk-translation" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3>개요<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>Bulk Translation은 문장 단위 병렬 번역을 통해 번역 성능을 극대화하는 전략입니다.</p>
+</section>
+<section id="id11">
+<h3>동작 원리<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p><strong>전통적인 방식</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">each</span> <span class="n">TextItem</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">each</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">TextItem</span><span class="p">:</span>
+        <span class="n">translate</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>  <span class="c1"># 순차 처리, 네트워크 대기 병목</span>
+</pre></div>
+</div>
+<p><strong>Bulk Translation 방식</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Phase 1: Collection (문장 수집)</span>
+<span class="n">all_sentences</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">each</span> <span class="n">TextItem</span><span class="p">:</span>
+    <span class="n">all_sentences</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sentences</span><span class="p">)</span>
+
+<span class="c1"># Phase 2: Bulk Translation (일괄 병렬 번역)</span>
+<span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">translated</span> <span class="o">=</span> <span class="n">parallel_translate</span><span class="p">(</span><span class="n">all_sentences</span><span class="p">)</span>
+
+<span class="c1"># Phase 3: Generation (파일 생성)</span>
+<span class="k">for</span> <span class="n">each</span> <span class="n">TextItem</span><span class="p">:</span>
+    <span class="n">get</span> <span class="n">translation</span> <span class="kn">from</span><span class="w"> </span><span class="nn">map</span>
+    <span class="n">write</span> <span class="n">to</span> <span class="n">file</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>핵심 이점<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>네트워크 대기 시간 최소화</strong></p>
+<ul class="simple">
+<li><p>번역 API 호출은 네트워크 I/O 대기가 주 병목</p></li>
+<li><p>여러 문장을 동시에 요청하면 대기 시간이 병렬로 진행</p></li>
+<li><p>8 workers로 약 4.7배 속도 향상 (239초 → 51초)</p></li>
+</ul>
+</li>
+<li><p><strong>코드 구조 명확성</strong></p>
+<ul class="simple">
+<li><p>Collection, Translation, Generation 단계 분리</p></li>
+<li><p>각 단계의 책임이 명확함</p></li>
+<li><p>디버깅 및 유지보수 용이</p></li>
+</ul>
+</li>
+<li><p><strong>확장성</strong></p>
+<ul class="simple">
+<li><p>Worker 수 조절로 성능 튜닝 가능</p></li>
+<li><p>다양한 번역 엔진에 적용 가능</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="id13">
+<h3>성능 결과<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<p>순차 처리 vs 병렬 처리 (8 workers) 비교:</p>
+<ul class="simple">
+<li><p><strong>전체 시간</strong>: 341초 → 110초 (<strong>68% 단축, 3.1배 빨라짐</strong>)</p></li>
+<li><p><strong>번역 시간</strong>: 239초 → 51초 (<strong>79% 단축, 4.7배 빨라짐</strong>)</p></li>
+<li><p><strong>처리량</strong>: 155 → 732 chars/초 (<strong>4.7배 향상</strong>)</p></li>
+</ul>
+<p>상세 비교는 <code class="docutils literal notranslate"><span class="pre">docs/PERFORMANCE_COMPARISON.md</span></code> 참조.</p>
+<hr class="docutils" />
+<p><em>최종 업데이트: 2025-11-22</em></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Docling Translate Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
