@@ -1,0 +1,10 @@
+title: Docling Translate
+email: your-email@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Advanced PDF/Document Translator with interactive comparison. Built on IBM Docling.
+baseurl: "/docling-translate" # the subpath of your site, e.g. /blog
+url: "https://gyunggyung.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
