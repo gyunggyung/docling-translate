@@ -21,5 +21,5 @@ Docling Translate는 오픈소스 프로젝트로서 커뮤니티의 참여를 �
 - [기여 가이드라인 (CONTRIBUTING.md)](https://docling-translate.readthedocs.io/ko/latest/contribution.html)
 
 ## 연락 채널 (Channels)
-- **Email**: maintainer@docling-translate.org (예시)
+- **Email**: newhiwoong@gmail.com
 - **Slack**: [Join our Slack Workspace](#) (준비 중)

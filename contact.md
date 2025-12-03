@@ -9,8 +9,8 @@ permalink: /contact/
 프로젝트와 관련하여 문의 사항이 있으시면 아래 채널을 통해 연락주세요.
 
 ## 이메일 (Email)
-- 일반 문의: `contact@docling-translate.org`
-- 보안 이슈: `security@docling-translate.org`
+- 일반 문의: `newhiwoong@gmail.com`
+- 보안 이슈: `newhiwoong@gmail.com`
 
 ## 소셜 미디어 (Social Media)
 - **GitHub**: [gyunggyung](https://github.com/gyunggyung)
