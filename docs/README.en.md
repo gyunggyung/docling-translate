@@ -7,6 +7,7 @@
 > **Docling-based Translator for Technical Documents**  
 > Supports PDF, DOCX, PPTX, HTML & Images with interactive structure-preserving comparison.
 
+[![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/ko/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](../requirements.txt)
 [![Korean](https://img.shields.io/badge/lang-한국어-blue.svg)](../README.md)
