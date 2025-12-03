@@ -90,7 +90,9 @@ a:hover {
   line-height: 1.2;
   margin-bottom: 1.5rem;
   background: linear-gradient(to right, #fff, #a5d6ff);
+  background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
 }
 
