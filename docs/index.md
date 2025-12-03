@@ -27,5 +27,6 @@ maintenance
 :caption: 커뮤니티 및 업데이트
 
 contribution
+support
 release_notes
 ```

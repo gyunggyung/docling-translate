@@ -4,29 +4,40 @@
 
 ## 프로젝트 구조 (Architecture)
 
-이 프로젝트는 크게 3가지 핵심 모듈로 구성되어 있습니다.
+이 프로젝트는 `src/` 폴더를 중심으로 모듈화되어 있습니다.
 
-### 1. `main.py` (CLI Entry Point & Orchestrator)
-- 사용자의 명령줄 입력을 파싱하고 전체 번역 파이프라인을 조율합니다.
+### 1. `main.py` (CLI Entry Point)
+- 사용자의 명령줄 입력을 파싱하고 `src.core`를 호출하여 작업을 시작합니다.
+- **역할**: CLI 인수 처리, 로깅 설정, 애플리케이션 진입점.
+
+### 2. `src/core.py` (Core Orchestrator)
+- 문서 처리의 핵심 파이프라인을 관리합니다.
 - **역할**:
-    - 파일 입출력 관리 (단일 파일 및 폴더 스캔).
-    - `docling`을 이용한 문서 변환(`DocumentConverter`) 초기화.
-    - 병렬 처리(`ThreadPoolExecutor`) 관리.
-    - 최종 결과물(Markdown, HTML) 생성 및 저장.
+    - `docling`을 이용한 문서 변환(`DocumentConverter`).
+    - 텍스트 추출 및 번역 요청 조율.
+    - 최종 결과물(HTML) 생성 요청.
 
-### 2. `translator.py` (Translation Logic)
-- 실제 텍스트 번역을 담당하며, 다양한 번역 엔진을 추상화합니다.
+### 3. `src/translation/` (Translation Package)
+- 번역 로직을 담당하는 패키지입니다.
+- **구조**:
+    - `base.py`: 번역 엔진의 추상 기본 클래스(`BaseTranslator`) 정의. 모든 엔진은 이 클래스를 상속받아야 합니다.
+    - `__init__.py`: 팩토리 패턴(`create_translator`)을 통해 엔진 인스턴스 생성.
+    - **`engines/` (구현체)**:
+        - **API 기반**: `GoogleTranslator` (무료/크롤링), `DeepLTranslator`, `OpenAITranslator` (GPT), `GeminiTranslator`.
+        - **로컬 LLM 기반**: `QwenTranslator`, `LFM2Translator`, `YanoljaTranslator`. (`llama-cpp-python` 사용)
+
+### 4. `src/html_generator.py` (HTML Generator)
+- 번역된 텍스트와 원본 문서를 결합하여 결과물을 생성합니다.
 - **역할**:
-    - **Engine Adapters**: `GoogleTranslator`, `deepl`, `google.genai` SDK를 래핑하여 통일된 인터페이스 제공.
-    - **Text Processing**: `nltk`를 사용한 문장 분리(Tokenization).
-    - **Bulk Translation**: 다수의 문장을 효율적으로 병렬 번역하는 로직 포함.
+    - HTML 템플릿 관리.
+    - 좌우 대조(Side-by-Side) 뷰 및 인터랙티브 기능 스크립트 주입.
 
-### 3. `app.py` (Web Interface)
+### 5. `app.py` (Web Interface)
 - `streamlit` 기반의 웹 애플리케이션입니다.
 - **역할**:
-    - 파일 업로드 UI 및 옵션 선택 핸들링.
-    - `main.py`의 로직을 재사용하여 번역 수행.
-    - 번역 결과를 인터랙티브한 HTML/Markdown 뷰어로 렌더링.
+    - 파일 업로드 및 옵션 설정 UI.
+    - `src.core.process_document`를 재사용하여 번역 수행.
+    - 결과 뷰어 렌더링.
 
 ## 개발 워크플로우 (Workflow)
 
@@ -60,7 +71,7 @@ pip install -r requirements.txt
 
 1.  **CLI 테스트**: `samples/` 폴더의 예제 파일을 사용하여 정상 동작 확인.
     ```bash
-    python main.py samples/1706.03762v7.pdf --max-workers 2
+    python main.py samples/1706.03762v7.pdf
     ```
 2.  **Web UI 테스트**: 스트림릿 앱을 실행하여 UI 깨짐이 없는지 확인.
     ```bash
@@ -71,4 +82,4 @@ pip install -r requirements.txt
 
 - **Type Hinting**: 모든 함수에 타입 힌트를 명시하여 가독성을 높여주세요.
 - **Comments**: 복잡한 로직에는 한국어 주석을 달아주세요.
-- **Documentation**: 기능 변경 시 `README.md` 또는 `docs/USAGE.md`를 함께 업데이트해주세요.
+- **Documentation**: 기능 변경 시 `README.md`과 `docs/README.en.md` 또는 `docs/USAGE.md`를 함께 업데이트해주세요.
