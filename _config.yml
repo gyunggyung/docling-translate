@@ -2,5 +2,7 @@ title: Docling Translate
 description: >-
   The ultimate document translation tool for the AI era.
 theme: minima
+url: "https://gyunggyung.github.io"
+baseurl: "/docling-translate"
 plugins:
   - jekyll-seo-tag
