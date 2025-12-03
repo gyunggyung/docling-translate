@@ -20,7 +20,7 @@ import shutil
 # src 모듈 임포트
 from src.core import process_document, create_converter
 from src.i18n import t, set_current_lang, get_current_lang
-from src.utils import create_zip, inject_images, load_history_from_disk
+from src.utils import inject_images, load_history_from_disk
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -238,15 +238,8 @@ def main():
             
             st.subheader(t("batch_result_header").format(n=len(selected_record['results'])))
             
-            # 상단 컨트롤 영역 (집중 모드, 검수 모드)
-            # 컬럼 비율 조정하여 토글 버튼들이 한 줄에 잘 나오도록 함
-            c_head, c_blank, c_view, c_focus = st.columns([6, 2, 2, 2])
-            with c_view:
-                # 검수 모드 (기본값: True -> 좌우 대조)
-                view_mode = st.toggle(t("view_mode_label"), value=True, key="view_mode", help=t("view_mode_help"))
-            with c_focus:
-                # 집중 모드
-                focus_mode = st.toggle(t("focus_mode_label"), key="focus_mode", help=t("focus_mode_help"))
+            # 상단 컨트롤 영역 (집중 모드, 검수 모드) - 제거됨 (기본값 적용)
+
             
             # 각 결과 파일별 탭 생성
             tabs = st.tabs([res['filename'] for res in selected_record['results']])
@@ -269,107 +262,32 @@ def main():
 
                     # 뷰 모드 설정 스크립트 주입
                     # HTML 로드 직후 실행되도록 body 끝에 스크립트 추가
-                    if view_mode:
-                        # 검수 모드 활성화 (view-mode-inspect 클래스 추가)
-                        script = """
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                document.getElementById('content-container').classList.add('view-mode-inspect');
-                                document.getElementById('btn-mode').classList.add('active');
-                                document.getElementById('btn-mode').innerText = UI_STRINGS[currentUiLang].mode_read; // 버튼 텍스트는 반대로 (누르면 읽기모드)
-                                updateUiText();
-                            });
-                        </script>
-                        """
-                        html_content += script
-                    else:
-                        # 읽기 모드 (기본값이지만 명시적으로 제거 보장)
-                        script = """
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                document.getElementById('content-container').classList.remove('view-mode-inspect');
-                                document.getElementById('btn-mode').classList.remove('active');
-                                updateUiText();
-                            });
-                        </script>
-                        """
-                        html_content += script
+                    # 검수 모드 활성화 (view-mode-inspect 클래스 추가) - 항상 적용
+                    script = """
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.getElementById('content-container').classList.add('view-mode-inspect');
+                            document.getElementById('btn-mode').classList.add('active');
+                            document.getElementById('btn-mode').innerText = UI_STRINGS[currentUiLang].mode_read; // 버튼 텍스트는 반대로 (누르면 읽기모드)
+                            updateUiText();
+                        });
+                    </script>
+                    """
+                    html_content += script
 
-                    if focus_mode:
-                        # 집중 모드: 1컬럼 (전체 너비) + 다운로드 옵션은 Expander로 이동
-                        st.info(t("single_tip"))
-                        
-                        # 뷰어 (전체 너비)
-                        st.components.v1.html(html_content, height=900, scrolling=True)
-                        
-                        # 다운로드 옵션 (Expander)
-                        with st.expander(t("download_options_label"), expanded=False):
-                            c1, c2, c3 = st.columns(3)
-                            with c1:
-                                zip_path = create_zip(output_dir)
-                                with open(zip_path, "rb") as f:
-                                    st.download_button(
-                                        label=t("zip_download"),
-                                        data=f,
-                                        file_name=f"{res['filename']}_translated.zip",
-                                        mime="application/zip",
-                                        key=f"zip_{selected_idx}_{i}_focus"
-                                    )
-                            with c2:
-                                st.download_button(
-                                    label=t("html_download_interactive"),
-                                    data=html_content,
-                                    file_name=f"{res['filename']}_interactive.html",
-                                    mime="text/html",
-                                    key=f"html_{selected_idx}_{i}_focus"
-                                )
-                            with c3:
-                                if st.button(t("open_folder"), key=f"open_{selected_idx}_{i}_focus"):
-                                    try:
-                                        os.startfile(output_dir)
-                                        st.success(t("open_folder_success").format(path=output_dir))
-                                    except Exception as e:
-                                        st.error(t("open_folder_failed").format(error=e))
-
-                    else:
-                        # 기본 모드: 2컬럼 레이아웃 (3:1)
-                        col1, col2 = st.columns([3, 1])
-                        
-                        with col1:
-                            st.info(t("single_tip"))
-                            # iframe으로 HTML 표시
-                            st.components.v1.html(html_content, height=800, scrolling=True)
-
-                        with col2:
-                            st.write(f"**{t('single_result_header').format(name=res['filename'])}**")
-                            
-                            # ZIP 다운로드 버튼
-                            zip_path = create_zip(output_dir)
-                            with open(zip_path, "rb") as f:
-                                st.download_button(
-                                    label=t("zip_download"),
-                                    data=f,
-                                    file_name=f"{res['filename']}_translated.zip",
-                                    mime="application/zip",
-                                    key=f"zip_{selected_idx}_{i}"
-                                )
-                            
-                            # HTML 다운로드 버튼
-                            st.download_button(
-                                label=t("html_download_interactive"),
-                                data=html_content,
-                                file_name=f"{res['filename']}_interactive.html",
-                                mime="text/html",
-                                key=f"html_{selected_idx}_{i}"
-                            )
-                            
-                            # 폴더 열기 (로컬 환경 전용)
-                            if st.button(t("open_folder"), key=f"open_{selected_idx}_{i}"):
-                                try:
-                                    os.startfile(output_dir)
-                                    st.success(t("open_folder_success").format(path=output_dir))
-                                except Exception as e:
-                                    st.error(t("open_folder_failed").format(error=e))
+                    # 집중 모드: 1컬럼 (전체 너비)
+                    st.info(t("single_tip"))
+                    
+                    # 뷰어 (전체 너비)
+                    st.components.v1.html(html_content, height=900, scrolling=True)
+                    
+                    # 폴더 열기 버튼
+                    if st.button(t("open_folder"), key=f"open_{selected_idx}_{i}_focus"):
+                        try:
+                            os.startfile(output_dir)
+                            st.success(t("open_folder_success").format(path=output_dir))
+                        except Exception as e:
+                            st.error(t("open_folder_failed").format(error=e))
 
 if __name__ == "__main__":
     main()

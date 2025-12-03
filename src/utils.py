@@ -12,7 +12,7 @@ src/utils.py
 
 import re
 import base64
-import zipfile
+
 import os
 import nltk
 import logging
@@ -90,27 +90,7 @@ def ensure_nltk_resources():
         nltk.download("punkt_tab", quiet=True)
         logging.info("NLTK 모델 다운로드 완료.")
 
-def create_zip(folder_path: Path) -> Path:
-    """
-    주어진 폴더의 모든 내용을 ZIP 파일로 압축합니다.
-    
-    Args:
-        folder_path (Path): 압축할 폴더 경로
-        
-    Returns:
-        Path: 생성된 ZIP 파일의 경로 (folder_path/result.zip)
-    """
-    zip_path = folder_path / "result.zip"
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(folder_path):
-            for file in files:
-                # 생성될 zip 파일 자체는 포함하지 않음
-                if file == "result.zip":
-                    continue
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, folder_path)
-                zipf.write(file_path, arcname)
-    return zip_path
+
 
 def inject_images(html_content: str, folder_path: Path) -> str:
     """

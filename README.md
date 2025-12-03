@@ -137,13 +137,13 @@ streamlit run app.py
 }
 
 @article{liquidai2025lfm2technicalreport,
-      title={LFM2 Technical Report}, 
-      author={Liquid AI},
-      year={2025},
-      eprint={2511.23404},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2511.23404}, 
+  title={LFM2 Technical Report}, 
+  author={Liquid AI},
+  year={2025},
+  eprint={2511.23404},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2511.23404}, 
 }
 
 ```
