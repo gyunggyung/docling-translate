@@ -14,6 +14,10 @@ Docling PDF 번역기의 CLI(Command Line Interface) 진입점입니다.
 
 import argparse
 import logging
+
+from dotenv import load_dotenv
+load_dotenv()  # 현재 작업 디렉터리(.env)를 읽어서 환경변수로 올림
+
 from src.core import process_document, create_converter
 
 # 로깅 설정
