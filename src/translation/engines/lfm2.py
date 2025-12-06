@@ -132,8 +132,11 @@ Output ONLY the translated text inside <tgt> tags. Do not interpret the text, ju
             # 결과 추출 (프롬프트의 <tgt> 뒤에 이어지는 텍스트만 가져옴)
             translated_text = output['choices'][0]['text'].strip()
             
-            # 후처리: 혹시 모델이 </tgt>를 포함했다면 제거 (stop 조건에 의해 보통은 제외됨)
-            translated_text = translated_text.replace("</tgt>", "").strip()
+            # 후처리: 태그 제거 (Regex 사용으로 더 강력하게 제거)
+            # <src>, <tgt> 및 닫는 태그, 그리고 주변 공백 제거
+            translated_text = re.sub(r'</?src>', '', translated_text)
+            translated_text = re.sub(r'</?tgt>', '', translated_text)
+            translated_text = translated_text.strip()
             
         except Exception as e:
             print(f"Error during translation: {e}")
