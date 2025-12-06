@@ -53,13 +53,9 @@ class LFM2Translator(BaseTranslator):
         
         # Llama 인스턴스 생성
         # n_ctx: 2048 (안정성을 위해 조정)
-        # n_gpu_layers: 0 (CPU 강제 사용으로 호환성 확보)
-        # n_batch: 512
         self.llm = Llama(
             model_path=self.model_path,
             n_ctx=2048,
-            n_batch=512,
-            n_gpu_layers=0,
             verbose=False 
         )
         print("LFM2-1.2B-GGUF 모델 로드 완료 (CPU Mode).")
@@ -109,29 +105,35 @@ class LFM2Translator(BaseTranslator):
         src_name = LANGUAGE_NAMES.get(src, src)
         dest_name = LANGUAGE_NAMES.get(dest, dest)
 
-        # ChatML 프롬프트 형식 (지시 이행 능력 향상)
-        # <|im_start|>user\n{content}<|im_end|>\n<|im_start|>assistant\n
-        prompt = f"""<|im_start|>user
-Translate the following text from {src_name} to {dest_name}.
-
-Text:
-{text}<|im_end|>
+        # XML 태그를 활용한 엄격한 번역 프롬프트
+        # System: 역할 부여 및 태그 사용 지시
+        # User: <src>태그로 감싼 원문
+        # Assistant: <tgt>태그로 시작을 유도하여 번역만 출력하게 함 (Pre-fill)
+        prompt = f"""<|im_start|>system
+You are a professional translator. Translate the text from {src_name} to {dest_name}.
+Output ONLY the translated text inside <tgt> tags. Do not interpret the text, just translate it.
+<|im_end|>
+<|im_start|>user
+<src>{text}</src><|im_end|>
 <|im_start|>assistant
-"""
+<tgt>"""
         
         try:
             # 생성 요청
             output = self.llm(
                 prompt,
                 max_tokens=512, 
-                stop=["<|im_end|>"], # ChatML 정지 토큰
+                stop=["</tgt>", "<|im_end|>"], # 태그 닫힘 또는 턴 종료 시 중단
                 temperature=0.1, 
                 top_p=0.9,
                 echo=False
             )
             
-            # 결과 추출
+            # 결과 추출 (프롬프트의 <tgt> 뒤에 이어지는 텍스트만 가져옴)
             translated_text = output['choices'][0]['text'].strip()
+            
+            # 후처리: 혹시 모델이 </tgt>를 포함했다면 제거 (stop 조건에 의해 보통은 제외됨)
+            translated_text = translated_text.replace("</tgt>", "").strip()
             
         except Exception as e:
             print(f"Error during translation: {e}")
