@@ -19,7 +19,7 @@
 `docling-translate` is an open-source tool that leverages IBM's [docling](https://github.com/ds4sd/docling) library to analyze complex document structures (tables, images, multi-column layouts) and provide a **sentence-level 1:1 mapping** between the source and translated text.
 
 <p align="center">
-  <img src="assets/images/docling.png" alt="Supported Formats" width="100%">
+  <img src="assets/images/docling.png" alt="Supported Formats" width="80%">
 </p>
 
 Designed to overcome the **imperfections and context loss** often encountered in machine translation. It goes beyond simple text replacement by providing **Side-by-Side** and **Interactive (Click-to-Reveal)** views, allowing users to instantly check the original text and ensure accurate understanding.

@@ -19,7 +19,7 @@
 `docling-translate`는 IBM의 [docling](https://github.com/ds4sd/docling) 라이브러리를 활용하여 문서의 복잡한 구조(표, 이미지, 다단 레이아웃)를 분석하고, 원문과 번역문을 **문장 단위로 매핑(1:1 Mapping)** 하여 제공하는 오픈소스 도구입니다.
 
 <p align="center">
-  <img src="docs/assets/images/docling.png" alt="Supported Formats" width="100%">
+  <img src="docs/assets/images/docling.png" alt="Supported Formats" width="80%">
 </p>
 
 기계 번역의 고질적인 문제인 **불완전한 문맥 전달과 오역**을 보완하기 위해 설계되었습니다. 단순한 텍스트 치환을 넘어, **Side-by-Side(좌우 대조)** 및 **Interactive(클릭 시 원문 확인)** 뷰를 제공하여 사용자가 원문을 즉시 확인하고 내용을 완벽하게 이해할 수 있도록 돕습니다.
