@@ -81,7 +81,7 @@ class LFM2Translator(BaseTranslator):
             
             # 진행상황 콜백 호출
             if progress_cb:
-                progress_cb((i + 1) / total, f"번역 중... ({i + 1}/{total})")
+                progress_cb((i + 1) / total, f"({i + 1}/{total})")
                 
         return results
 

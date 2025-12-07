@@ -82,7 +82,7 @@ class BaseTranslator(ABC):
                     
                     completed_count += 1
                     if progress_cb:
-                        progress_cb(completed_count / total, f"번역 중... ({completed_count}/{total})")
+                        progress_cb(completed_count / total, f"({completed_count}/{total})")
             
             # 인덱스 순서대로 결과 리스트 재구성
             return [results_map[i] for i in range(total)]
@@ -93,5 +93,5 @@ class BaseTranslator(ABC):
                 translated = self.translate(s, src, dest)
                 results.append(translated if translated is not None else "")
                 if progress_cb:
-                    progress_cb(idx / total, f"번역 중... ({idx}/{total})")
+                    progress_cb(idx / total, f"({idx}/{total})")
             return results

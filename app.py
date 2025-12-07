@@ -69,7 +69,8 @@ def main():
                 selection_mode="single",
                 default=get_current_lang(),
                 key="lang_choice",
-                on_change=set_lang_and_rerun
+                on_change=set_lang_and_rerun,
+                disabled="is_processing" in st.session_state and st.session_state["is_processing"]
             )
         else:
             st.radio(
@@ -79,7 +80,8 @@ def main():
                 index=0 if get_current_lang() == "ko" else 1,
                 horizontal=True,
                 key="lang_choice",
-                on_change=set_lang_and_rerun
+                on_change=set_lang_and_rerun,
+                disabled="is_processing" in st.session_state and st.session_state["is_processing"]
             )
 
         st.markdown("---")
@@ -124,8 +126,13 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
+    # 라벨 직접 렌더링 (언어 변경 시에도 업로더 리셋 방지)
+    st.markdown(f"**{t('upload_label')}**")
+
     uploaded_files = st.file_uploader(
-        t("upload_label"),
+        label="file_uploader", # 고정 라벨 (화면엔 안 보임)
+        label_visibility="collapsed",
+        key="file_uploader", # 고정 Key
         type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"],
         accept_multiple_files=True,
         help=t("uploader_limit")
@@ -133,7 +140,11 @@ def main():
 
     # 4. 번역 실행
     if uploaded_files:
-        if st.button(t("translate_button"), type="primary"):
+        if st.button(t("translate_button"), type="primary", disabled="is_processing" in st.session_state and st.session_state["is_processing"]):
+            st.session_state["is_processing"] = True
+            st.rerun()
+
+    if "is_processing" in st.session_state and st.session_state["is_processing"] and uploaded_files:
             converter = get_converter()
             
             # 진행 상태 표시줄
@@ -166,7 +177,8 @@ def main():
                         dest_lang=target_lang,
                         engine=engine,
                         max_workers=max_workers,
-                        progress_cb=update_progress
+                        progress_cb=update_progress,
+                        ui_lang=get_current_lang()
                     )
                     
                     if result:
@@ -206,8 +218,11 @@ def main():
                     "engine": engine
                 }
                 st.session_state.history.insert(0, new_history_item)
-                st.success(t("batch_success").format(n=len(results)))
                 st.info(t("batch_hint"))
+
+            # 처리가 끝나면 상태 초기화
+            st.session_state["is_processing"] = False
+            st.rerun()
 
     st.markdown("---")
 
