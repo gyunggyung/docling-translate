@@ -1,23 +1,35 @@
 # docling-translate
 
-<p align="center">
-  <img src="docs/logo.png" alt="docling-translate logo"/>
-</p>
+<!-- <p align="center">
+  <img src="docs/assets/images/logo.png" alt="docling-translate logo"/>
+</p> -->
 
 > **Docling 기반의 구조 보존형 문서 번역 도구**  
 > PDF, DOCX, PPTX, HTML, 이미지의 구조를 유지하며 인터랙티브 비교 뷰를 제공합니다.
 
+[![Stars](https://img.shields.io/github/stars/gyunggyung/docling-translate?style=social)](https://github.com/gyunggyung/docling-translate/stargazers)
 [![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/ko/latest/?badge=latest)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](requirements.txt)
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)](requirements.txt)
 [![English](https://img.shields.io/badge/lang-English-red.svg)](docs/README.en.md)
-[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate)](https://github.com/gyunggyung/docling-translate/discussions)
+[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate?color=6524fa)](https://github.com/gyunggyung/docling-translate/discussions)
 
 ## 개요
 
 `docling-translate`는 IBM의 [docling](https://github.com/ds4sd/docling) 라이브러리를 활용하여 문서의 복잡한 구조(표, 이미지, 다단 레이아웃)를 분석하고, 원문과 번역문을 **문장 단위로 매핑(1:1 Mapping)** 하여 제공하는 오픈소스 도구입니다.
 
+<p align="center">
+  <img src="docs/assets/images/docling.png" alt="Supported Formats" width="80%">
+</p>
+
 기계 번역의 고질적인 문제인 **불완전한 문맥 전달과 오역**을 보완하기 위해 설계되었습니다. 단순한 텍스트 치환을 넘어, **Side-by-Side(좌우 대조)** 및 **Interactive(클릭 시 원문 확인)** 뷰를 제공하여 사용자가 원문을 즉시 확인하고 내용을 완벽하게 이해할 수 있도록 돕습니다.
+
+## 데모 (Demo)
+
+<p align="center">
+  <video src="docs/assets/videos/demo.mp4" controls="controls" style="max-width: 100%;">
+  </video>
+</p>
 
 ## 주요 기능
 
@@ -102,6 +114,12 @@ streamlit run app.py
 - **실시간 진행률 표시**: 문서 변환, 텍스트 추출, 번역, 이미지 저장 등 각 단계별 상세 상태와 진행률을 실시간으로 확인할 수 있습니다.
 - **번역 기록 관리**: 이전 번역 결과를 자동으로 저장하고 불러올 수 있습니다.
 
+## 아키텍처 (Architecture)
+
+<p align="center">
+  <img src="docs/assets/images/architecture.png" alt="Architecture Diagram" width="100%">
+</p>
+
 ## 상세 가이드
 
 더 자세한 사용법과 설정 방법은 아래 문서를 참고하세요.
@@ -109,6 +127,16 @@ streamlit run app.py
 - [📖 **상세 사용 가이드 (USAGE.md)**](docs/USAGE.md): CLI 전체 옵션, API 키 설정, 포맷별 특징.
 - [🛠 **기여 가이드 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md): 프로젝트 구조, 개발 워크플로우, 테스트 방법.
 - [🤝 **지원 가이드 (SUPPORT.md)**](SUPPORT.md): 커뮤니티 참여 및 질문 방법.
+
+## 프로젝트 웹사이트 (Project Website)
+
+<p align="center">
+  <img src="docs/assets/images/qr.png" alt="Scan to Visit Website">
+</p>
+
+<!-- <p align="center">
+  <a href="https://gyunggyung.github.io/docling-translate/">https://gyunggyung.github.io/docling-translate/</a>
+</p> -->
 
 ## Acknowledgments
 

@@ -1,23 +1,35 @@
 # docling-translate
 
-<p align="center">
-  <img src="logo.png" alt="docling-translate logo"/>
-</p>
+<!-- <p align="center">
+  <img src="assets/images/logo.png" alt="docling-translate logo"/>
+</p> -->
 
 > **Docling-based Translator for Technical Documents**  
 > Supports PDF, DOCX, PPTX, HTML & Images with interactive structure-preserving comparison.
 
+[![Stars](https://img.shields.io/github/stars/gyunggyung/docling-translate?style=social)](https://github.com/gyunggyung/docling-translate/stargazers)
 [![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/ko/latest/?badge=latest)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](../requirements.txt)
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](../LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)](../requirements.txt)
 [![Korean](https://img.shields.io/badge/lang-한국어-blue.svg)](../README.md)
-[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate)](https://github.com/gyunggyung/docling-translate/discussions)
+[![Discussions](https://img.shields.io/github/discussions/gyunggyung/docling-translate?color=6524fa)](https://github.com/gyunggyung/docling-translate/discussions)
 
 ## Overview
 
 `docling-translate` is an open-source tool that leverages IBM's [docling](https://github.com/ds4sd/docling) library to analyze complex document structures (tables, images, multi-column layouts) and provide a **sentence-level 1:1 mapping** between the source and translated text.
 
+<p align="center">
+  <img src="assets/images/docling.png" alt="Supported Formats" width="80%">
+</p>
+
 Designed to overcome the **imperfections and context loss** often encountered in machine translation. It goes beyond simple text replacement by providing **Side-by-Side** and **Interactive (Click-to-Reveal)** views, allowing users to instantly check the original text and ensure accurate understanding.
+
+## Demo
+
+<p align="center">
+  <video src="assets/videos/demo.mp4" controls="controls" style="max-width: 100%;">
+  </video>
+</p>
 
 ## Key Features
 
@@ -102,6 +114,12 @@ streamlit run app.py
 - **Real-time Progress**: View detailed status and real-time progress for each step, including document conversion, text extraction, translation, and image saving.
 - **History Management**: Automatically saves and loads previous translation results.
 
+## Architecture
+
+<p align="center">
+  <img src="assets/images/architecture.png" alt="Architecture Diagram" width="100%">
+</p>
+
 ## Detailed Guide
 
 For more detailed usage and configuration instructions, please refer to the documents below.
@@ -109,6 +127,16 @@ For more detailed usage and configuration instructions, please refer to the docu
 - [📖 **Detailed Usage Guide (USAGE.md)**](USAGE.md): Full CLI options, API key setup, format specifics.
 - [🛠 **Contributing Guide (CONTRIBUTING.md)**](CONTRIBUTING.md): Project structure, development workflow, testing methods.
 - [🤝 **Support Guide (SUPPORT.md)**](SUPPORT.md): How to join the community and ask questions.
+
+## Project Website
+
+<p align="center">
+  <img src="assets/images/qr.png" alt="Scan to Visit Website">
+</p>
+
+<!-- <p align="center">
+  <a href="https://gyunggyung.github.io/docling-translate/">https://gyunggyung.github.io/docling-translate/</a>
+</p> -->
 
 ## Acknowledgments
 
