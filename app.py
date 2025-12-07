@@ -134,9 +134,9 @@ def main():
         label_visibility="collapsed",
         key="file_uploader", # 고정 Key
         type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"],
-        accept_multiple_files=True,
-        help=t("uploader_limit")
+        accept_multiple_files=True
     )
+    st.caption(t("uploader_limit"))
 
     # 4. 번역 실행
     if uploaded_files:
