@@ -27,8 +27,7 @@ Designed to overcome the **imperfections and context loss** often encountered in
 ## Demo
 
 <p align="center">
-  <video src="assets/videos/demo.mp4" controls="controls" style="max-width: 100%;">
-  </video>
+  <img src="assets/videos/demo.gif" alt="Demo Video" style="max-width: 100%;">
 </p>
 
 ## Key Features

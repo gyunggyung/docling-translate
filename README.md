@@ -27,8 +27,7 @@
 ## 데모 (Demo)
 
 <p align="center">
-  <video src="docs/assets/videos/demo.mp4" controls="controls" style="max-width: 100%;">
-  </video>
+  <img src="docs/assets/videos/demo.gif" alt="Demo Video" style="max-width: 100%;">
 </p>
 
 ## 주요 기능
