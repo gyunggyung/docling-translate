@@ -72,6 +72,33 @@ def create_converter() -> DocumentConverter:
         },
     )
 
+
+# UI 메시지 다국어 지원
+PROGRESS_MESSAGES = {
+    "ko": {
+        "analyzing": "📄 문서 구조 분석 및 변환 중... ({file_name})",
+        "error_search": "❌ 오류: 파일을 찾을 수 없습니다 ({file_name})",
+        "error_convert": "❌ 오류: 문서 변환 실패 ({file_name})",
+        "extracting": "📝 텍스트 및 캡션 추출 중... ({file_name})",
+        "translating_start": "🤖 번역 시작... ({count} 문장)",
+        "translating_progress": "🤖 번역 중... {msg}",
+        "saving": "💾 결과 파일 생성 및 이미지 저장 중... ({file_name})",
+        "saving_progress": "💾 {msg}",
+        "done": "✅ 모든 작업 완료! ({file_name})"
+    },
+    "en": {
+        "analyzing": "📄 Analyzing document structure... ({file_name})",
+        "error_search": "❌ Error: File not found ({file_name})",
+        "error_convert": "❌ Error: Document conversion failed ({file_name})",
+        "extracting": "📝 Extracting text and captions... ({file_name})",
+        "translating_start": "🤖 Starting translation... ({count} sentences)",
+        "translating_progress": "🤖 Translating... {msg}",
+        "saving": "💾 Generating result file and saving images... ({file_name})",
+        "saving_progress": "💾 {msg}",
+        "done": "✅ All tasks completed! ({file_name})"
+    }
+}
+
 def process_single_file(
     file_path: str,
     converter: DocumentConverter,
@@ -80,6 +107,7 @@ def process_single_file(
     engine: str,
     max_workers: int = 1,
     progress_cb: Optional[ProgressCallback] = None,
+    ui_lang: str = "ko",
 ) -> dict:
     """
     단일 파일을 처리하는 핵심 파이프라인입니다.
@@ -99,23 +127,27 @@ def process_single_file(
         engine (str): 사용할 번역 엔진 ('google', 'deepl', 'gemini', 'openai')
         max_workers (int): 병렬 번역 시 사용할 워커 수
         progress_cb (Optional[ProgressCallback]): 진행률 업데이트 콜백 함수
+        ui_lang (str): UI 표시 언어 ('ko' or 'en')
 
     Returns:
         dict: 결과 정보를 담은 딕셔너리 (output_dir, html_path 포함). 실패 시 빈 딕셔너리.
     """
     ensure_nltk_resources()
     
+    # UI 메시지 가져오기 (기본값 ko)
+    msgs = PROGRESS_MESSAGES.get(ui_lang, PROGRESS_MESSAGES["ko"])
+
     file_name = Path(file_path).name
     bench.start(f"Total Process: {file_name}")
 
     if progress_cb:
-        progress_cb(0.02, f"📄 문서 구조 분석 및 변환 중... ({file_name})")
+        progress_cb(0.02, msgs["analyzing"].format(file_name=file_name))
 
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(file_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {file_path}")
         if progress_cb:
-            progress_cb(1.0, f"❌ 오류: 파일을 찾을 수 없음 ({file_name})")
+            progress_cb(1.0, msgs["error_search"].format(file_name=file_name))
         return {}
 
     # 2. 출력 경로 설정
@@ -135,13 +167,13 @@ def process_single_file(
     except Exception as e:
         logging.error(f"[{file_name}] 문서 변환 오류: {e}", exc_info=True)
         if progress_cb:
-            progress_cb(1.0, f"❌ 오류: 문서 변환 실패 ({file_name})")
+            progress_cb(1.0, msgs["error_convert"].format(file_name=file_name))
         return {}
     bench.end(f"Conversion: {file_name}")
     logging.info(f"[{file_name}] 문서 변환 성공.")
 
     if progress_cb:
-        progress_cb(0.20, f"📝 텍스트 및 캡션 추출 중... ({file_name})")
+        progress_cb(0.20, msgs["extracting"].format(file_name=file_name))
 
     # 4. 텍스트 수집 및 번역
     bench.start(f"Translation & Save: {file_name}")
@@ -170,7 +202,7 @@ def process_single_file(
     logging.info(f"[{file_name}] 총 {len(all_sentences)}개 문장 수집 (고유 문장: {len(unique_sentences)}개)")
 
     if progress_cb:
-        progress_cb(0.25, f"🤖 번역 시작... ({len(unique_sentences)} 문장)")
+        progress_cb(0.25, msgs["translating_start"].format(count=len(unique_sentences)))
 
     # --- Phase 2: Translation (번역) ---
     t_trans_start = time.time()
@@ -183,7 +215,7 @@ def process_single_file(
     def _translate_progress(local_ratio: float, msg: str):
         if progress_cb:
             global_ratio = TRANSLATE_BASE + TRANSLATE_SPAN * local_ratio
-            progress_cb(global_ratio, f"🤖 {msg}")
+            progress_cb(global_ratio, msgs["translating_progress"].format(msg=msg))
 
     # Translator 인스턴스 생성 및 일괄 번역 실행
     translator = create_translator(engine)
@@ -213,7 +245,7 @@ def process_single_file(
 
     # --- Phase 3: HTML Generation (HTML 생성) ---
     if progress_cb:
-        progress_cb(0.85, f"💾 결과 파일 생성 및 이미지 저장 중... ({file_name})")
+        progress_cb(0.85, msgs["saving"].format(file_name=file_name))
 
     path_html = output_dir / f"{base_filename}_interactive.html"
     
@@ -224,7 +256,7 @@ def process_single_file(
     def _gen_progress(local_ratio: float, msg: str):
         if progress_cb:
             global_ratio = GEN_BASE + GEN_SPAN * local_ratio
-            progress_cb(global_ratio, f"💾 {msg}")
+            progress_cb(global_ratio, msgs["saving_progress"].format(msg=msg))
 
     html_content = generate_html_content(
         doc,
@@ -239,7 +271,7 @@ def process_single_file(
         f.write(html_content)
     
     if progress_cb:
-        progress_cb(1.0, f"✅ 모든 작업 완료! ({file_name})")
+        progress_cb(1.0, msgs["done"].format(file_name=file_name))
     
     bench.end(f"Translation & Save: {file_name}")
     bench.end(f"Total Process: {file_name}")
@@ -258,6 +290,7 @@ def process_document(
     engine: str = "google",
     max_workers: int = 8,
     progress_cb: Optional[ProgressCallback] = None,
+    ui_lang: str = "ko",
 ) -> dict:
     """
     외부(app.py, main.py)에서 호출하기 위한 편의성 래퍼 함수입니다.
@@ -271,4 +304,5 @@ def process_document(
         engine=engine,
         max_workers=max_workers,
         progress_cb=progress_cb,
+        ui_lang=ui_lang
     )

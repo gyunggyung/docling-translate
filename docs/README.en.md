@@ -39,8 +39,8 @@ cd docling-translate
 pip install -r requirements.txt
 ```
 
-**(Optional) For Local Translation Model (Qwen)**
-To use local LLMs like Qwen, you need to install `llama-cpp-python` and `huggingface_hub`.
+**(Optional) For Local Translation Model (Qwen, LFM2, Yanolja)**
+To use local LLMs like Qwen, LFM2 or Yanolja, you need to install `llama-cpp-python` and `huggingface_hub`.
 - **Windows Users**: Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Check "Desktop development with C++") then:
   ```bash
   pip install llama-cpp-python huggingface_hub
@@ -59,10 +59,13 @@ This is the most basic usage. Specify a PDF file to generate an **interactive HT
 python main.py sample.pdf
 
 # With options (Use DeepL engine, translate to Japanese)
-python main.py sample.pdf --engine deepl --to ja
+python main.py sample.pdf --engine deepl --target ja
 
 # Use OpenAI GPT-5-nano
-python main.py sample.pdf --engine openai --to ko
+python main.py sample.pdf --engine openai --target ko
+
+# Use LFM2 local model
+python main.py sample.pdf --engine lfm2 --target ko
 ```
 
 ### API Key Setup (Optional)
@@ -105,6 +108,7 @@ For more detailed usage and configuration instructions, please refer to the docu
 
 - [📖 **Detailed Usage Guide (USAGE.md)**](USAGE.md): Full CLI options, API key setup, format specifics.
 - [🛠 **Contributing Guide (CONTRIBUTING.md)**](CONTRIBUTING.md): Project structure, development workflow, testing methods.
+- [🤝 **Support Guide (SUPPORT.md)**](SUPPORT.md): How to join the community and ask questions.
 
 ## Acknowledgments
 

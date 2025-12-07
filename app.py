@@ -16,6 +16,7 @@ import os
 import logging
 from pathlib import Path
 import shutil
+from datetime import datetime
 
 # src 모듈 임포트
 from src.core import process_document, create_converter
@@ -69,7 +70,8 @@ def main():
                 selection_mode="single",
                 default=get_current_lang(),
                 key="lang_choice",
-                on_change=set_lang_and_rerun
+                on_change=set_lang_and_rerun,
+                disabled="is_processing" in st.session_state and st.session_state["is_processing"]
             )
         else:
             st.radio(
@@ -79,7 +81,8 @@ def main():
                 index=0 if get_current_lang() == "ko" else 1,
                 horizontal=True,
                 key="lang_choice",
-                on_change=set_lang_and_rerun
+                on_change=set_lang_and_rerun,
+                disabled="is_processing" in st.session_state and st.session_state["is_processing"]
             )
 
         st.markdown("---")
@@ -124,25 +127,40 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
+    # 라벨 직접 렌더링 (언어 변경 시에도 업로더 리셋 방지)
+    st.markdown(f"**{t('upload_label')}**")
+
     uploaded_files = st.file_uploader(
-        t("upload_label"),
+        label="file_uploader", # 고정 라벨 (화면엔 안 보임)
+        label_visibility="collapsed",
+        key="file_uploader", # 고정 Key
         type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"],
-        accept_multiple_files=True,
-        help=t("uploader_limit")
+        accept_multiple_files=True
     )
+    st.caption(t("uploader_limit"))
 
     # 4. 번역 실행
     if uploaded_files:
-        if st.button(t("translate_button"), type="primary"):
-            converter = get_converter()
-            
-            # 진행 상태 표시줄
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            total_files = len(uploaded_files)
-            results = []
+        if st.button(t("translate_button"), type="primary", disabled="is_processing" in st.session_state and st.session_state["is_processing"]):
+            st.session_state["is_processing"] = True
+            st.rerun()
 
+    if "is_processing" in st.session_state and st.session_state["is_processing"] and uploaded_files:
+        # 강제 중단/초기화 버튼
+        if st.button("🛑 " + t("stop_button")):
+            st.session_state["is_processing"] = False
+            st.rerun()
+
+        converter = get_converter()
+        
+        # 진행 상태 표시줄
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        total_files = len(uploaded_files)
+        results = []
+
+        try:
             for i, uploaded_file in enumerate(uploaded_files):
                 # 임시 파일 저장
                 with open(uploaded_file.name, "wb") as f:
@@ -166,7 +184,8 @@ def main():
                         dest_lang=target_lang,
                         engine=engine,
                         max_workers=max_workers,
-                        progress_cb=update_progress
+                        progress_cb=update_progress,
+                        ui_lang=get_current_lang()
                     )
                     
                     if result:
@@ -182,21 +201,49 @@ def main():
                 except Exception as e:
                     st.error(t("translate_error").format(filename=uploaded_file.name, error=str(e)))
                     logging.error(f"Processing failed for {uploaded_file.name}: {e}")
+                    import traceback
+                    st.error(traceback.format_exc())
 
-            progress_bar.progress(1.0)
-            status_text.text(t("status_all_done"))
-            
-            # 히스토리에 결과 추가 및 저장
+            # 배치 처리 완료 결과 저장
             if results:
-                timestamp = results[0]["output_dir"].split("_")[-2] + "_" + results[0]["output_dir"].split("_")[-1] # 폴더명에서 추출
+                st.success(t("status_all_done"))
+                # 히스토리에 저장 (첫 번째 파일 기준으로 타이틀 생성)
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                first_file = uploaded_files[0].name
+                batch_title = f"[{timestamp}] {first_file}"
+                if len(uploaded_files) > 1:
+                    batch_title += f" (+{len(uploaded_files)-1})"
                 
-                # 타임스탬프 포맷팅
-                from datetime import datetime
+                new_history_item = {
+                    "id": batch_title,
+                    "timestamp": timestamp,
+                    "results": results,
+                    "source_lang": source_lang,
+                    "target_lang": target_lang,
+                    "engine": engine
+                }
+                
+                # 히스토리 형식 맞추기 (app.py 하단에서 사용하는 형식과 일치시켜야 함)
+                # 하단 format_history_option에서는 h['results'] (리스트), h['source'], h['target'] 등을 씀
+                # 여기서 insert하는 new_history_item 구조를 하단 코드와 맞춰야 함.
+                # 기존 코드:
+                # new_history_item = {
+                #     "timestamp": display_time,
+                #     "results": results,
+                #     "source": source_lang,
+                #     "target": target_lang,
+                #     "engine": engine
+                # }
+                # id 필드는 하단에서 안 쓰는 것 같지만... 일단 놔둠.
+                # display_time 포맷팅 로직 추가 필요.
+                
+                result_dir = results[0]["output_dir"]
+                ts_str = result_dir.split("_")[-2] + "_" + result_dir.split("_")[-1]
                 try:
-                    dt = datetime.strptime(timestamp, "%Y%m%d_%H%M%S")
+                    dt = datetime.strptime(ts_str, "%Y%m%d_%H%M%S")
                     display_time = dt.strftime("%Y-%m-%d %H:%M:%S")
                 except:
-                    display_time = timestamp
+                    display_time = ts_str
 
                 new_history_item = {
                     "timestamp": display_time,
@@ -206,8 +253,11 @@ def main():
                     "engine": engine
                 }
                 st.session_state.history.insert(0, new_history_item)
-                st.success(t("batch_success").format(n=len(results)))
                 st.info(t("batch_hint"))
+
+        finally:
+            st.session_state["is_processing"] = False
+            st.rerun()
 
     st.markdown("---")
 
