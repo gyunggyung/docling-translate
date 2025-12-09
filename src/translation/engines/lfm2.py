@@ -52,10 +52,10 @@ class LFM2Translator(BaseTranslator):
         )
         
         # Llama 인스턴스 생성
-        # n_ctx: 2048 (안정성을 위해 조정)
+        # n_ctx: 4096 (문맥 유지를 위해 확장)
         self.llm = Llama(
             model_path=self.model_path,
-            n_ctx=2048,
+            n_ctx=4096,
             verbose=False 
         )
         print("LFM2-1.2B-GGUF 모델 로드 완료 (CPU Mode).")
@@ -105,47 +105,38 @@ class LFM2Translator(BaseTranslator):
         src_name = LANGUAGE_NAMES.get(src, src)
         dest_name = LANGUAGE_NAMES.get(dest, dest)
 
-        # XML 태그를 활용한 엄격한 번역 프롬프트
-        # System: 역할 부여 및 태그 사용 지시
-        # User: <src>태그로 감싼 원문
-        # Assistant: <tgt>태그로 시작을 유도하여 번역만 출력하게 함 (Pre-fill)
+        # 표준 ChatML 포맷을 사용한 자연어 지시 프롬프트
+        # 복잡한 태그(<src>, <tgt>)를 제거하고 명확한 지시만 남김
         prompt = f"""<|im_start|>system
-You are a professional translator. Translate the text from {src_name} to {dest_name}.
-Output ONLY the translated text inside <tgt> tags. Do not interpret the text, just translate it.
+You are a professional translator. Translate the following text from {src_name} to {dest_name}.
+Output ONLY the translated text. Do not provide any explanations or notes.
 <|im_end|>
 <|im_start|>user
-<src>{text}</src><|im_end|>
+{text}<|im_end|>
 <|im_start|>assistant
-<tgt>"""
+"""
         
         try:
             # 생성 요청
             output = self.llm(
                 prompt,
                 max_tokens=512, 
-                stop=["</tgt>", "<|im_end|>"], # 태그 닫힘 또는 턴 종료 시 중단
-                temperature=0.1, 
-                top_p=0.9,
+                stop=["<|im_end|>"], # 턴 종료 시 중단
+                temperature=0.3, # 약간의 창의성 허용
+                min_p=0.15, # Top-p 대신 min_p 사용 (모델 권장)
+                repeat_penalty=1.05, # 반복 생성 방지
                 echo=False
             )
             
-            # 결과 추출 (프롬프트의 <tgt> 뒤에 이어지는 텍스트만 가져옴)
+            # 결과 추출
             translated_text = output['choices'][0]['text'].strip()
             
-            # 후처리: 태그 제거 (Regex 사용으로 더 강력하게 제거)
-            # <src>, <tgt> 및 닫는 태그, 그리고 주변 공백 제거
-            translated_text = re.sub(r'</?src>', '', translated_text)
-            translated_text = re.sub(r'</?tgt>', '', translated_text)
-            translated_text = translated_text.strip()
+            # 후처리: 불필요한 따옴표 제거만 수행 (태그 제거 로직 삭제)
+            if translated_text.startswith('"') and translated_text.endswith('"'):
+                translated_text = translated_text[1:-1]
+                
+            return translated_text.strip()
             
         except Exception as e:
             print(f"Error during translation: {e}")
             return text
-        
-        # 후처리: 불필요한 따옴표 제거
-        if translated_text.startswith('"') and translated_text.endswith('"'):
-            translated_text = translated_text[1:-1]
-            
-        return translated_text
-
-        
