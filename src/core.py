@@ -27,7 +27,7 @@ from docling.document_converter import (
     ImageFormatOption
 )
 from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.datamodel.pipeline_options import PdfPipelineOptions, TableFormerMode
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem
 
 from src.benchmark import global_benchmark as bench
@@ -53,6 +53,7 @@ def create_converter() -> DocumentConverter:
     pipeline_options.do_table_structure = True
     pipeline_options.generate_picture_images = True
     pipeline_options.generate_table_images = True
+    pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
     pipeline_options.images_scale = 2.0
 
     return DocumentConverter(
@@ -193,9 +194,25 @@ def process_single_file(
                 sentences = nltk.sent_tokenize(item.text)
                 all_sentences.extend(sentences)
         elif isinstance(item, (TableItem, PictureItem)):
-             orig_caption = item.caption_text(doc)
-             if orig_caption:
-                 all_sentences.append(orig_caption)
+            orig_caption = item.caption_text(doc)
+            if orig_caption:
+                all_sentences.append(orig_caption)
+            
+            # [NEW] 표 셀 텍스트 수집 (pandas DataFrame 활용)
+            # TableItem에서 텍스트를 추출하여 번역 대상에 포함시킵니다.
+            if isinstance(item, TableItem):
+                try:
+                    df = item.export_to_dataframe()
+                    # 데이터프레임의 모든 셀 값을 문자열로 변환하여 수집
+                    for text in df.values.flatten():
+                        if isinstance(text, str) and text.strip():
+                            all_sentences.append(text)
+                    # 컬럼 헤더도 수집
+                    for col in df.columns:
+                        if isinstance(col, str) and col.strip():
+                            all_sentences.append(col)
+                except Exception as e:
+                    logging.warning(f"[{file_name}] 표 텍스트 추출 중 오류 발생(무시됨): {e}")
 
     # 중복 문장 제거 (번역 비용 절감)
     unique_sentences = list(set(all_sentences))

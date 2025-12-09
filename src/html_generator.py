@@ -211,6 +211,31 @@ HTML_HEADER = """
             .view-mode-inspect .paragraph-row { grid-template-columns: 1fr; }
             .container { padding: 20px; }
         }
+
+        /* 번역된 표 스타일 */
+        .table-container {
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .translated-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .translated-table th, .translated-table td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .translated-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+        }
+        .translated-table tr:nth-child(even) {
+            background-color: var(--bg-color);
+        }
     </style>
     <script>
         const UI_STRINGS = {
@@ -546,6 +571,48 @@ def generate_html_content(
                     html_parts.append(f'<div class="caption">{html.escape(trans_caption)}</div>\n') 
                 
                 html_parts.append(f"</div>\n")
+
+                # [NEW] 번역된 표 렌더링 (HTML Table)
+                if isinstance(item, TableItem):
+                    try:
+                        df = item.export_to_dataframe()
+                        
+                        # 1. 내용을 번역문으로 치환
+                        # (모든 셀을 순회하며 번역 맵에 있으면 교체, 없으면 원본 유지)
+                        def translate_cell(x):
+                            if isinstance(x, str):
+                                return translation_map.get(x, x)
+                            return x
+                        
+                        df_translated = df.map(translate_cell)
+                        
+                        # 2. 컬럼 헤더 번역
+                        new_columns = []
+                        for col in df_translated.columns:
+                            if isinstance(col, str):
+                                new_columns.append(translation_map.get(col, col))
+                            else:
+                                new_columns.append(col)
+                        df_translated.columns = new_columns
+
+                        # 3. HTML 변환 (클래스 추가, 특수문자 이스케이프)
+                        table_html = df_translated.to_html(classes="translated-table", escape=True, index=False)
+                        
+                        html_parts.append(f"""
+                        <div class="paragraph-row">
+                            <div class="full-width">
+                                <details>
+                                    <summary style="cursor: pointer; color: var(--sub-text-color); margin-bottom: 10px;">📋 번역된 표 보기 (텍스트)</summary>
+                                    <div class="table-container">
+                                        {table_html}
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                        """)
+                    except Exception as e:
+                        # 표 렌더링 실패 시에도 전체 프로세스는 멈추지 않도록 함
+                        pass
     
     html_parts.append(HTML_FOOTER)
     return "".join(html_parts)
