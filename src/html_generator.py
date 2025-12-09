@@ -157,7 +157,8 @@ HTML_HEADER = """
         .sent.related-highlight { background-color: var(--related-bg); }
 
         /* Tooltip-like interaction for source text in Reading Mode */
-        .sent[data-src]:hover::after {
+        /* Tooltip-like interaction for source text in Reading Mode */
+        .sent[data-src-text]:hover::after {
             content: attr(data-src-text);
             position: absolute;
             left: 0;
@@ -245,7 +246,8 @@ HTML_HEADER = """
                 mode_read: "Reading Mode",
                 mode_inspect: "Inspection Mode",
                 lang_ui: "한국어",
-                title: "Translation Result"
+                title: "Translation Result",
+                show_table: "Show table"
             },
             ko: {
                 theme_dark: "다크 모드",
@@ -253,7 +255,8 @@ HTML_HEADER = """
                 mode_read: "읽기 모드",
                 mode_inspect: "검수 모드",
                 lang_ui: "English",
-                title: "번역 결과"
+                title: "번역 결과",
+                show_table: "표 보기"
             }
         };
 
@@ -349,6 +352,11 @@ HTML_HEADER = """
             document.getElementById('btn-mode').innerText = isInspect ? t.mode_read : t.mode_inspect;
             document.getElementById('btn-lang').innerText = t.lang_ui;
             document.getElementById('page-title').innerText = t.title;
+            
+            // 클래스 기반 다국어 처리 (여러 요소)
+            document.querySelectorAll('.label-show-table').forEach(el => {
+                el.innerText = t.show_table;
+            });
         }
 
         // 원문-번역문 간 양방향 하이라이트 설정
@@ -572,42 +580,80 @@ def generate_html_content(
                 
                 html_parts.append(f"</div>\n")
 
-                # [NEW] 번역된 표 렌더링 (HTML Table)
+                # [NEW] 번역된 표 렌더링 (HTML Table with Hover Tooltips)
                 if isinstance(item, TableItem):
                     try:
                         df = item.export_to_dataframe()
                         
-                        # 1. 내용을 번역문으로 치환
-                        # (모든 셀을 순회하며 번역 맵에 있으면 교체, 없으면 원본 유지)
-                        def translate_cell(x):
-                            if isinstance(x, str):
-                                return translation_map.get(x, x)
-                            return x
-                        
-                        df_translated = df.map(translate_cell)
-                        
-                        # 2. 컬럼 헤더 번역
-                        new_columns = []
-                        for col in df_translated.columns:
-                            if isinstance(col, str):
-                                new_columns.append(translation_map.get(col, col))
-                            else:
-                                new_columns.append(col)
-                        df_translated.columns = new_columns
+                        # --- 1. 원문 표 생성 (검수 모드용) ---
+                        table_rows_orig = []
+                        # 헤더
+                        if not df.columns.empty:
+                            headers = []
+                            for col in df.columns:
+                                safe_orig = html.escape(str(col))
+                                headers.append(f'<th>{safe_orig}</th>')
+                            table_rows_orig.append(f"<thead><tr>{''.join(headers)}</tr></thead>")
+                        # 본문
+                        tbody_cells_orig = []
+                        for _, row in df.iterrows():
+                            cells = []
+                            for val in row:
+                                safe_orig = html.escape(str(val) if val is not None else "")
+                                cells.append(f'<td>{safe_orig}</td>')
+                            tbody_cells_orig.append(f"<tr>{''.join(cells)}</tr>")
+                        table_html_orig = f'<table class="translated-table">{"".join(table_rows_orig)}<tbody>{"".join(tbody_cells_orig)}</tbody></table>'
 
-                        # 3. HTML 변환 (클래스 추가, 특수문자 이스케이프)
-                        table_html = df_translated.to_html(classes="translated-table", escape=True, index=False)
+                        # --- 2. 번역 표 생성 (툴팁 포함) ---
+                        table_rows_trans = []
+                        # 헤더
+                        if not df.columns.empty:
+                            headers = []
+                            for col in df.columns:
+                                orig_text = str(col)
+                                trans_text = translation_map.get(orig_text, orig_text)
+                                safe_orig = html.escape(orig_text)
+                                safe_trans = html.escape(trans_text)
+                                headers.append(f'<th><span class="sent" data-src-text="{safe_orig}">{safe_trans}</span></th>')
+                            table_rows_trans.append(f"<thead><tr>{''.join(headers)}</tr></thead>")
+                        # 본문
+                        tbody_cells_trans = []
+                        for _, row in df.iterrows():
+                            cells = []
+                            for val in row:
+                                orig_text = str(val) if val is not None else ""
+                                trans_text = translation_map.get(orig_text, orig_text)
+                                safe_orig = html.escape(orig_text)
+                                safe_trans = html.escape(trans_text)
+                                
+                                # 빈 셀 처리
+                                if not orig_text.strip():
+                                    cells.append(f'<td>{safe_trans}</td>')
+                                else:
+                                    cells.append(f'<td><span class="sent" data-src-text="{safe_orig}">{safe_trans}</span></td>')
+                            tbody_cells_trans.append(f"<tr>{''.join(cells)}</tr>")
+                        table_html_trans = f'<table class="translated-table">{"".join(table_rows_trans)}<tbody>{"".join(tbody_cells_trans)}</tbody></table>'
                         
+                        # --- 3. HTML 조립 (Side-by-Side 지원 구조) ---
                         html_parts.append(f"""
-                        <div class="paragraph-row">
-                            <div class="full-width">
-                                <details>
-                                    <summary style="cursor: pointer; color: var(--sub-text-color); margin-bottom: 10px;">📋 번역된 표 보기 (텍스트)</summary>
-                                    <div class="table-container">
-                                        {table_html}
+                        <div class="full-width">
+                            <details>
+                                <summary style="cursor: pointer; color: var(--sub-text-color); margin-bottom: 10px;">📋 <span class="label-show-table">표 보기</span></summary>
+                                <div class="paragraph-row">
+                                    <!-- 원문 표 (검수 모드에서만 보임) -->
+                                    <div class="src-block">
+                                        <div class="table-container">
+                                            {table_html_orig}
+                                        </div>
                                     </div>
-                                </details>
-                            </div>
+                                    <!-- 번역 표 (항상 보임) -->
+                                    <div class="tgt-block">
+                                        <div class="table-container">
+                                            {table_html_trans}
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
                         </div>
                         """)
                     except Exception as e:
