@@ -24,7 +24,7 @@
 
 기계 번역의 고질적인 문제인 **불완전한 문맥 전달과 오역**을 보완하기 위해 설계되었습니다. 단순한 텍스트 치환을 넘어, **Side-by-Side(좌우 대조)** 및 **Interactive(클릭 시 원문 확인)** 뷰를 제공하여 사용자가 원문을 즉시 확인하고 내용을 완벽하게 이해할 수 있도록 돕습니다.
 
-## 데모 (Demo)
+## 데모
 
 <p align="center">
   <img src="docs/assets/videos/demo.gif" alt="Demo Video" style="max-width: 100%;">
@@ -38,7 +38,7 @@
 - **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
-## 빠른 시작 (Quick Start)
+## 빠른 시작
 
 ### 1. 설치
 
@@ -108,12 +108,12 @@ streamlit run app.py
 
 ### Web UI 주요 기능
 
-- **집중 모드 (Focus Mode)**: 사이드바와 컨트롤을 숨겨 번역 결과에만 집중할 수 있습니다.
+- **집중 모드**: 사이드바와 컨트롤을 숨겨 번역 결과에만 집중할 수 있습니다.
 - **뷰 모드 제어**: 원문-번역문 대조 보기(Inspection Mode)와 번역문만 보기(Reading Mode)를 전환할 수 있습니다.
 - **실시간 진행률 표시**: 문서 변환, 텍스트 추출, 번역, 이미지 저장 등 각 단계별 상세 상태와 진행률을 실시간으로 확인할 수 있습니다.
 - **번역 기록 관리**: 이전 번역 결과를 자동으로 저장하고 불러올 수 있습니다.
 
-## 아키텍처 (Architecture)
+## 아키텍처
 
 <p align="center">
   <img src="docs/assets/images/architecture.png" alt="Architecture Diagram" width="100%">
@@ -127,7 +127,7 @@ streamlit run app.py
 - [🛠 **기여 가이드 (CONTRIBUTING.md)**](docs/CONTRIBUTING.md): 프로젝트 구조, 개발 워크플로우, 테스트 방법.
 - [🤝 **지원 가이드 (SUPPORT.md)**](SUPPORT.md): 커뮤니티 참여 및 질문 방법.
 
-## 프로젝트 웹사이트 (Project Website)
+## 프로젝트 웹사이트
 
 <p align="center">
   <img src="docs/assets/images/qr.png" alt="Scan to Visit Website">
