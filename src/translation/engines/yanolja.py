@@ -52,14 +52,19 @@ class YanoljaTranslator(BaseTranslator):
             filename="Q5_K_M/YanoljaNEXT-Rosetta-4B-2511-bf16-q5_k_m.gguf"
         )
         
+        # CPU 물리 코어 수 계산 (하이퍼스레딩 제외 시 최적 성능)
+        physical_cores = os.cpu_count() // 2 if os.cpu_count() else 4
+        
         # Llama 인스턴스 생성
         # n_ctx: 4096 (모델 스펙 및 일반적인 문서 청크 크기 고려)
+        # n_threads: 물리 코어 수만 사용하여 컨텍스트 스위칭 최소화
         self.llm = Llama(
             model_path=self.model_path,
             n_ctx=4096,
+            n_threads=physical_cores,
             verbose=False # 로그 출력 끄기
         )
-        print("YanoljaNEXT-Rosetta-4B-2511-GGUF 모델 로드 완료.")
+        print(f"YanoljaNEXT-Rosetta-4B-2511-GGUF 모델 로드 완료 ({physical_cores} threads).")
 
     def translate(self, text: str, src: str, dest: str) -> str:
         """

@@ -61,6 +61,20 @@ Qwen, LFM2 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_
   pip install llama-cpp-python huggingface_hub
   ```
 
+**(선택) CPU 성능 최적화 (AVX2 빌드) - 2~3배 속도 향상**
+기본 설치 대신 AVX2 명령어를 활성화하여 빌드하면 CPU 번역 속도가 2~3배 빨라집니다.
+```powershell
+# Windows (PowerShell)
+pip uninstall llama-cpp-python -y
+$env:CMAKE_ARGS = "-DGGML_AVX2=on"
+pip install llama-cpp-python --force-reinstall --no-cache-dir
+```
+```bash
+# Linux/Mac
+pip uninstall llama-cpp-python -y
+CMAKE_ARGS="-DGGML_AVX2=on" pip install llama-cpp-python --force-reinstall --no-cache-dir
+```
+
 **(선택) NLLB 번역 모델(nllb, nllb-koen) 사용 시**
 ```bash
 pip install ctranslate2 transformers sentencepiece hf_xet

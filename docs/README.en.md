@@ -61,6 +61,20 @@ To use local LLMs like Qwen, LFM2 or Yanolja, you need to install `llama-cpp-pyt
   pip install llama-cpp-python huggingface_hub
   ```
 
+**(Optional) CPU Performance Optimization (AVX2 Build) - 2~3x Speed Boost**
+Building with AVX2 instructions enabled can make CPU translation 2~3x faster.
+```powershell
+# Windows (PowerShell)
+pip uninstall llama-cpp-python -y
+$env:CMAKE_ARGS = "-DGGML_AVX2=on"
+pip install llama-cpp-python --force-reinstall --no-cache-dir
+```
+```bash
+# Linux/Mac
+pip uninstall llama-cpp-python -y
+CMAKE_ARGS="-DGGML_AVX2=on" pip install llama-cpp-python --force-reinstall --no-cache-dir
+```
+
 **(Optional) For NLLB Translation Model (nllb, nllb-koen)**
 ```bash
 pip install ctranslate2 transformers sentencepiece hf_xet

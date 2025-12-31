@@ -51,14 +51,20 @@ class LFM2Translator(BaseTranslator):
             filename="LFM2-1.2B-Q4_K_M.gguf"
         )
         
+        # CPU 물리 코어 수 계산 (하이퍼스레딩 제외 시 최적 성능)
+        import os
+        physical_cores = os.cpu_count() // 2 if os.cpu_count() else 4
+        
         # Llama 인스턴스 생성
         # n_ctx: 4096 (문맥 유지를 위해 확장)
+        # n_threads: 물리 코어 수만 사용하여 컨텍스트 스위칭 최소화
         self.llm = Llama(
             model_path=self.model_path,
             n_ctx=4096,
+            n_threads=physical_cores,
             verbose=False 
         )
-        print("LFM2-1.2B-GGUF 모델 로드 완료 (CPU Mode).")
+        print(f"LFM2-1.2B-GGUF 모델 로드 완료 (CPU Mode, {physical_cores} threads).")
 
     def translate_batch(self, sentences, src, dest, max_workers=1, progress_cb=None):
         """

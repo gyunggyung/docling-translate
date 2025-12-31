@@ -52,14 +52,19 @@ class QwenTranslator(BaseTranslator):
             filename="Qwen_Qwen3-0.6B-Q4_K_M.gguf"
         )
         
+        # CPU 물리 코어 수 계산 (하이퍼스레딩 제외 시 최적 성능)
+        physical_cores = os.cpu_count() // 2 if os.cpu_count() else 4
+        
         # Llama 인스턴스 생성
         # n_ctx: 컨텍스트 길이 (Qwen3는 32k까지 지원하지만 로컬 CPU 부하 고려하여 2048~4096 설정)
+        # n_threads: 물리 코어 수만 사용하여 컨텍스트 스위칭 최소화
         self.llm = Llama(
             model_path=self.model_path,
             n_ctx=2048,
+            n_threads=physical_cores,
             verbose=False # 로그 출력 끄기
         )
-        print("Qwen3-0.6B-GGUF 모델 로드 완료.")
+        print(f"Qwen3-0.6B-GGUF 모델 로드 완료 ({physical_cores} threads).")
 
     def translate(self, text: str, src: str, dest: str) -> str:
         """
