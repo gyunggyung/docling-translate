@@ -36,7 +36,7 @@ python main.py <input_path> [options]
 | :--- | :--- | :--- | :--- |
 | `--from` | `-f` | `en` | 원본 문서의 언어 코드 (예: `en`, `ja`, `zh`). |
 | `--to` | `-t` | `ko` | 번역할 목표 언어 코드. |
-| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen-0.6b`, `lfm2`, `yanolja`). |
+| `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen-0.6b`, `lfm2`, `lfm2-koen-mt`, `yanolja`). |
 | `--max-workers` | | `4` | 병렬 처리를 위한 스레드 수. 시스템 사양에 따라 조절하세요. |
 | `--benchmark` | `-b` | `False` | 번역 성능 측정 리포트를 출력합니다. |
 
@@ -62,7 +62,12 @@ python main.py documents/contract.docx --engine deepl
 python main.py documents/paper.pdf --engine lfm2
 ```
 
-**5. 폴더 내 모든 파일 일괄 번역 (8개 스레드 병렬 처리)**
+**5. LFM2-KOEN-MT 엔진 사용 (한국어-영어 전용, 고품질)**
+```bash
+python main.py documents/paper.pdf --engine lfm2-koen-mt
+```
+
+**6. 폴더 내 모든 파일 일괄 번역 (8개 스레드 병렬 처리)**
 ```bash
 python main.py my_documents/ --max-workers 8
 ```
@@ -97,7 +102,7 @@ streamlit run app.py
 
 ## 3. 환경 설정 (API Key)
 
-`google` 엔진(Google Translate)과 `qwen`, `lfm2`, `yanolja` 엔진(Local LLM)은 별도의 설정 없이 무료로 사용할 수 있지만, `deepl`, `gemini`, `openai`를 사용하려면 API 키 설정이 필요합니다.
+`google` 엔진(Google Translate)과 `qwen`, `lfm2`, `lfm2-koen-mt`, `yanolja` 엔진(Local LLM)은 별도의 설정 없이 무료로 사용할 수 있지만, `deepl`, `gemini`, `openai`를 사용하려면 API 키 설정이 필요합니다.
 
 프로젝트 루트 디렉토리에 `.env` 파일을 생성하고 아래와 같이 입력하세요.
 

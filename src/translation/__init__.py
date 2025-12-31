@@ -15,6 +15,7 @@ from .engines.gemini import GeminiTranslator
 from .engines.openai import OpenAITranslator
 from .engines.qwen import QwenTranslator
 from .engines.lfm2 import LFM2Translator
+from .engines.lfm2_koen import LFM2KOENTranslator
 from .engines.yanolja import YanoljaTranslator
 
 def create_translator(engine_name: str) -> BaseTranslator:
@@ -38,6 +39,7 @@ def create_translator(engine_name: str) -> BaseTranslator:
         "qwen": QwenTranslator,
         "qwen-0.6b": QwenTranslator,
         "lfm2": LFM2Translator,
+        "lfm2-koen-mt": LFM2KOENTranslator,
         "yanolja": YanoljaTranslator,
     }
     

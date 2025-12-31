@@ -35,7 +35,7 @@ Designed to overcome the **imperfections and context loss** often encountered in
 - **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, `HTML`, and `Image` formats into an **Interactive Viewer (HTML)**.
 - **Sentence-Level Parallel Translation**: Precisely matches one source sentence to one translated sentence for maximum readability.
 - **Layout Preservation**: Maintains tables and images within the document during translation.
-- **Flexible Engine Selection**: Supports Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), Yanolja(Local).
+- **Flexible Engine Selection**: Supports Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), Yanolja(Local).
 - **High Performance**: Fast parallel processing for large volumes of documents using multi-threading (`max_workers`).
 
 ## Quick Start
@@ -77,6 +77,9 @@ python main.py sample.pdf --engine openai --target ko
 
 # Use LFM2 local model
 python main.py sample.pdf --engine lfm2 --target ko
+
+# Use LFM2-KOEN-MT model (Korean-English specialized, high quality)
+python main.py sample.pdf --engine lfm2-koen-mt --target ko
 ```
 
 ### API Key Setup (Optional)
@@ -139,7 +142,7 @@ For more detailed usage and configuration instructions, please refer to the docu
 
 ## Acknowledgments
 
-This project is built upon the [Docling](https://github.com/docling-project/docling) library. It also utilizes open-source models from [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), and [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF) for local translation capabilities.
+This project is built upon the [Docling](https://github.com/docling-project/docling) library. It also utilizes open-source models from [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), [LFM2-KOEN-MT](https://huggingface.co/gyung/lfm2-1.2b-koen-mt-v8-rl-10k-merged-GGUF) (Korean-English specialized), and [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF) for local translation capabilities.
 
 ```bibtex
 @techreport{Docling,

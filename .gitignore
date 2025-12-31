@@ -26,3 +26,6 @@ debug_*.txt
 
 .gemini/
 gha-creds-*.json
+
+# LLM
+LFM2-KoEn-Tuning
