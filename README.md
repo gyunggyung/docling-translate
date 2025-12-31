@@ -35,7 +35,7 @@
 - **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
-- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), Yanolja(Local) 지원.
+- **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), NLLB-200(Local), NLLB-KOEN(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
 ## 빠른 시작
@@ -61,6 +61,11 @@ Qwen, LFM2 등 로컬 LLM을 사용하려면 `llama-cpp-python`과 `huggingface_
   pip install llama-cpp-python huggingface_hub
   ```
 
+**(선택) NLLB 번역 모델(nllb, nllb-koen) 사용 시**
+```bash
+pip install ctranslate2 transformers sentencepiece hf_xet
+```
+
 ### 2. CLI 실행
 
 가장 기본적인 사용법입니다. PDF 파일을 지정하면 **인터랙티브 HTML 파일**이 생성됩니다.
@@ -80,6 +85,12 @@ python main.py sample.pdf --engine lfm2 --target ko
 
 # LFM2-KOEN-MT 모델 사용 (한국어-영어 전용, 고품질)
 python main.py sample.pdf --engine lfm2-koen-mt --target ko
+
+# NLLB-200 모델 사용 (200개 언어 지원)
+python main.py sample.pdf --engine nllb --target ko
+
+# NLLB-KOEN 모델 사용 (한국어-영어 Fine-tuned, BLEU 33.66)
+python main.py sample.pdf --engine nllb-koen --target ko
 ```
 
 ### API 키 설정 (선택 사항)
@@ -142,7 +153,7 @@ streamlit run app.py
 
 ## Acknowledgments
 
-이 프로젝트는 [Docling](https://github.com/docling-project/docling) 라이브러리를 기반으로 합니다. 또한, 로컬 번역 기능을 위해 [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), [LFM2-KOEN-MT](https://huggingface.co/gyung/lfm2-1.2b-koen-mt-v8-rl-10k-merged-GGUF) (한국어-영어 전용), [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF)의 오픈소스 모델을 활용합니다.
+이 프로젝트는 [Docling](https://github.com/docling-project/docling) 라이브러리를 기반으로 합니다. 또한, 로컬 번역 기능을 위해 [Qwen](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF), [LFM2](https://huggingface.co/LiquidAI/LFM2-1.2B-GGUF), [LFM2-KOEN-MT](https://huggingface.co/gyung/lfm2-1.2b-koen-mt-v8-rl-10k-merged-GGUF) (한국어-영어 전용), [NLLB-200](https://huggingface.co/facebook/nllb-200-distilled-600M) (200개 언어), [Yanolja](https://huggingface.co/yanolja/YanoljaNEXT-Rosetta-4B-2511-GGUF)의 오픈소스 모델을 활용합니다.
 
 ```bibtex
 @techreport{Docling,
