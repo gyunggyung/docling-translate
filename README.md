@@ -204,6 +204,30 @@ streamlit run app.py
   url={https://arxiv.org/abs/2511.23404}, 
 }
 
+@article{nllb2022,
+  title={No Language Left Behind: Scaling Human-Centered Machine Translation},
+  author={NLLB Team et al.},
+  journal={arXiv preprint arXiv:2207.04672},
+  year={2022},
+  url={https://arxiv.org/abs/2207.04672}
+}
+
+@misc{nllb-finetuned-en2ko,
+  author = {Jisu Kim, Juhwan Lee, TakSung Heo, Minsu Jeong},
+  title = {NLLB Fine-tuned English to Korean},
+  year = {2024},
+  publisher = {Hugging Face},
+  howpublished = {\\url{https://huggingface.co/NHNDQ/nllb-finetuned-en2ko}}
+}
+
+@misc{lfm2-koen-mt,
+  author = {gyung},
+  title = {LFM2-1.2B-KOEN-MT: Korean-English Translation Model},
+  year = {2025},
+  publisher = {Hugging Face},
+  howpublished = {\\url{https://huggingface.co/gyung/lfm2-1.2b-koen-mt-v8-rl-10k-merged-GGUF}}
+}
+
 ```
 
 ## 라이선스
