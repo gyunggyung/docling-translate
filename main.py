@@ -38,7 +38,7 @@ def main():
     # 선택 인수
     parser.add_argument("--source", default="en", help="Source language code (default: en)")
     parser.add_argument("--target", default="ko", help="Target language code (default: ko)")
-    parser.add_argument("--engine", default="google", choices=["google", "deepl", "gemini", "openai", "qwen-0.6b", "lfm2", "lfm2-koen-mt", "yanolja"], help="Translation engine (default: google)")
+    parser.add_argument("--engine", default="google", choices=["google", "deepl", "gemini", "openai", "qwen-0.6b", "lfm2", "lfm2-koen-mt", "nllb", "nllb-koen", "yanolja"], help="Translation engine (default: google)")
     parser.add_argument("--workers", type=int, default=8, help="Number of parallel workers (default: 8)")
 
     args = parser.parse_args()
@@ -49,7 +49,7 @@ def main():
     # 로컬 모델(Qwen, Yanolja) 사용 시 기본 워커 수를 1로 조정 (사용자가 명시적으로 지정하지 않은 경우)
     # argparse의 default는 8이지만, 로컬 모델의 메모리 사용량을 고려하여 안전하게 처리
     workers = args.workers
-    if args.engine in ["qwen-0.6b", "lfm2", "lfm2-koen-mt", "yanolja"] and workers == 8:
+    if args.engine in ["qwen-0.6b", "lfm2", "lfm2-koen-mt", "nllb", "nllb-koen", "yanolja"] and workers == 8:
         # 사용자가 --workers를 지정하지 않았다고 가정 (기본값 8인 경우)
         # 만약 사용자가 명시적으로 8을 입력했다면 그대로 8로 실행됨 (구분 불가하지만 안전한 방향으로)
         workers = 1
