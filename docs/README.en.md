@@ -5,7 +5,7 @@
 </p> -->
 
 > **Docling-based Translator for Technical Documents**  
-> Supports PDF, DOCX, PPTX, HTML & Images with interactive structure-preserving comparison.
+> Supports PDF, DOCX, PPTX, HTML, Images, **Code Files & Text Files** with interactive structure-preserving comparison.
 
 [![Stars](https://img.shields.io/github/stars/gyunggyung/docling-translate?style=social)](https://github.com/gyunggyung/docling-translate/stargazers)
 [![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/ko/latest/?badge=latest)
@@ -32,9 +32,11 @@ Designed to overcome the **imperfections and context loss** often encountered in
 
 ## Key Features
 
-- **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, `HTML`, and `Image` formats into an **Interactive Viewer (HTML)**.
+- **Multi-Format Support**: Converts and translates `PDF`, `DOCX`, `PPTX`, `HTML`, `Image`, and **Text/Code files** into an **Interactive Viewer (HTML)**.
 - **Sentence-Level Parallel Translation**: Precisely matches one source sentence to one translated sentence for maximum readability.
 - **Layout Preservation**: Maintains tables and images within the document during translation.
+- **Smart Code Translation**: For code files (.py, .js, .ts, .java, .c, .go, etc.), only comments and docstrings are translated while preserving the code structure.
+- **Markdown Rendering**: Markdown files are rendered as HTML with proper formatting (headings, lists, code blocks, etc.).
 - **Flexible Engine Selection**: Supports Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), NLLB-200(Local), Yanolja(Local).
 - **High Performance**: Fast parallel processing for large volumes of documents using multi-threading (`max_workers`).
 
@@ -102,6 +104,15 @@ python main.py sample.pdf --engine lfm2-koen-mt --target ko
 
 # Use NLLB-200 model (200 languages support)
 python main.py sample.pdf --engine nllb --target ko
+
+# Translate a Markdown file (rendered as HTML)
+python main.py README.md --source en --target ko
+
+# Translate a Python file (comments/docstrings only)
+python main.py script.py --source ko --target en
+
+# Translate a text file
+python main.py notes.txt --source en --target ko
 ```
 
 ### API Key Setup (Optional)
@@ -137,6 +148,27 @@ streamlit run app.py
 - **View Mode Control**: Switch between "Inspection Mode" (Side-by-Side) and "Reading Mode" (Translation Only).
 - **Real-time Progress**: View detailed status and real-time progress for each step, including document conversion, text extraction, translation, and image saving.
 - **History Management**: Automatically saves and loads previous translation results.
+
+## Text & Code File Translation
+
+In addition to documents, `docling-translate` supports **smart translation** for various text-based files:
+
+### Supported File Types
+
+| Category | Extensions | Translation Behavior |
+|----------|------------|---------------------|
+| **Markdown** | `.md`, `.markdown` | Full text translated, rendered as HTML |
+| **Code Files** | `.py`, `.js`, `.ts`, `.java`, `.c`, `.cpp`, `.go`, `.rs`, etc. | **Comments & docstrings only** - code structure preserved |
+| **Config Files** | `.json`, `.yaml`, `.toml`, `.xml` | Full content translated |
+| **Plain Text** | `.txt`, `.log` | Full text translated by paragraph |
+| **No Extension** | `LICENSE`, `README`, etc. | Detected as text, translated by paragraph |
+
+### Code File Features
+
+- **Original code structure preserved** with line numbers
+- **Toggle between translated/original comments** with a single click
+- **Hover over translated comments** to see the original text in a tooltip
+- **Dark/Light theme** support
 
 ## Architecture
 

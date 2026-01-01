@@ -8,8 +8,15 @@ Docling PDF 번역기의 CLI(Command Line Interface) 진입점입니다.
 2.  **문서 처리 요청**: `src.core.process_document`를 호출하여 문서 변환 및 번역을 실행합니다.
 3.  **결과 출력**: 처리 결과를 콘솔에 출력합니다.
 
+지원 파일 형식:
+- 문서: PDF, DOCX, PPTX, HTML, Image
+- 텍스트: .md, .txt, .json, .yaml 등
+- 코드: .py, .js, .ts, .java, .c, .go 등 (주석/독스트링만 번역)
+
 사용 예시:
     python main.py document.pdf --source en --target ko --engine google
+    python main.py README.md --source en --target ko
+    python main.py script.py --source ko --target en
 """
 
 import argparse
@@ -33,7 +40,7 @@ def main():
     parser = argparse.ArgumentParser(description="Docling PDF Translator CLI")
     
     # 필수 인수: 입력 파일 경로
-    parser.add_argument("input_file", help="Path to the input file (PDF, DOCX, PPTX, etc.)")
+    parser.add_argument("input_file", help="Path to the input file (PDF, DOCX, PPTX, HTML, Image, .md, .py, .txt, etc.)")
     
     # 선택 인수
     parser.add_argument("--source", default="en", help="Source language code (default: en)")

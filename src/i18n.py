@@ -22,12 +22,12 @@ TRANSLATIONS = {
 
         # 업로더 텍스트 (CSS Hack용)
         "uploader_text": "Drag and drop files here",
-        "uploader_limit": "Limit 50GB per file • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
+        "uploader_limit": "Docs: PDF, DOCX, PPTX | Code: .py, .js, .ts, .java, .c, .go | Text: .md, .txt, .json",
 
         # 타이틀 / 사이드바
         "app_title": "Docling PDF Translator",
         "sidebar_header": "Settings",
-        "upload_label": "Upload documents (PDF, DOCX, PPTX, HTML, Image, etc.)",
+        "upload_label": "Upload files (Documents, Code, Text)",
         "options_label": "Translation options",
         "src_label": "Source language",
         "dest_label": "Target language",
@@ -89,12 +89,12 @@ TRANSLATIONS = {
 
         # 업로더 텍스트 (CSS Hack용)
         "uploader_text": "파일을 이곳에 드래그 앤 드롭하세요",
-        "uploader_limit": "파일당 50GB 제한 • PDF, DOCX, PPTX, HTML, HTM, PNG, JPG, JPEG",
+        "uploader_limit": "문서: PDF, DOCX, PPTX | 코드: .py, .js, .ts, .java, .c, .go | 텍스트: .md, .txt, .json",
 
         # 타이틀 / 사이드바
         "app_title": "Docling PDF 번역기",
         "sidebar_header": "설정",
-        "upload_label": "문서 업로드 (PDF, DOCX, PPTX, HTML, Image 등)",
+        "upload_label": "파일 업로드 (문서, 코드, 텍스트)",
         "options_label": "번역 옵션",
         "src_label": "원본 언어 (Source)",
         "dest_label": "대상 언어 (Target)",
