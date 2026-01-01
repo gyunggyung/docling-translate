@@ -5,7 +5,7 @@
 </p> -->
 
 > **Docling 기반의 구조 보존형 문서 번역 도구**  
-> PDF, DOCX, PPTX, HTML, 이미지의 구조를 유지하며 인터랙티브 비교 뷰를 제공합니다.
+> PDF, DOCX, PPTX, HTML, 이미지, **코드 파일 및 텍스트 파일**의 구조를 유지하며 인터랙티브 비교 뷰를 제공합니다.
 
 [![Stars](https://img.shields.io/github/stars/gyunggyung/docling-translate?style=social)](https://github.com/gyunggyung/docling-translate/stargazers)
 [![Documentation Status](https://readthedocs.org/projects/docling-translate/badge/?version=latest)](https://docling-translate.readthedocs.io/ko/latest/?badge=latest)
@@ -32,9 +32,11 @@
 
 ## 주요 기능
 
-- **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image` 포맷을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
+- **다양한 포맷 지원**: `PDF`, `DOCX`, `PPTX`, `HTML`, `Image`, **텍스트/코드 파일**을 **인터랙티브 뷰어(HTML)** 형태로 변환 및 번역.
 - **문장 단위 병렬 번역**: 원문 한 문장, 번역문 한 문장을 정확히 매칭하여 가독성 극대화.
 - **레이아웃 보존**: 문서 내의 표(Table)와 이미지(Image)를 유지하며 번역.
+- **스마트 코드 번역**: 코드 파일(.py, .js, .ts, .java, .c, .go 등)의 **주석과 독스트링만 번역**하고 코드 구조는 그대로 유지.
+- **마크다운 렌더링**: 마크다운 파일은 제목, 리스트, 코드 블록 등이 제대로 렌더링된 HTML로 변환.
 - **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), NLLB-200(Local), NLLB-KOEN(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
 
@@ -105,6 +107,15 @@ python main.py sample.pdf --engine nllb --target ko
 
 # NLLB-KOEN 모델 사용 (한국어-영어 Fine-tuned, BLEU 33.66)
 python main.py sample.pdf --engine nllb-koen --target ko
+
+# 마크다운 파일 번역 (HTML로 렌더링)
+python main.py README.md --source en --target ko
+
+# Python 파일 번역 (주석/독스트링만 번역)
+python main.py script.py --source ko --target en
+
+# 텍스트 파일 번역
+python main.py notes.txt --source en --target ko
 ```
 
 ### API 키 설정 (선택 사항)
@@ -140,6 +151,27 @@ streamlit run app.py
 - **뷰 모드 제어**: 원문-번역문 대조 보기(Inspection Mode)와 번역문만 보기(Reading Mode)를 전환할 수 있습니다.
 - **실시간 진행률 표시**: 문서 변환, 텍스트 추출, 번역, 이미지 저장 등 각 단계별 상세 상태와 진행률을 실시간으로 확인할 수 있습니다.
 - **번역 기록 관리**: 이전 번역 결과를 자동으로 저장하고 불러올 수 있습니다.
+
+## 텍스트 및 코드 파일 번역
+
+문서 외에도 다양한 텍스트 기반 파일의 **스마트 번역**을 지원합니다:
+
+### 지원 파일 형식
+
+| 카테고리 | 확장자 | 번역 방식 |
+|----------|------------|---------------------|
+| **마크다운** | `.md`, `.markdown` | 전체 번역, HTML로 렌더링 |
+| **코드 파일** | `.py`, `.js`, `.ts`, `.java`, `.c`, `.cpp`, `.go`, `.rs` 등 | **주석/독스트링만** - 코드 구조 유지 |
+| **설정 파일** | `.json`, `.yaml`, `.toml`, `.xml` | 전체 번역 |
+| **일반 텍스트** | `.txt`, `.log` | 문단 단위 번역 |
+| **확장자 없음** | `LICENSE`, `README` 등 | 텍스트로 감지, 문단 단위 번역 |
+
+### 코드 파일 기능
+
+- **원본 코드 구조 유지** + 줄 번호 표시
+- **번역/원문 토글** 버튼으로 한 번에 전환
+- **마우스 호버** 시 원문 툴팁 표시
+- **다크/라이트 테마** 지원
 
 ## 아키텍처
 

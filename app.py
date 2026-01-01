@@ -115,6 +115,13 @@ def main():
         [data-testid="stFileUploader"] section > div > div > span {{
             display: none;
         }}
+        /* Hide the ugly extension list in the uploader box */
+        [data-testid="stFileUploader"] section > div:first-child > small {{
+            display: none !important;
+        }}
+        [data-testid="stFileUploader"] section small {{
+            display: none !important;
+        }}
         /* Insert custom text */
         [data-testid="stFileUploader"] section > div > div::after {{
             content: "{t('uploader_text')}";
@@ -134,10 +141,23 @@ def main():
         label="file_uploader", # 고정 라벨 (화면엔 안 보임)
         label_visibility="collapsed",
         key="file_uploader", # 고정 Key
-        type=["pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg"],
+        type=[
+            # 기존 Docling 지원
+            "pdf", "docx", "pptx", "html", "htm", "png", "jpg", "jpeg",
+            # 텍스트/마크다운
+            "txt", "md", "markdown", "rst",
+            # 프로그래밍 언어 (주석 번역)
+            "py", "pyw", "js", "jsx", "ts", "tsx",
+            "c", "h", "cpp", "hpp", "cc", "cxx", "cs",
+            "java", "kt", "go", "rs", "swift",
+            "sh", "bash", "zsh",
+            # 설정 파일
+            "json", "yaml", "yml", "toml", "xml",
+            # 기타
+            "log", "cfg", "ini", "env",
+        ],
         accept_multiple_files=True
     )
-    st.caption(t("uploader_limit"))
 
     # 4. 번역 실행
     if uploaded_files:

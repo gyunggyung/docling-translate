@@ -8,6 +8,7 @@ src/core.py
 2.  **텍스트 수집**: 변환된 문서에서 텍스트와 캡션을 추출합니다.
 3.  **번역 오케스트레이션**: 추출된 텍스트를 `src.translation` 패키지를 사용하여 병렬 번역합니다.
 4.  **HTML 생성**: `src.html_generator`를 사용하여 번역 결과가 포함된 인터랙티브 HTML을 생성합니다.
+5.  **텍스트 파일 처리**: txt, md, py 등 텍스트 파일의 스마트 번역을 지원합니다.
 """
 
 import os
@@ -34,6 +35,8 @@ from src.benchmark import global_benchmark as bench
 from src.translation import create_translator
 from src.html_generator import generate_html_content
 from src.utils import ensure_nltk_resources
+from src.text_parser import TextFileParser, is_text_file
+from src.text_html_generator import generate_text_html, get_file_type_display, generate_code_file_html
 
 # 진행률 콜백 타입 정의 (float: 진행률 0.0~1.0, str: 상태 메시지)
 ProgressCallback = Callable[[float, str], None]
@@ -100,6 +103,167 @@ PROGRESS_MESSAGES = {
     }
 }
 
+
+def process_text_file(
+    file_path: str,
+    source_lang: str,
+    target_lang: str,
+    engine: str,
+    max_workers: int = 1,
+    progress_cb: Optional[ProgressCallback] = None,
+    ui_lang: str = "ko",
+) -> dict:
+    """
+    텍스트 파일 전용 처리 파이프라인입니다.
+    
+    txt, md, py, js 등의 텍스트 파일을 파싱하여 번역 대상 영역만 추출하고,
+    번역 후 인터랙티브 HTML을 생성합니다.
+    
+    Args:
+        file_path: 처리할 텍스트 파일 경로
+        source_lang: 원본 언어 코드
+        target_lang: 대상 언어 코드
+        engine: 번역 엔진
+        max_workers: 병렬 워커 수
+        progress_cb: 진행률 콜백
+        ui_lang: UI 언어
+        
+    Returns:
+        결과 정보 딕셔너리 (output_dir, html_path)
+    """
+    ensure_nltk_resources()
+    
+    msgs = PROGRESS_MESSAGES.get(ui_lang, PROGRESS_MESSAGES["ko"])
+    file_name = Path(file_path).name
+    
+    bench.start(f"Total Process (Text): {file_name}")
+    
+    if progress_cb:
+        progress_cb(0.05, f"📄 텍스트 파일 분석 중... ({file_name})")
+    
+    # 1. 파일 유효성 검사
+    if not os.path.exists(file_path):
+        logging.error(f"입력 파일을 찾을 수 없습니다: {file_path}")
+        if progress_cb:
+            progress_cb(1.0, msgs["error_search"].format(file_name=file_name))
+        return {}
+    
+    # 2. 출력 경로 설정
+    base_filename = Path(file_path).stem
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_dir = Path("output") / f"{base_filename}_{source_lang}_to_{target_lang}_{timestamp}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    logging.info(f"[{file_name}] 텍스트 파일 처리 시작 (엔진: {engine})")
+    
+    # 3. 텍스트 파일 파싱
+    if progress_cb:
+        progress_cb(0.10, f"📝 파일 파싱 중... ({file_name})")
+    
+    parser = TextFileParser()
+    try:
+        segments = parser.parse(Path(file_path))
+    except Exception as e:
+        logging.error(f"[{file_name}] 파일 파싱 오류: {e}", exc_info=True)
+        if progress_cb:
+            progress_cb(1.0, f"❌ 파싱 오류: {e}")
+        return {}
+    
+    # 번역 대상 텍스트 추출
+    translatable_texts = parser.get_translatable_texts(segments)
+    unique_texts = list(set(translatable_texts))
+    
+    logging.info(f"[{file_name}] 세그먼트 {len(segments)}개, 번역 대상 {len(unique_texts)}개")
+    
+    if progress_cb:
+        progress_cb(0.20, msgs["translating_start"].format(count=len(unique_texts)))
+    
+    # 4. 번역 실행
+    bench.start(f"Translation (Text): {file_name}")
+    t_trans_start = time.time()
+    
+    TRANSLATE_BASE = 0.20
+    TRANSLATE_SPAN = 0.60
+    
+    def _translate_progress(local_ratio: float, msg: str):
+        if progress_cb:
+            global_ratio = TRANSLATE_BASE + TRANSLATE_SPAN * local_ratio
+            progress_cb(global_ratio, msgs["translating_progress"].format(msg=msg))
+    
+    translator = create_translator(engine)
+    translated_results = translator.translate_batch(
+        unique_texts,
+        src=source_lang,
+        dest=target_lang,
+        max_workers=max_workers,
+        progress_cb=_translate_progress
+    )
+    
+    t_trans_end = time.time()
+    
+    # 번역 맵 생성
+    translation_map = dict(zip(unique_texts, translated_results))
+    
+    bench.end(f"Translation (Text): {file_name}")
+    logging.info(f"[{file_name}] 번역 완료 ({t_trans_end - t_trans_start:.2f}초)")
+    
+    # 5. HTML 생성
+    if progress_cb:
+        progress_cb(0.85, msgs["saving"].format(file_name=file_name))
+    
+    ext = Path(file_path).suffix.lstrip('.').lower()
+    file_type = get_file_type_display(ext)
+    
+    # 파일 타입별 분기
+    is_markdown = ext in ('md', 'markdown')
+    is_code_file = ext in ('py', 'pyw', 'js', 'jsx', 'ts', 'tsx', 'c', 'h', 'cpp', 'hpp', 'cc', 'cxx', 'cs', 'java', 'kt', 'kts', 'go', 'rs', 'swift', 'sh', 'bash', 'zsh')
+    
+    GEN_BASE = 0.85
+    GEN_SPAN = 0.15
+    
+    def _gen_progress(local_ratio: float, msg: str):
+        if progress_cb:
+            global_ratio = GEN_BASE + GEN_SPAN * local_ratio
+            progress_cb(global_ratio, msgs["saving_progress"].format(msg=msg))
+    
+    if is_code_file:
+        # 코드 파일: 원본 코드 구조 유지하면서 주석만 번역
+        original_content = Path(file_path).read_text(encoding='utf-8', errors='ignore')
+        html_content = generate_code_file_html(
+            file_name=file_name,
+            original_content=original_content,
+            segments=segments,
+            translation_map=translation_map,
+            file_type=file_type,
+            progress_cb=_gen_progress
+        )
+    else:
+        # 마크다운/일반 텍스트
+        html_content = generate_text_html(
+            file_name=file_name,
+            segments=segments,
+            translation_map=translation_map,
+            file_type=file_type,
+            is_markdown=is_markdown,
+            progress_cb=_gen_progress
+        )
+    
+    path_html = output_dir / f"{base_filename}_interactive.html"
+    with open(path_html, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    
+    if progress_cb:
+        progress_cb(1.0, msgs["done"].format(file_name=file_name))
+    
+    bench.end(f"Total Process (Text): {file_name}")
+    logging.info(f"[{file_name}] 텍스트 파일 처리 완료: {output_dir}")
+    
+    return {
+        "output_dir": output_dir,
+        "html_path": path_html
+    }
+
+
 def process_single_file(
     file_path: str,
     converter: DocumentConverter,
@@ -144,6 +308,19 @@ def process_single_file(
     if progress_cb:
         progress_cb(0.02, msgs["analyzing"].format(file_name=file_name))
 
+    # 0. 텍스트 파일인 경우 별도 파이프라인으로 처리
+    if is_text_file(file_path):
+        logging.info(f"[{file_name}] 텍스트 파일 감지됨, 텍스트 처리 파이프라인으로 전환")
+        return process_text_file(
+            file_path=file_path,
+            source_lang=source_lang,
+            target_lang=target_lang,
+            engine=engine,
+            max_workers=max_workers,
+            progress_cb=progress_cb,
+            ui_lang=ui_lang
+        )
+    
     # 1. 입력 파일 유효성 검사
     if not os.path.exists(file_path):
         logging.error(f"입력 파일을 찾을 수 없습니다: {file_path}")
