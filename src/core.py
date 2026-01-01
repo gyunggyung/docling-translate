@@ -18,6 +18,27 @@ import nltk
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Callable
+import multiprocessing
+
+# [Issue #92] Docling CPU 병렬 처리 최적화
+# Docling 및 PyTorch/OCR 라이브러리가 로드되기 전에 환경 변수 설정
+try:
+    # CPU 물리 코어 수 또는 논리 코어 수 확인 (가능하면 물리 코어 권장되나 multiprocessing은 논리 코어 반환)
+    cpu_count = str(multiprocessing.cpu_count())
+    
+    # 이미 설정되어 있지 않은 경우에만 설정 (사용자 지정 값 존중)
+    if "OMP_NUM_THREADS" not in os.environ:
+        os.environ["OMP_NUM_THREADS"] = cpu_count
+    
+    # 추가 가속화 관련 환경 변수
+    if "MKL_NUM_THREADS" not in os.environ:
+        os.environ["MKL_NUM_THREADS"] = cpu_count
+    if "TORCH_NUM_THREADS" not in os.environ:
+        os.environ["TORCH_NUM_THREADS"] = cpu_count
+        
+    logging.info(f"[Optimization] CPU Optimization Enabled: Threads set to {cpu_count}")
+except Exception as e:
+    logging.warning(f"[Optimization] Failed to set CPU threads: {e}")
 
 from docling.document_converter import (
     DocumentConverter,
