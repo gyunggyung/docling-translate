@@ -68,24 +68,104 @@ class NLLBKOENTranslator(BaseTranslator):
         
         print("NLLB-KOEN Fine-tuned 모델 로드 완료 (CTranslate2).")
 
-    def translate_batch(self, sentences, src, dest, max_workers=1, progress_cb=None):
-        """여러 문장을 순차적으로 번역합니다."""
+    def translate_batch(self, sentences, src, dest, max_workers=1, progress_cb=None, chunk_size=16):
+        """
+        CTranslate2의 진정한 배치 처리를 활용하여 여러 문장을 효율적으로 번역합니다.
+        
+        Args:
+            sentences: 번역할 문장 리스트
+            src: 원본 언어 코드
+            dest: 대상 언어 코드
+            max_workers: (미사용) 호환성을 위해 유지
+            progress_cb: 진행률 콜백 함수
+            chunk_size: 한 번에 배치 처리할 문장 수 (기본값: 16, NLLB는 더 큰 배치 가능)
+        
+        Returns:
+            번역된 문장 리스트 (입력과 동일한 순서 보장)
+        """
         results = []
         total = len(sentences)
         
-        print(f"NLLB-KOEN: Starting translation of {total} items...")
+        # NLLB 언어 코드
+        src_lang = "eng_Latn" if src == "en" else "kor_Hang"
+        tgt_lang = "kor_Hang" if dest == "ko" else "eng_Latn"
+        self.tokenizer.src_lang = src_lang
         
-        for i, text in enumerate(sentences):
+        # 청크 단위로 분할
+        chunks = [sentences[i:i + chunk_size] for i in range(0, total, chunk_size)]
+        
+        print(f"NLLB-KOEN: CTranslate2 배치 번역 시작 ({total}개 문장 → {len(chunks)}개 청크, 청크 크기: {chunk_size})")
+        
+        processed_count = 0
+        for i, chunk in enumerate(chunks):
             try:
-                translated = self.translate(text, src, dest)
-                results.append(translated)
-            except Exception as e:
-                print(f"NLLB-KOEN batch processing error at index {i}: {e}")
-                results.append(text)
-            
-            if progress_cb:
-                progress_cb((i + 1) / total, f"({i + 1}/{total})")
+                # 배치 토큰화
+                all_input_tokens = []
+                for text in chunk:
+                    if not text or not text.strip():
+                        all_input_tokens.append([])  # 빈 문장 처리
+                    else:
+                        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+                        tokens = self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+                        all_input_tokens.append(tokens)
                 
+                # 빈 문장 필터링 및 결과 위치 추적
+                non_empty_indices = [j for j, tokens in enumerate(all_input_tokens) if tokens]
+                non_empty_tokens = [all_input_tokens[j] for j in non_empty_indices]
+                
+                if non_empty_tokens:
+                    # CTranslate2 배치 번역 (진정한 배치 처리)
+                    batch_results = self.translator.translate_batch(
+                        non_empty_tokens,
+                        target_prefix=[[tgt_lang]] * len(non_empty_tokens),
+                        beam_size=4,
+                        max_decoding_length=512,
+                        repetition_penalty=1.2  # 반복 토큰 생성 억제
+                    )
+                    
+                    # 결과 디코딩
+                    translated_texts = []
+                    for result in batch_results:
+                        output_tokens = result.hypotheses[0]
+                        # 타겟 언어 토큰 제거
+                        if output_tokens and output_tokens[0] == tgt_lang:
+                            output_tokens = output_tokens[1:]
+                        
+                        translated_text = self.tokenizer.decode(
+                            self.tokenizer.convert_tokens_to_ids(output_tokens),
+                            skip_special_tokens=True
+                        )
+                        translated_texts.append(translated_text.strip())
+                else:
+                    translated_texts = []
+                
+                # 원래 순서대로 결과 재조합 (빈 문장은 원문 유지)
+                chunk_results = []
+                translated_idx = 0
+                for j in range(len(chunk)):
+                    if j in non_empty_indices:
+                        chunk_results.append(translated_texts[translated_idx])
+                        translated_idx += 1
+                    else:
+                        chunk_results.append(chunk[j])  # 빈 문장은 원문 유지
+                
+                results.extend(chunk_results)
+                
+            except Exception as e:
+                # Fallback: 개별 번역
+                print(f"NLLB-KOEN 배치 처리 오류 (청크 {i+1}): {e}")
+                for text in chunk:
+                    try:
+                        results.append(self.translate(text, src, dest))
+                    except Exception as inner_e:
+                        print(f"개별 번역 실패: {inner_e}")
+                        results.append(text)
+            
+            # 진행률 업데이트
+            processed_count += len(chunk)
+            if progress_cb:
+                progress_cb(processed_count / total, f"({processed_count}/{total})")
+        
         return results
 
     def translate(self, text: str, src: str, dest: str) -> str:
@@ -112,7 +192,8 @@ class NLLBKOENTranslator(BaseTranslator):
                 [input_tokens],
                 target_prefix=[[tgt_lang]],
                 beam_size=4,
-                max_decoding_length=512
+                max_decoding_length=512,
+                repetition_penalty=1.2  # 반복 토큰 생성 억제
             )
             
             # 결과 디코딩

@@ -29,3 +29,9 @@ gha-creds-*.json
 
 # LLM
 LFM2-KoEn-Tuning
+
+# benchmarks
+benchmarks/
+
+# scripts
+scripts/
