@@ -47,11 +47,13 @@ def main():
     parser.add_argument("--target", default="ko", help="Target language code (default: ko)")
     parser.add_argument("--engine", default="google", choices=["google", "deepl", "gemini", "openai", "qwen-0.6b", "lfm2", "lfm2-koen-mt", "nllb", "nllb-koen", "yanolja"], help="Translation engine (default: google)")
     parser.add_argument("--workers", type=int, default=8, help="Number of parallel workers (default: 8)")
+    parser.add_argument("--fast", action="store_true", help="Enable fast mode (optimized for speed)")
 
     args = parser.parse_args()
 
     # Converter 생성
-    converter = create_converter()
+    speed_mode = "fast" if args.fast else "balanced"
+    converter = create_converter(speed_mode=speed_mode)
 
     # 로컬 모델(Qwen, Yanolja) 사용 시 기본 워커 수를 1로 조정 (사용자가 명시적으로 지정하지 않은 경우)
     # argparse의 default는 8이지만, 로컬 모델의 메모리 사용량을 고려하여 안전하게 처리
