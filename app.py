@@ -39,14 +39,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# 캐시된 Converter 생성 (리소스 재사용)
+# 캐시된 Converter 생성 (speed_mode에 따라 분기)
+# Issue #100: 속도 모드에 따라 다른 설정의 Converter 생성
 @st.cache_resource
-def get_converter():
+def get_converter(speed_mode: str = "balanced"):
     """
     Docling Converter 인스턴스를 캐싱하여 반환합니다.
-    앱 실행 중 한 번만 생성되어 재사용됩니다.
+    speed_mode에 따라 다른 설정으로 생성됩니다.
     """
-    return create_converter()
+    return create_converter(speed_mode=speed_mode)
 
 def main():
     """
@@ -108,6 +109,19 @@ def main():
             max_value=16, 
             value=default_workers,
             help=t("workers_help")
+        )
+        
+        # [NEW] 속도 모드 선택 (Issue #100)
+        st.markdown("---")
+        speed_mode_options = ["balanced", "fast"]
+        speed_mode = st.radio(
+            t("speed_mode_label"),
+            options=speed_mode_options,
+            format_func=lambda x: t(f"speed_mode_{x}"),
+            index=0,  # 기본값: balanced
+            horizontal=True,
+            help=t("speed_mode_help"),
+            disabled="is_processing" in st.session_state and st.session_state["is_processing"]
         )
 
     # 3. 메인 영역: 타이틀 및 파일 업로드
@@ -177,7 +191,8 @@ def main():
             st.session_state["is_processing"] = False
             st.rerun()
 
-        converter = get_converter()
+        # 속도 모드에 따른 Converter 생성 (Issue #100)
+        converter = get_converter(speed_mode=speed_mode)
         
         # 진행 상태 표시줄
         progress_bar = st.progress(0)
