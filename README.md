@@ -39,6 +39,7 @@
 - **마크다운 렌더링**: 마크다운 파일은 제목, 리스트, 코드 블록 등이 제대로 렌더링된 HTML로 변환.
 - **유연한 엔진 선택**: Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), NLLB-200(Local), NLLB-KOEN(Local), Yanolja(Local) 지원.
 - **고성능 처리**: 멀티스레딩(`max_workers`)을 통한 대량 문서 고속 병렬 처리.
+- **Fast Mode 지원**: `pypdfium2` 백엔드 가속을 통해 **3-5배 빠른** PDF 파싱 지원 (`--fast` 옵션).
 
 ## 빠른 시작
 
@@ -89,6 +90,9 @@ pip install ctranslate2 transformers sentencepiece hf_xet
 ```bash
 # 기본 번역 (영어 -> 한국어)
 python main.py sample.pdf
+
+# Fast Mode 사용 (3-5배 빠른 속도, 레이아웃 단순화)
+python main.py sample.pdf --fast
 
 # 옵션 사용 (DeepL 엔진, 일본어 번역)
 python main.py sample.pdf --engine deepl --target ja

@@ -39,6 +39,7 @@ python main.py <input_path> [options]
 | `--engine` | `-e` | `google` | 사용할 번역 엔진 (`google`, `deepl`, `gemini`, `openai`, `qwen-0.6b`, `lfm2`, `lfm2-koen-mt`, `nllb`, `yanolja`). |
 | `--max-workers` | | `4` | 병렬 처리를 위한 스레드 수. 시스템 사양에 따라 조절하세요. |
 | `--benchmark` | `-b` | `False` | 번역 성능 측정 리포트를 출력합니다. |
+| `--fast` | | `False` | Fast Mode를 활성화합니다. (3-5배 빠른 속도, `pypdfium2` 사용) |
 
 ### 사용 예시
 
@@ -75,6 +76,11 @@ python main.py documents/paper.pdf --engine nllb
 **7. 폴더 내 모든 파일 일괄 번역 (8개 스레드 병렬 처리)**
 ```bash
 python main.py my_documents/ --max-workers 8
+
+**8. Fast Mode 사용 (속도 최적화)**
+```bash
+python main.py documents/paper.pdf --fast
+```
 ```
 
 ---

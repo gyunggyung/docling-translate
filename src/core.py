@@ -52,6 +52,15 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions, TableFormerMode
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem
 
+# [NEW] pypdfium2 백엔드 import (Issue #100 - 속도 최적화)
+# Fast 모드에서 사용하면 3-5배 속도 향상
+try:
+    from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
+    PYPDFIUM_AVAILABLE = True
+except ImportError:
+    PYPDFIUM_AVAILABLE = False
+    logging.warning("[Speed] PyPdfiumDocumentBackend not available. Fast mode will use default backend.")
+
 from src.benchmark import global_benchmark as bench
 from src.translation import create_translator
 from src.html_generator import generate_html_content
@@ -62,12 +71,14 @@ from src.text_html_generator import generate_text_html, get_file_type_display, g
 # 진행률 콜백 타입 정의 (float: 진행률 0.0~1.0, str: 상태 메시지)
 ProgressCallback = Callable[[float, str], None]
 
-def create_converter() -> DocumentConverter:
+def create_converter(speed_mode: str = "balanced") -> DocumentConverter:
     """
     Docling DocumentConverter를 초기화하고 반환합니다.
     
-    PDF 변환 시 OCR은 비활성화하고, 테이블 구조 분석 및 이미지 추출을 활성화합니다.
-    이미지 스케일은 2.0으로 설정하여 고해상도 이미지를 얻습니다.
+    Args:
+        speed_mode: "fast" | "balanced" 
+            - fast: pypdfium2 백엔드, TableFormerMode.FAST, 이미지 생성 비활성화
+            - balanced: 기본 백엔드, TableFormerMode.ACCURATE, 이미지 생성 활성화
     
     Returns:
         DocumentConverter: 설정된 문서 변환기 인스턴스
@@ -75,14 +86,35 @@ def create_converter() -> DocumentConverter:
     pipeline_options = PdfPipelineOptions()
     pipeline_options.do_ocr = False
     pipeline_options.do_table_structure = True
-    pipeline_options.generate_picture_images = True
-    pipeline_options.generate_table_images = True
-    pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
-    pipeline_options.images_scale = 2.0
     
     # [NEW] 수식 추출 활성화 (Issue #102)
-    # 수식은 번역하지 않고 원문(LaTeX) 그대로 HTML에 표시됩니다.
     pipeline_options.do_formula_enrichment = True
+    
+    # [NEW] 속도 모드에 따른 설정 분기 (Issue #100)
+    if speed_mode == "fast":
+        # Fast 모드: pypdfium2 백엔드 + TableFormerMode.FAST만 적용
+        # 이미지/해상도는 Balanced와 동일하게 유지
+        pipeline_options.table_structure_options.mode = TableFormerMode.FAST
+        pipeline_options.generate_picture_images = True   # 이미지 유지
+        pipeline_options.generate_table_images = True     # 표 이미지 유지
+        pipeline_options.images_scale = 2.0               # 고해상도 유지
+    else:
+        # Balanced 모드: 품질 우선 (기본값)
+        pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
+        pipeline_options.generate_picture_images = True
+        pipeline_options.generate_table_images = True
+        pipeline_options.images_scale = 2.0  # 고해상도
+
+    # [NEW] 속도 모드에 따른 PDF 백엔드 선택 (Issue #100)
+    if speed_mode == "fast" and PYPDFIUM_AVAILABLE:
+        # Fast 모드: pypdfium2 백엔드 (3-5배 속도 향상)
+        pdf_format_option = PdfFormatOption(
+            pipeline_options=pipeline_options,
+            backend=PyPdfiumDocumentBackend
+        )
+    else:
+        # Balanced 모드: 기본 백엔드 (docling-parse-v4)
+        pdf_format_option = PdfFormatOption(pipeline_options=pipeline_options)
 
     return DocumentConverter(
         allowed_formats=[
@@ -93,7 +125,7 @@ def create_converter() -> DocumentConverter:
             InputFormat.IMAGE,
         ],
         format_options={
-            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
+            InputFormat.PDF: pdf_format_option,
             InputFormat.DOCX: WordFormatOption(),
             InputFormat.PPTX: PowerpointFormatOption(),
             InputFormat.HTML: HTMLFormatOption(),

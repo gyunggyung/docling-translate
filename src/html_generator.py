@@ -11,9 +11,57 @@ src/html_generator.py
 
 import html
 import nltk
+import re
 from pathlib import Path
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItemLabel, FormulaItem
 from src.utils import save_and_get_image_path
+
+
+def is_formula_text(text: str) -> bool:
+    """
+    텍스트가 수식인지 판별합니다.
+    LaTeX 명령어 패턴이 포함되어 있으면 수식으로 판단합니다.
+    """
+    if not text:
+        return False
+    
+    # LaTeX 수식 패턴 (일반적인 수학 기호/명령어)
+    latex_patterns = [
+        r'\\[a-zA-Z]+',      # \sin, \cos, \frac, \text 등
+        r'\^{',              # ^{ (위첨자)
+        r'_{',               # _{ (아래첨자)
+        r'\\left',           # \left
+        r'\\right',          # \right
+        r'\\frac',           # \frac
+        r'\\sum',            # \sum
+        r'\\int',            # \int
+        r'\\prod',           # \prod
+        r'&=',               # 정렬 기호
+    ]
+    
+    for pattern in latex_patterns:
+        if re.search(pattern, text):
+            return True
+    return False
+
+
+def format_formula_for_mathjax(text: str) -> str:
+    """
+    수식 텍스트를 MathJax가 렌더링할 수 있는 형식으로 변환합니다.
+    이미 $...$나 \\[...\\]로 감싸져 있지 않으면 블록 수식으로 감쌉니다.
+    """
+    text = text.strip()
+    
+    # 이미 MathJax 형식이면 그대로 반환
+    if text.startswith('$') or text.startswith('\\[') or text.startswith('\\('):
+        return text
+    
+    # &= 정렬 기호가 있으면 aligned 환경으로 감싸기
+    if '&=' in text or '&' in text:
+        return f'\\[\\begin{{aligned}}{text}\\end{{aligned}}\\]'
+    
+    # 일반 블록 수식으로 감싸기
+    return f'\\[{text}\\]'
 
 # HTML 헤더: CSS 스타일 및 자바스크립트 포함
 # - 다크 모드/라이트 모드 지원
@@ -498,6 +546,16 @@ def generate_html_content(
 
         if isinstance(item, TextItem):
             if not item.text or not item.text.strip():
+                continue
+            
+            # [NEW] 수식 감지 - 수식이면 번역 없이 MathJax로 렌더링
+            if is_formula_text(item.text):
+                formula_html = format_formula_for_mathjax(item.text)
+                html_parts.append(f'''
+                <div class="formula-block">
+                    {formula_html}
+                </div>
+                ''')
                 continue
             
             # 문장 분리 및 번역 매핑

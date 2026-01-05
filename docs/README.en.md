@@ -39,6 +39,7 @@ Designed to overcome the **imperfections and context loss** often encountered in
 - **Markdown Rendering**: Markdown files are rendered as HTML with proper formatting (headings, lists, code blocks, etc.).
 - **Flexible Engine Selection**: Supports Google Translate, DeepL, Gemini, OpenAI GPT-5-nano, Qwen(Local), LFM2(Local), LFM2-KOEN-MT(Local), NLLB-200(Local), Yanolja(Local).
 - **High Performance**: Fast parallel processing for large volumes of documents using multi-threading (`max_workers`).
+- **Fast Mode Support**: Accelerated PDF parsing via `pypdfium2` backend for **3-5x faster** processing (`--fast` option).
 
 ## Quick Start
 
@@ -89,6 +90,9 @@ This is the most basic usage. Specify a PDF file to generate an **interactive HT
 ```bash
 # Basic translation (English -> Korean)
 python main.py sample.pdf
+
+# Use Fast Mode (3-5x faster, simplified layout)
+python main.py sample.pdf --fast
 
 # With options (Use DeepL engine, translate to Japanese)
 python main.py sample.pdf --engine deepl --target ja
