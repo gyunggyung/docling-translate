@@ -79,6 +79,10 @@ def create_converter() -> DocumentConverter:
     pipeline_options.generate_table_images = True
     pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
     pipeline_options.images_scale = 2.0
+    
+    # [NEW] 수식 추출 활성화 (Issue #102)
+    # 수식은 번역하지 않고 원문(LaTeX) 그대로 HTML에 표시됩니다.
+    pipeline_options.do_formula_enrichment = True
 
     return DocumentConverter(
         allowed_formats=[
@@ -400,7 +404,9 @@ def process_single_file(
             # TableItem에서 텍스트를 추출하여 번역 대상에 포함시킵니다.
             if isinstance(item, TableItem):
                 try:
-                    df = item.export_to_dataframe()
+                    # [FIX] deprecated API 수정 (Issue #102)
+                    # export_to_dataframe()에 doc 인자 추가
+                    df = item.export_to_dataframe(doc)
                     # 데이터프레임의 모든 셀 값을 문자열로 변환하여 수집
                     for text in df.values.flatten():
                         if isinstance(text, str) and text.strip():

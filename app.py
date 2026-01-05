@@ -11,6 +11,12 @@ Docling PDF 번역기의 웹 인터페이스(Streamlit) 진입점입니다.
 5.  **히스토리 관리**: `src.utils.load_history_from_disk`를 통해 이전 작업 기록을 불러옵니다.
 """
 
+# [FIX] PyTorch + Streamlit 호환성 워크어라운드 (Issue #102)
+# Streamlit의 파일 감시(hot-reload) 기능이 torch.classes.__path__._path를 잘못 참조하는 문제 해결
+# 반드시 streamlit import 전에 실행되어야 함
+import torch
+torch.classes.__path__ = []
+
 import streamlit as st
 import os
 import logging

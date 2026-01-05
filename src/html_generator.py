@@ -12,7 +12,7 @@ src/html_generator.py
 import html
 import nltk
 from pathlib import Path
-from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItemLabel
+from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem, DocItemLabel, FormulaItem
 from src.utils import save_and_get_image_path
 
 # HTML 헤더: CSS 스타일 및 자바스크립트 포함
@@ -26,6 +26,12 @@ HTML_HEADER = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docling Translation Result</title>
+    
+    <!-- MathJax for LaTeX rendering (Issue #102) -->
+    <!-- 수식을 원문 그대로 렌더링하기 위한 MathJax 라이브러리 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     <style>
         :root {
             --bg-color: #f4f6f8;
@@ -236,6 +242,19 @@ HTML_HEADER = """
         }
         .translated-table tr:nth-child(even) {
             background-color: var(--bg-color);
+        }
+        
+        /* 수식 스타일 (Issue #102) */
+        .formula-block {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--hover-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .formula-block .MathJax {
+            font-size: 1.1em;
         }
     </style>
     <script>
@@ -583,7 +602,8 @@ def generate_html_content(
                 # [NEW] 번역된 표 렌더링 (HTML Table with Hover Tooltips)
                 if isinstance(item, TableItem):
                     try:
-                        df = item.export_to_dataframe()
+                        # [FIX] deprecated API 수정 (Issue #102)
+                        df = item.export_to_dataframe(doc)
                         
                         # --- 1. 원문 표 생성 (검수 모드용) ---
                         table_rows_orig = []
@@ -659,6 +679,25 @@ def generate_html_content(
                     except Exception as e:
                         # 표 렌더링 실패 시에도 전체 프로세스는 멈추지 않도록 함
                         pass
+        
+        # [NEW] FormulaItem 처리 (Issue #102)
+        # 수식은 번역하지 않고 원문(LaTeX) 그대로 MathJax로 렌더링합니다.
+        elif isinstance(item, FormulaItem):
+            try:
+                # FormulaItem에서 LaTeX 텍스트 추출
+                latex = item.text if hasattr(item, 'text') and item.text else ""
+                
+                if latex.strip():
+                    # 블록 수식으로 렌더링 (\[ ... \] 형식)
+                    # MathJax가 자동으로 렌더링합니다
+                    html_parts.append(f'''
+                    <div class="formula-block">
+                        \\[{html.escape(latex)}\\]
+                    </div>
+                    ''')
+            except Exception as e:
+                # 수식 렌더링 실패 시에도 전체 프로세스는 멈추지 않도록 함
+                pass
     
     html_parts.append(HTML_FOOTER)
     return "".join(html_parts)
