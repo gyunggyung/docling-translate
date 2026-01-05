@@ -52,6 +52,15 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions, TableFormerMode
 from docling_core.types.doc import DoclingDocument, TextItem, TableItem, PictureItem
 
+# [NEW] pypdfium2 백엔드 import (Issue #100 - 속도 최적화)
+# Fast 모드에서 사용하면 3-5배 속도 향상
+try:
+    from docling.backend.pypdfium2_backend import PyPdfiumDocumentBackend
+    PYPDFIUM_AVAILABLE = True
+except ImportError:
+    PYPDFIUM_AVAILABLE = False
+    logging.warning("[Speed] PyPdfiumDocumentBackend not available. Fast mode will use default backend.")
+
 from src.benchmark import global_benchmark as bench
 from src.translation import create_translator
 from src.html_generator import generate_html_content
@@ -83,17 +92,29 @@ def create_converter(speed_mode: str = "balanced") -> DocumentConverter:
     
     # [NEW] 속도 모드에 따른 설정 분기 (Issue #100)
     if speed_mode == "fast":
-        # Fast 모드: 속도 우선
+        # Fast 모드: pypdfium2 백엔드 + TableFormerMode.FAST만 적용
+        # 이미지/해상도는 Balanced와 동일하게 유지
         pipeline_options.table_structure_options.mode = TableFormerMode.FAST
-        pipeline_options.generate_picture_images = False
-        pipeline_options.generate_table_images = False
-        pipeline_options.images_scale = 1.0  # 낮은 해상도
+        pipeline_options.generate_picture_images = True   # 이미지 유지
+        pipeline_options.generate_table_images = True     # 표 이미지 유지
+        pipeline_options.images_scale = 2.0               # 고해상도 유지
     else:
         # Balanced 모드: 품질 우선 (기본값)
         pipeline_options.table_structure_options.mode = TableFormerMode.ACCURATE
         pipeline_options.generate_picture_images = True
         pipeline_options.generate_table_images = True
         pipeline_options.images_scale = 2.0  # 고해상도
+
+    # [NEW] 속도 모드에 따른 PDF 백엔드 선택 (Issue #100)
+    if speed_mode == "fast" and PYPDFIUM_AVAILABLE:
+        # Fast 모드: pypdfium2 백엔드 (3-5배 속도 향상)
+        pdf_format_option = PdfFormatOption(
+            pipeline_options=pipeline_options,
+            backend=PyPdfiumDocumentBackend
+        )
+    else:
+        # Balanced 모드: 기본 백엔드 (docling-parse-v4)
+        pdf_format_option = PdfFormatOption(pipeline_options=pipeline_options)
 
     return DocumentConverter(
         allowed_formats=[
@@ -104,7 +125,7 @@ def create_converter(speed_mode: str = "balanced") -> DocumentConverter:
             InputFormat.IMAGE,
         ],
         format_options={
-            InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options),
+            InputFormat.PDF: pdf_format_option,
             InputFormat.DOCX: WordFormatOption(),
             InputFormat.PPTX: PowerpointFormatOption(),
             InputFormat.HTML: HTMLFormatOption(),
